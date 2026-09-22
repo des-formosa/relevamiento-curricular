@@ -233,6 +233,7 @@
       <div class="t-cabecera__derecha">
         <div class="t-cabecera__fecha">Datos al ${esc(fechaLarga(new Date()))}</div>
         ${estado.pantalla === 'panel' ? `
+        <button type="button" class="t-salir t-ayuda" data-accion="tour" title="Ver cómo se usa esta pantalla">¿Cómo se usa?</button>
         <button type="button" class="t-salir t-modo" data-accion="alternar-modo">${estado.modo === 'catalogo' ? 'Ver resultados' : 'Editar catálogo'}</button>
         <button type="button" class="t-interruptor ${estado.ejemplo ? 't-interruptor--activo' : ''} ${estado.modo === 'catalogo' ? 'oculto-visual' : ''}" data-accion="alternar-ejemplo" aria-pressed="${estado.ejemplo}">
           <span class="t-interruptor__pista"></span>Datos de ejemplo
@@ -717,6 +718,10 @@
     const fn = { ingreso: pantallaIngreso, 'sin-permiso': pantallaSinPermiso, panel: pantallaPanel }[estado.pantalla] || pantallaCargando;
     app.innerHTML = fn();
     document.body.style.overflow = estado.exportar ? 'hidden' : '';
+    // La primera vez que se entra a cada pantalla, el recorrido arranca solo
+    if (estado.pantalla === 'panel' && !estado.cargandoDatos && !Editor.estado.cargando) {
+      Tour.quizas(estado.modo === 'catalogo' ? 'catalogo' : 'resultados');
+    }
   }
 
   /* ======================================================================
@@ -732,6 +737,7 @@
       case 'salir': salir(); break;
       case 'reintentar': cargarDatos(); break;
       case 'alternar-ejemplo': estado.ejemplo = !estado.ejemplo; escribirHash(); cargarDatos(); break;
+      case 'tour': Tour.iniciar(estado.modo === 'catalogo' ? 'catalogo' : 'resultados'); break;
       case 'alternar-modo':
         estado.modo = estado.modo === 'catalogo' ? 'resultados' : 'catalogo';
         Editor.limpiar();

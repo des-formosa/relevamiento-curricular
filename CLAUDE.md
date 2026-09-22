@@ -65,6 +65,7 @@ fijada, nunca por bundler.
 │   ├── formulario.js       estado, navegación y pantallas del flujo del docente
 │   ├── dashboard.js        panel: sesión, selectores, Detalle, Mapa de calor, exportar
 │   ├── editor.js           edición del catálogo desde el panel, con historial
+│   ├── tour.js             recorrido guiado del panel y del editor
 │   ├── tablero.css         estilos propios del panel (usa los tokens de estilos.css)
 │   ├── fuentes/            Kumbh Sans, Didact Gothic y Noto Serif Ahom en woff2, embebidas
 │   └── img/                logos oficiales, más los símbolos recortados que se usan en pantalla
@@ -315,6 +316,19 @@ Las funciones del panel (`catalogo_editar`, `guardar_saber`, `guardar_contenido`
 verifican `es_equipo()`: el dashboard nunca escribe en las tablas directamente, igual que el
 formulario solo entra por `registrar_aporte`.
 
+### El recorrido guiado (assets/tour.js)
+
+Son veinte personas que entran cada tanto, no todos los días. En vez de un instructivo que
+nadie lee, el panel se explica solo: ilumina una parte de la pantalla y dice qué mira, con
+«Saltar», «Anterior» y «Siguiente». Diez pasos para leer los resultados y ocho para editar el
+catálogo.
+
+Arranca solo la primera vez que se entra a cada pantalla (queda anotado en `localStorage`,
+claves `relevamiento.tour.*`) y se vuelve a ver desde «¿Cómo se usa?» en la cabecera. Los
+pasos marcados `opcional` se saltean si su elemento no está en pantalla, así el recorrido no
+señala un vacío cuando todavía no hay datos. Vive fuera de `#app` porque el panel se redibuja
+entero en cada acción.
+
 El acceso requiere login (Supabase Auth). Los usuarios los crea el administrador; no hay
 registro público.
 
@@ -459,6 +473,8 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
   `assets/editor.js`. Editar, agregar y archivar saberes y contenidos, con historial de
   cambios y botón para publicar el JSON. Probado con un cliente simulado; falta correr el
   SQL en Supabase y probarlo con un usuario del equipo
+- **Recorrido guiado del panel** (`assets/tour.js`): diez pasos para leer los resultados y
+  ocho para editar el catálogo. Arranca solo la primera vez y se repite desde «¿Cómo se usa?»
 - Dashboard completo (`dashboard.html` + `assets/dashboard.js` + `assets/tablero.css`):
   ingreso con Supabase Auth, chequeo de `equipo_planificacion`, Detalle, Mapa de calor,
   datos de ejemplo, exportar a Excel y PDF. Probado con un cliente simulado y el ingreso

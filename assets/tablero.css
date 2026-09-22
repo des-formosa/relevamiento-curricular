@@ -30,13 +30,16 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
 
 /* ---------- Cabecera ---------- */
 
+/* Altura mínima, no fija: con cuatro controles hay anchos donde el grupo de la
+   derecha tiene que bajar de línea. Antes se superponía con la marca. */
 .t-cabecera {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 20px;
-  height: 88px;
-  padding: 0 32px;
+  gap: 12px 20px;
+  flex-wrap: wrap;
+  min-height: 88px;
+  padding: 10px 32px;
   background: var(--blanco);
   border-bottom: 3px solid var(--verde);
   flex-shrink: 0;
@@ -55,10 +58,30 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
 .t-cabecera__nombre span:first-child { font-size: 13.5px; font-weight: 700; color: var(--t-tinta); }
 .t-cabecera__nombre span + span { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--t-gris-2); }
 .t-cabecera__separador { width: 1px; height: 40px; background: var(--t-borde); flex-shrink: 0; }
-/* Con el botón de editar catálogo, el rótulo y la fecha ya no entran juntos */
-@media (max-width: 1599px) { .t-cabecera__rotulo, .t-cabecera__rotulo + .t-cabecera__separador { display: none; } }
+/* La cabecera del panel lleva cuatro controles: el rótulo y el segundo nombre
+   son lo primero que sobra cuando no entra todo. */
+@media (max-width: 1699px) {
+  .t-cabecera__rotulo, .t-cabecera__rotulo + .t-cabecera__separador { display: none; }
+}
+@media (max-width: 1499px) {
+  .t-cabecera__marca .t-cabecera__nombre + .t-cabecera__separador + .t-cabecera__simbolo + .t-cabecera__nombre { display: none; }
+}
+@media (max-width: 1299px) { .t-cabecera__fecha { display: none; } }
+/* Entre 900 y 1100 los cuatro controles no entran al lado de la marca */
+@media (min-width: 900px) and (max-width: 1100px) {
+  .t-cabecera__marca { flex: 1 1 100%; }
+  .t-cabecera__derecha { flex: 1 1 100%; justify-content: flex-end; }
+}
 .t-modo { border-color: var(--verde); color: var(--verde); }
-.t-cabecera__rotulo { font-size: 15px; font-weight: 600; color: var(--t-gris); white-space: nowrap; }
+.t-cabecera__rotulo {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--t-gris);
+  white-space: nowrap;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 .t-cabecera__derecha { display: flex; align-items: center; gap: 18px; flex-shrink: 0; }
 .t-cabecera__fecha { font-size: 14px; color: var(--t-gris-2); white-space: nowrap; }
 .t-cabecera__usuario { font-size: 14px; color: var(--t-gris-2); white-space: nowrap; }
@@ -1132,3 +1155,135 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
   .ed-panel { top: auto; bottom: 0; width: 100%; max-height: 92vh; }
   .ed-panel--historial { width: 100%; }
 }
+
+/* ============================================================================
+   Tour del panel (assets/tour.js)
+
+   Ilumina una parte de la pantalla y explica qué mira. Vive sobre todo lo
+   demás, así que el foco es un recorte del velo, no un borde de color.
+   ============================================================================ */
+
+body.tour-abierto { overflow: hidden; }
+
+.tour { position: fixed; inset: 0; z-index: 60; }
+.tour__velo { position: absolute; inset: 0; background: rgba(18, 28, 25, 0.62); }
+
+/* El «agujero»: una sombra enorme alrededor del recuadro iluminado */
+.tour__foco {
+  position: absolute;
+  border-radius: 12px;
+  box-shadow: 0 0 0 9999px rgba(18, 28, 25, 0.62);
+  border: 2px solid var(--blanco);
+  pointer-events: none;
+  transition: top .18s ease, left .18s ease, width .18s ease, height .18s ease;
+}
+/* Con foco, el velo plano sobra */
+.tour__foco ~ .tour__velo, .tour:has(.tour__foco) .tour__velo { display: none; }
+
+.tour__tarjeta {
+  position: absolute;
+  background: var(--blanco);
+  border-radius: 16px;
+  box-shadow: 0 18px 44px rgba(18, 28, 25, 0.3);
+  padding: 20px 22px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.tour__tarjeta--centro {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(460px, calc(100vw - 32px));
+}
+.tour__tarjeta--abajo {
+  left: 16px;
+  right: 16px;
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  width: auto;
+}
+/* Puntita que señala el elemento */
+.tour__tarjeta--flecha-arriba::before,
+.tour__tarjeta--flecha-abajo::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  margin-left: -9px;
+  border: 9px solid transparent;
+}
+.tour__tarjeta--flecha-arriba::before { top: -18px; border-bottom-color: var(--blanco); }
+.tour__tarjeta--flecha-abajo::before { bottom: -18px; border-top-color: var(--blanco); }
+
+.tour__paso {
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--verde);
+}
+.tour__titulo {
+  margin: 0;
+  font-family: var(--ui);
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+  color: var(--tinta);
+}
+.tour__texto {
+  margin: 0;
+  font-family: var(--texto);
+  font-size: 16.5px;
+  line-height: 1.5;
+  color: var(--tinta-2);
+}
+.tour__pie {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+.tour__puntos { display: flex; gap: 6px; }
+.tour__punto {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--pista);
+}
+.tour__punto--actual { background: var(--verde); width: 20px; border-radius: 4px; }
+.tour__botones { display: flex; gap: 8px; margin-left: auto; }
+.tour__boton {
+  height: 42px;
+  padding: 0 16px;
+  border: 1.5px solid var(--borde);
+  border-radius: 10px;
+  background: var(--blanco);
+  font-family: var(--ui);
+  font-size: 15.5px;
+  font-weight: 700;
+  color: var(--tinta-2);
+  cursor: pointer;
+}
+.tour__boton:hover { border-color: var(--verde); color: var(--verde); }
+.tour__boton--principal {
+  background: var(--verde);
+  border-color: var(--verde);
+  color: var(--blanco);
+  padding: 0 22px;
+}
+.tour__boton--principal:hover { background: var(--verde-profundo); color: var(--blanco); }
+
+@media (max-width: 899px) {
+  .tour__tarjeta { padding: 18px 18px 16px; }
+  .tour__titulo { font-size: 20px; }
+  .tour__texto { font-size: 16px; }
+  .tour__botones { width: 100%; margin-left: 0; }
+  .tour__boton { flex: 1 1 0; justify-content: center; }
+  .tour__boton--principal { flex: 1.4 1 0; }
+}
+
+/* El botón que vuelve a abrirlo */
+.t-ayuda { border-color: var(--borde); }
+.t-ayuda:hover { border-color: var(--verde); color: var(--verde); }
