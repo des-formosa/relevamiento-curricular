@@ -974,8 +974,8 @@
     const yaCargados = new Set(registro(s.id).contenidos.map((c) => normalizarTexto(c.texto)));
     const disponibles = lista.filter((c) => !yaCargados.has(c.texto_normalizado || normalizarTexto(c.texto)));
     const titulo = disponibles.length
-      ? `Del diseño curricular · ${disponibles.length} ${plural(disponibles.length, 'coincidencia', 'coincidencias')}`
-      : 'Del diseño curricular · sin coincidencias';
+      ? `Sugerencias para este saber · ${disponibles.length} ${plural(disponibles.length, 'coincidencia', 'coincidencias')}`
+      : 'Sugerencias para este saber · sin coincidencias';
     const filas = disponibles.map((c, i) => `
       <button type="button" class="sugerencia ${ui.sugerenciaActiva === i ? 'sugerencia--activa' : ''}" data-accion="elegir-sugerencia" data-id="${esc(c.id)}" role="option" ${ui.sugerenciaActiva === i ? 'aria-selected="true"' : ''}>
         ${Icono.mas({ color: '#0B4F4A' })}
@@ -1101,7 +1101,7 @@
     } else if (escribiendo) {
       cuerpoCentral = `<div class="ayuda">Lo que agregás vos queda marcado aparte. No es un error: nos sirve igual.</div>`;
     } else {
-      cuerpoCentral = `<div class="caja-ayuda">Escribí las primeras letras y te mostramos los contenidos del diseño curricular para este saber.<br><br>Si el tuyo no aparece, igual lo podés agregar.</div>`;
+      cuerpoCentral = `<div class="caja-ayuda">Escribí las primeras letras y te mostramos los contenidos sugeridos para este saber.<br><br>Si el tuyo no aparece, igual lo podés agregar.</div>`;
     }
 
     const acciones = hayContenidos ? `

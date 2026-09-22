@@ -1,0 +1,380 @@
+{
+  "educacion-tecnologica--e1--a1s1": [
+    "Qué es un proceso tecnológico",
+    "Insumos, procesos y productos",
+    "Operaciones que componen un proceso",
+    "Representación de un proceso mediante esquemas",
+    "Indagación sobre procesos del entorno"
+  ],
+  "educacion-tecnologica--e1--a1s2": [
+    "Transformación de materiales",
+    "Tipos de materiales y sus propiedades",
+    "Técnicas de transformación: conformado, corte y unión",
+    "Operaciones técnicas y herramientas",
+    "Relación entre la técnica y el material"
+  ],
+  "educacion-tecnologica--e1--a1s3": [
+    "Uso de microorganismos en la industria alimenticia",
+    "Fermentación: pan, yogur y quesos",
+    "Microorganismos en la agricultura",
+    "Biotecnología tradicional",
+    "Control de las condiciones del proceso"
+  ],
+  "educacion-tecnologica--e1--a1s4": [
+    "Análisis funcional de artefactos",
+    "Análisis morfológico de artefactos",
+    "Partes de un artefacto y su función",
+    "Relaciones entre las partes",
+    "Desarmado y estudio de un objeto técnico"
+  ],
+  "educacion-tecnologica--e1--a1s5": [
+    "Diagramas de bloques",
+    "Representación de funciones y relaciones",
+    "Diagramas de máquinas",
+    "Diagramas de sistemas de comunicación",
+    "Interpretación y elaboración de diagramas"
+  ],
+  "educacion-tecnologica--e1--a1s6": [
+    "Dibujo técnico",
+    "Bocetos y croquis",
+    "Planos: vistas y acotación",
+    "Representación de formas y dimensiones",
+    "Escalas en el dibujo técnico"
+  ],
+  "educacion-tecnologica--e1--a1s7": [
+    "Dispositivos de producción de energía",
+    "Generación de energía eléctrica",
+    "Conservación y almacenamiento de energía",
+    "Fuentes de energía disponibles",
+    "Funciones de cada dispositivo"
+  ],
+  "educacion-tecnologica--e1--a1s8": [
+    "Artefactos que transforman energía en movimiento",
+    "Motores y mecanismos",
+    "Transmisión y transformación del movimiento",
+    "Poleas, engranajes y palancas",
+    "Construcción de un mecanismo sencillo"
+  ],
+  "educacion-tecnologica--e1--a1s9": [
+    "El proceso de diseño",
+    "Identificación del problema",
+    "Generación de alternativas de solución",
+    "Evaluación y selección de la alternativa",
+    "Prototipo y prueba"
+  ],
+  "educacion-tecnologica--e1--a1s10": [
+    "Control de calidad de productos",
+    "Control de calidad de procesos",
+    "Variables que se controlan",
+    "Normas y estándares",
+    "Resolución de problemas de calidad"
+  ],
+  "educacion-tecnologica--e1--a2s1": [
+    "Procesos tecnológicos: revisión y profundización",
+    "Entradas, transformaciones y salidas",
+    "Secuencia de operaciones",
+    "Representación del proceso",
+    "Indagación sobre procesos productivos locales"
+  ],
+  "educacion-tecnologica--e1--a2s2": [
+    "Escalas de producción",
+    "Procesos agrícola-ganaderos",
+    "Elaboración y distribución de alimentos",
+    "Contextos de producción artesanal e industrial",
+    "Comparación entre escalas"
+  ],
+  "educacion-tecnologica--e1--a2s3": [
+    "Sistemas y procesos automatizados",
+    "Sensores y captación de información",
+    "Cambios promovidos por la información",
+    "Lazo de control",
+    "Ejemplos de automatización cotidiana"
+  ],
+  "educacion-tecnologica--e1--a2s4": [
+    "Comunicación a distancia",
+    "Señales digitales",
+    "Codificación y decodificación",
+    "Transmisión de datos",
+    "Medios de transmisión"
+  ],
+  "educacion-tecnologica--e1--a2s5": [
+    "Diagramas de flujo",
+    "Diagramas de estados",
+    "Comportamiento de sistemas automáticos",
+    "Representación de secuencias",
+    "Elaboración de un diagrama"
+  ],
+  "educacion-tecnologica--e1--a2s6": [
+    "Grados de libertad de un sistema",
+    "Tipos de actuadores",
+    "Tipos de sensores",
+    "Capacidad de adaptación del sistema",
+    "Aspectos estructurales y funcionales"
+  ],
+  "educacion-tecnologica--e1--a2s7": [
+    "Problemas de diseño",
+    "Alternativas de solución",
+    "Criterios de evaluación de alternativas",
+    "Selección fundamentada",
+    "Documentación del proceso de diseño"
+  ],
+  "educacion-tecnologica--e1--a2s8": [
+    "Cálculo de tiempos de un proyecto",
+    "Cálculo de costos",
+    "Diagrama de tareas y tiempos",
+    "Uso de planillas de cálculo",
+    "Planificación de un proyecto tecnológico"
+  ],
+  "educacion-tecnologica--e1--a2s9": [
+    "Controladores electromecánicos",
+    "Diseño y construcción de un controlador",
+    "Ajuste y calibración",
+    "Tipos de control",
+    "Toma de decisiones técnicas"
+  ],
+  "educacion-tecnologica--e2--a1s1": [
+    "Secuencias de actividades",
+    "Tareas delegadas en los artefactos",
+    "Delegación de funciones humanas",
+    "Programa de acciones",
+    "Indagación sobre artefactos del hogar"
+  ],
+  "educacion-tecnologica--e2--a1s2": [
+    "Delegación del programa de acciones",
+    "Censado de variables",
+    "Comparación con un valor de referencia",
+    "Toma de decisiones automática",
+    "Registro y análisis del funcionamiento"
+  ],
+  "educacion-tecnologica--e2--a1s3": [
+    "Procesos automáticos con sensores",
+    "Procesos automáticos sin sensores",
+    "Medios técnicos y automatización",
+    "Comparación entre ambos tipos",
+    "Ejemplos del entorno cotidiano"
+  ],
+  "educacion-tecnologica--e2--a1s4": [
+    "Sistemas de comunicación a distancia",
+    "Digitalización de la información",
+    "Transmisión y recepción de señales",
+    "Codificación de datos",
+    "Uso de dispositivos de comunicación"
+  ],
+  "educacion-tecnologica--e2--a1s5": [
+    "Comunicación unidireccional",
+    "Comunicación bidireccional",
+    "Características de funcionamiento",
+    "Emisor, canal y receptor",
+    "Ejemplos de cada tipo de comunicación"
+  ],
+  "educacion-tecnologica--e2--a2s1": [
+    "Secuencias de actividades en los artefactos",
+    "Tareas delegadas y automatización",
+    "Programación de secuencias",
+    "Análisis de un artefacto programable",
+    "Indagación sobre delegación de tareas"
+  ],
+  "educacion-tecnologica--e2--a2s2": [
+    "Dispositivos de control automático",
+    "Programadores mecánicos",
+    "Programadores eléctricos",
+    "Exploración de un temporizador",
+    "Uso de dispositivos de control"
+  ],
+  "educacion-tecnologica--e2--a2s3": [
+    "Información codificada en formato digital",
+    "Tablas de estado",
+    "Diagramas temporales",
+    "Representación de transmisiones",
+    "Interpretación de la codificación"
+  ],
+  "educacion-tecnologica--e2--a2s4": [
+    "Control discreto",
+    "Control analógico",
+    "Diferencias entre ambas técnicas",
+    "Procedimientos delegados en los dispositivos",
+    "Comparación de aplicaciones"
+  ],
+  "educacion-tecnologica--e2--a2s5": [
+    "Robots en los procesos industriales",
+    "Secuencias de operaciones delegadas",
+    "Formas de programación gestual",
+    "Programación por aprendizaje",
+    "Impacto de la robótica en el trabajo"
+  ],
+  "educacion-tecnologica--e3--a1s1": [
+    "Redes y sistemas tecnológicos",
+    "Procesos que forman redes",
+    "Interconexión entre tecnologías",
+    "Infraestructura de servicios",
+    "Reconocimiento de redes del entorno"
+  ],
+  "educacion-tecnologica--e3--a1s2": [
+    "Interacciones entre procesos tecnológicos",
+    "Actores involucrados en la tecnología",
+    "Diagramas y esquemas de interacción",
+    "Sistema sociotécnico",
+    "Representación de un caso"
+  ],
+  "educacion-tecnologica--e3--a1s3": [
+    "Líneas de producción",
+    "Provisión y uso de la energía",
+    "Representación mediante esquemas",
+    "Tipos de líneas: continua y por lotes",
+    "Análisis de una línea de producción"
+  ],
+  "educacion-tecnologica--e3--a1s4": [
+    "Continuidad y cambio en las tecnologías",
+    "Evolución de un artefacto a lo largo del tiempo",
+    "Innovación tecnológica",
+    "Líneas de tiempo tecnológicas",
+    "Indagación histórica sobre una tecnología"
+  ],
+  "educacion-tecnologica--e3--a1s5": [
+    "Momentos del desarrollo tecnológico",
+    "Operaciones que se conservan a lo largo del tiempo",
+    "Cambios en los medios técnicos",
+    "Permanencia de los principios de funcionamiento",
+    "Comparación entre épocas"
+  ],
+  "educacion-tecnologica--e3--a1s6": [
+    "Tiempos de realización de una actividad",
+    "Tecnologías de distintas épocas",
+    "Formas de organización del trabajo",
+    "Contrastación de rendimientos",
+    "Eficiencia y productividad"
+  ],
+  "educacion-tecnologica--e3--a1s7": [
+    "Sistemas automatizados y trabajo humano",
+    "Delegación de programas de acciones",
+    "La tecnología que complementa el trabajo",
+    "La tecnología que sustituye el trabajo",
+    "Análisis crítico de la automatización"
+  ],
+  "educacion-tecnologica--e3--a1s8": [
+    "Adopción de una tecnología",
+    "Actores involucrados en la adopción",
+    "Resistencias y aceptación",
+    "Deconstrucción del proceso",
+    "Estudio de caso"
+  ],
+  "educacion-tecnologica--e3--a1s9": [
+    "Combustibles fósiles",
+    "Energías renovables",
+    "Conveniencia del reemplazo energético",
+    "Interrelaciones ambientales y sociales",
+    "Debate sobre la transición energética"
+  ],
+  "educacion-tecnologica--e3--a1s10": [
+    "Coexistencia de tecnologías diferentes",
+    "Tecnologías en una misma sociedad",
+    "Tecnologías de culturas específicas",
+    "Tecnologías tradicionales vigentes",
+    "Indagación sobre tecnologías locales"
+  ],
+  "educacion-tecnologica--e3--a1s11": [
+    "Energías renovables y no renovables",
+    "Generación concentrada o centralizada",
+    "Generación aislada o distribuida",
+    "Coexistencia de sistemas energéticos",
+    "Energía en zonas rurales de Formosa"
+  ],
+  "educacion-tecnologica--e3--a1s12": [
+    "Potencialidad de las tecnologías disponibles",
+    "Condiciones de vida de la población",
+    "Acceso desigual a la tecnología",
+    "Brecha tecnológica",
+    "Reflexión sobre tecnología y bienestar"
+  ],
+  "educacion-tecnologica--e3--a1s13": [
+    "Valor social de las tecnologías",
+    "Sustentabilidad ambiental",
+    "Criterios para seleccionar tecnologías",
+    "Consecuencias de las decisiones técnicas",
+    "Tecnología apropiada"
+  ],
+  "educacion-tecnologica--e3--a2s1": [
+    "Redes y sistemas tecnológicos",
+    "Procesos interconectados",
+    "Sistemas de servicios: agua, energía y comunicaciones",
+    "Nodos y enlaces de una red",
+    "Reconocimiento de redes en la provincia"
+  ],
+  "educacion-tecnologica--e3--a2s2": [
+    "Sistema sociotécnico actual",
+    "Interacciones entre procesos y actores",
+    "Representación de las interacciones",
+    "Tecnologías que configuran el sistema",
+    "Análisis de un sistema sociotécnico"
+  ],
+  "educacion-tecnologica--e3--a2s3": [
+    "Convergencia de modos y de medios",
+    "Integración de servicios en un dispositivo",
+    "Fenómeno sociotécnico de la convergencia",
+    "Consecuencias de la convergencia",
+    "Análisis crítico del fenómeno"
+  ],
+  "educacion-tecnologica--e3--a2s4": [
+    "Continuidad y cambio en las tecnologías",
+    "Trayectoria de una tecnología",
+    "Innovaciones incrementales y radicales",
+    "Obsolescencia",
+    "Indagación sobre cambios tecnológicos"
+  ],
+  "educacion-tecnologica--e3--a2s5": [
+    "Decisiones sociotécnicas",
+    "Situaciones problemáticas complejas",
+    "Diferentes enfoques de resolución",
+    "Actores y sus intereses",
+    "Contrastación de decisiones"
+  ],
+  "educacion-tecnologica--e3--a2s6": [
+    "Localización de la producción",
+    "Sistemas de transmisión de información a distancia",
+    "Deslocalización y trabajo remoto",
+    "Cambios en la organización del trabajo",
+    "Consecuencias territoriales"
+  ],
+  "educacion-tecnologica--e3--a2s7": [
+    "Tecnologías de almacenamiento de información",
+    "Recuperación de la información",
+    "Soportes del pasado y del presente",
+    "Pérdida y calidad de la información",
+    "Comparación de soportes"
+  ],
+  "educacion-tecnologica--e3--a2s8": [
+    "Sistema Nacional de Innovación",
+    "INTI: propósitos y actividades",
+    "INTA: propósitos y actividades",
+    "CONICET y organismos de ciencia y técnica",
+    "Aportes de estas instituciones a la producción"
+  ],
+  "educacion-tecnologica--e3--a2s9": [
+    "Coexistencia de tecnologías diferentes",
+    "Tecnologías en distintas culturas",
+    "Saberes técnicos tradicionales",
+    "Convivencia de lo artesanal y lo industrial",
+    "Indagación sobre casos locales"
+  ],
+  "educacion-tecnologica--e3--a2s10": [
+    "Escalas de producción y sus características",
+    "Costos de los productos terminados",
+    "Modos de gestión",
+    "Distribución de excedentes",
+    "Comparación entre unidades productivas"
+  ],
+  "educacion-tecnologica--e3--a2s11": [
+    "Potencialidad de las tecnologías disponibles",
+    "Condiciones de vida y tecnología",
+    "Distribución desigual de los beneficios",
+    "Tecnología y desarrollo social",
+    "Reflexión fundamentada"
+  ],
+  "educacion-tecnologica--e3--a2s12": [
+    "Problemáticas cotidianas desde el enfoque sociotécnico",
+    "Preguntas y respuestas como ciudadanos",
+    "Participación ciudadana en decisiones tecnológicas",
+    "Ejercicio de análisis de un caso",
+    "Elaboración de una postura fundamentada"
+  ]
+}

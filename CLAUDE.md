@@ -68,7 +68,9 @@ fijada, nunca por bundler.
 │   ├── fuentes/            Kumbh Sans, Didact Gothic y Noto Serif Ahom en woff2, embebidas
 │   └── img/                logos oficiales, más los símbolos recortados que se usan en pantalla
 ├── datos/
-│   ├── catalogo.json       942 saberes, 2.724 contenidos sugeridos
+│   ├── catalogo.json       942 saberes, 4.716 contenidos sugeridos
+│   ├── contenidos/         contenidos propuestos por materia + aplicar.py
+│   └── contenidos_672_originales.json   los recortes que traía la transcripción
 │   └── escuelas.json       81 escuelas E.P.E.S., 9 departamentos
 └── sql/                    se corren en orden en el SQL Editor; todos se pueden re-ejecutar
     ├── 01_esquema.sql      tablas e índices
@@ -87,9 +89,27 @@ fijada, nunca por bundler.
 
 Sale de la **Resolución 672**, el diseño curricular del Ciclo Básico de Formosa. El PDF
 original es un escaneo sin capa de texto. Se empezó con OCR, pero la calidad del escaneo no
-alcanzó, así que **las 16 materias terminaron transcritas a mano contra el PDF**. Todo el
-catálogo tiene `origen: "transcripcion_manual"` y `calidad: "buena"`, y todos los saberes
-tienen contenidos sugeridos.
+alcanzó, así que **las 16 materias terminaron transcritas a mano contra el PDF**. Los saberes
+tienen `origen: "transcripcion_manual"` y `calidad: "buena"`.
+
+### Los contenidos sugeridos no salen de la Resolución
+
+La Resolución enuncia saberes, no contenidos. La transcripción había dejado como "contenidos"
+recortes del propio texto del saber, muchos cortados a la mitad: «Mcd en situaciones
+planteadas», «Noción energía», «Entendida en su complejidad». El 77 % era subcadena literal
+del saber y 193 saberes tenían una sola opción. Eso rompía el objetivo del relevamiento: si el
+docente no reconoce la opción, no la elige, escribe texto libre y se pierde la comparabilidad.
+
+Por eso los **4.716 contenidos sugeridos los escribió el equipo** (22/09/2026), cinco por
+saber, con criterio de la materia y del año. Llevan `origen: "propuesto_equipo"` para
+distinguirlos de lo que está textualmente en la Resolución, y la pantalla del docente los
+titula «Sugerencias para este saber», nunca «del diseño curricular».
+
+Se editan en `datos/contenidos/<espacio_id>.json` (saber_id → lista de textos) y se vuelcan al
+catálogo con `python datos/contenidos/aplicar.py`, que reemplaza los contenidos del saber,
+recalcula `texto_normalizado` y asigna ids `<saber_id>--p<n>`. `--revisar` informa la cobertura
+sin escribir. Los contenidos originales quedaron guardados en
+`datos/contenidos_672_originales.json` por si el equipo quiere consultarlos.
 
 Jerarquía: **Área → Espacio Curricular → Eje → Saber → Contenidos sugeridos**
 
@@ -398,9 +418,11 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
   el catálogo que tiene la base es el viejo, ver Pendiente.
   `assets/supabase.js` ya apunta al proyecto: lo que se envíe desde el formulario se guarda de verdad
 - **Catálogo curricular terminado** (22/09/2026): las 16 materias transcritas a mano contra el
-  PDF. 942 saberes con trimestre asignado, 45 ejes reales y 2.724 contenidos sugeridos, en
-  `datos/catalogo.json`. Todos `calidad: buena`, ninguno sin contenidos, ninguna combinación
-  materia/año vacía
+  PDF. 942 saberes con trimestre asignado y 45 ejes reales, en `datos/catalogo.json`. Todos
+  `calidad: buena`, ninguna combinación materia/año vacía
+- **Contenidos sugeridos reescritos** (22/09/2026): 4.716, cinco por saber, escritos por el
+  equipo porque los de la transcripción eran recortes del texto del saber. `origen:
+  "propuesto_equipo"`. Fuente editable en `datos/contenidos/`
 - Dashboard completo (`dashboard.html` + `assets/dashboard.js` + `assets/tablero.css`):
   ingreso con Supabase Auth, chequeo de `equipo_planificacion`, Detalle, Mapa de calor,
   datos de ejemplo, exportar a Excel y PDF. Probado con un cliente simulado y el ingreso
@@ -413,8 +435,8 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
   https://des-formosa.github.io/relevamiento-curricular/dashboard.html (panel)
 
 **Pendiente**
-- **Subir el catálogo nuevo a Supabase.** La base todavía tiene el de 831 saberes, con ids que
-  ya no existen. En el SQL Editor, en este orden:
+- **Subir el catálogo nuevo a Supabase** (incluye los contenidos reescritos). En el SQL Editor,
+  en este orden:
   1. `select public.borrar_datos_ejemplo();` y borrar los envíos de prueba reales
      (`delete from public.aportes where es_ejemplo = false;`), porque un saber con respuestas
      no se puede borrar y quedaría colgado del catálogo viejo

@@ -1,0 +1,1206 @@
+{
+  "matematica--e1--a1s1": [
+    "Valor posicional de las cifras",
+    "Descomposición de un número natural",
+    "Descomposición polinómica con potencias de diez",
+    "Series numéricas y regularidades",
+    "Lectura y escritura de números naturales"
+  ],
+  "matematica--e1--a1s2": [
+    "Potencias de base natural",
+    "Cuadrado y cubo de un número",
+    "Raíz cuadrada exacta",
+    "Cálculo de potencias y raíces",
+    "Problemas con cuadrados y cubos"
+  ],
+  "matematica--e1--a1s3": [
+    "Composición de números naturales",
+    "Descomposición aditiva",
+    "Sistema de numeración posicional",
+    "Órdenes: unidades, decenas y centenas",
+    "Equivalencias entre órdenes"
+  ],
+  "matematica--e1--a1s4": [
+    "Propiedades de la suma y la resta",
+    "Propiedades de la multiplicación y la división",
+    "Propiedad conmutativa, asociativa y distributiva",
+    "Problemas que requieren varias operaciones",
+    "Cálculo mental con propiedades"
+  ],
+  "matematica--e1--a1s5": [
+    "Múltiplos de un número natural",
+    "Divisores de un número natural",
+    "Múltiplos comunes",
+    "Divisores comunes",
+    "Criterios de divisibilidad"
+  ],
+  "matematica--e1--a1s6": [
+    "Relaciones de divisibilidad",
+    "Múltiplos y divisores comunes",
+    "Números primos y compuestos",
+    "Análisis de afirmaciones sobre divisibilidad",
+    "Justificación de afirmaciones"
+  ],
+  "matematica--e1--a1s7": [
+    "Múltiplo común menor (mcm)",
+    "Divisor común mayor (mcd)",
+    "Descomposición en factores primos",
+    "Cálculo del mcm y el mcd",
+    "Identificación en situaciones concretas"
+  ],
+  "matematica--e1--a1s8": [
+    "Problemas con múltiplo común menor",
+    "Problemas con divisor común mayor",
+    "Situaciones de encuentros periódicos",
+    "Repartos exactos",
+    "Elección del procedimiento adecuado"
+  ],
+  "matematica--e1--a1s9": [
+    "Expresiones fraccionarias",
+    "Expresiones decimales",
+    "Equivalencia entre distintas representaciones",
+    "Pasaje de fracción a decimal",
+    "Argumentación sobre la equivalencia"
+  ],
+  "matematica--e1--a1s10": [
+    "El sistema sexagesimal",
+    "Unidades de tiempo: horas, minutos y segundos",
+    "Unidades de ángulo: grados, minutos y segundos",
+    "Equivalencias entre unidades sexagesimales",
+    "Lectura de medidas sexagesimales"
+  ],
+  "matematica--e1--a1s11": [
+    "Sistema decimal y sistema sexagesimal",
+    "Comparación entre ambos sistemas",
+    "Agrupamientos de base diez y de base sesenta",
+    "Ventajas de cada sistema",
+    "Conversión entre sistemas"
+  ],
+  "matematica--e1--a1s12": [
+    "Suma en el sistema sexagesimal",
+    "Resta en el sistema sexagesimal",
+    "Algoritmos con medidas de tiempo",
+    "Operaciones con medidas de ángulos",
+    "Problemas de duración y de amplitud"
+  ],
+  "matematica--e1--a1s13": [
+    "Cálculo mental",
+    "Cálculo escrito",
+    "Cálculo exacto y aproximado",
+    "Estimación de resultados",
+    "Elección del tipo de cálculo según la situación"
+  ],
+  "matematica--e1--a1s14": [
+    "Concepto de fracción",
+    "Numerador y denominador",
+    "Relación entre fracción y número decimal",
+    "Fracciones decimales",
+    "Representación de fracciones"
+  ],
+  "matematica--e1--a1s15": [
+    "La fracción como razón",
+    "Igualdad de razones",
+    "Proporciones",
+    "Comparación de razones",
+    "Problemas de razones"
+  ],
+  "matematica--e1--a1s16": [
+    "Fracciones equivalentes",
+    "Amplificación y simplificación",
+    "Representaciones gráficas de fracciones",
+    "Fracción irreducible",
+    "Reconocimiento de equivalencias"
+  ],
+  "matematica--e1--a1s17": [
+    "Significados de la fracción: parte-todo",
+    "La fracción como cociente",
+    "La fracción como operador",
+    "La fracción como medida",
+    "Problemas con distintos significados"
+  ],
+  "matematica--e1--a1s18": [
+    "Comparación de números naturales",
+    "Comparación de números racionales",
+    "Orden en la recta numérica",
+    "Nociones de densidad",
+    "Números entre dos números dados"
+  ],
+  "matematica--e1--a1s19": [
+    "Registro y comunicación de cantidades",
+    "Encuadramiento de números",
+    "Elección de la representación adecuada",
+    "Aproximación y redondeo",
+    "Comparación de cantidades"
+  ],
+  "matematica--e1--a1s20": [
+    "Problemas con fracciones de uso frecuente",
+    "Problemas con decimales",
+    "Situaciones de la vida cotidiana",
+    "Dinero y medidas",
+    "Interpretación del resultado en contexto"
+  ],
+  "matematica--e1--a1s21": [
+    "Combinación de varias operaciones",
+    "Del problema al cálculo",
+    "Del cálculo al problema",
+    "Jerarquía de las operaciones",
+    "Uso de paréntesis"
+  ],
+  "matematica--e1--a1s22": [
+    "Suma y resta de fracciones",
+    "Multiplicación de fracciones",
+    "División de fracciones",
+    "Significados de las operaciones con fracciones",
+    "Problemas con operaciones combinadas"
+  ],
+  "matematica--e2--a1s1": [
+    "Proporcionalidad directa",
+    "Proporcionalidad inversa",
+    "Tablas de proporcionalidad",
+    "Constante de proporcionalidad",
+    "Representación gráfica de la proporcionalidad"
+  ],
+  "matematica--e2--a1s2": [
+    "Lectura de tablas",
+    "Interpretación de gráficos",
+    "Variables dependientes e independientes",
+    "Relaciones entre variables",
+    "Situaciones de la vida cotidiana"
+  ],
+  "matematica--e2--a1s3": [
+    "Producción de tablas de valores",
+    "Gráficos cartesianos",
+    "Ejes, escalas y puntos",
+    "Magnitudes discretas y continuas",
+    "Elaboración de un gráfico a partir de datos"
+  ],
+  "matematica--e2--a1s4": [
+    "Propiedades de la proporcionalidad directa",
+    "Propiedades de la proporcionalidad inversa",
+    "Construcción de tablas",
+    "Explicitación de las propiedades",
+    "Comparación entre ambos tipos"
+  ],
+  "matematica--e2--a1s5": [
+    "Problemas de proporcionalidad directa",
+    "Problemas de proporcionalidad inversa",
+    "Regla de tres simple",
+    "Porcentaje",
+    "Escalas y planos"
+  ],
+  "matematica--e2--a1s6": [
+    "Variación del perímetro",
+    "Variación del área",
+    "Cambios en las dimensiones de una figura",
+    "Análisis funcional de la variación",
+    "Problemas de optimización sencillos"
+  ],
+  "matematica--e2--a1s7": [
+    "Lenguaje coloquial y lenguaje simbólico",
+    "Traducción de enunciados a expresiones algebraicas",
+    "Uso de letras para representar números",
+    "Propiedades de las operaciones en lenguaje simbólico",
+    "Interpretación de expresiones"
+  ],
+  "matematica--e2--a1s8": [
+    "Datos de un problema",
+    "La incógnita de un problema",
+    "Identificación de lo conocido y lo desconocido",
+    "Planteo de la situación",
+    "Organización de la información"
+  ],
+  "matematica--e2--a1s9": [
+    "Producción de expresiones algebraicas",
+    "Expresión oral de una relación matemática",
+    "Expresión escrita de una relación",
+    "Propiedades de las operaciones en N",
+    "Validación de la expresión producida"
+  ],
+  "matematica--e2--a1s10": [
+    "Uso de expresiones algebraicas",
+    "Valor numérico de una expresión",
+    "Propiedades de las operaciones",
+    "Generalización de regularidades",
+    "Fórmulas sencillas"
+  ],
+  "matematica--e2--a1s11": [
+    "Ecuaciones de primer grado sencillas",
+    "Despeje de la incógnita",
+    "Operaciones inversas",
+    "Resolución paso a paso",
+    "Problemas que se resuelven con ecuaciones"
+  ],
+  "matematica--e2--a1s12": [
+    "Verificación de la solución",
+    "Ecuaciones aditivas",
+    "Sustitución del valor hallado",
+    "Análisis de la validez del resultado",
+    "Corrección de errores"
+  ],
+  "matematica--e3--a1s1": [
+    "Rectas paralelas",
+    "Rectas perpendiculares",
+    "Símbolos de paralelismo y perpendicularidad",
+    "Trazado con regla y escuadra",
+    "Identificación en figuras y en el entorno"
+  ],
+  "matematica--e3--a1s2": [
+    "Triángulos: elementos",
+    "Clasificación de triángulos según sus lados",
+    "Clasificación según sus ángulos",
+    "Cuadriláteros y sus elementos",
+    "Clasificación de cuadriláteros"
+  ],
+  "matematica--e3--a1s3": [
+    "Cuerpos geométricos en objetos reales",
+    "Desarrollo plano del cubo",
+    "Desarrollo plano de prismas y pirámides",
+    "Caras, aristas y vértices",
+    "Construcción de cuerpos con sus desarrollos"
+  ],
+  "matematica--e3--a1s4": [
+    "Suma de los ángulos interiores de un triángulo",
+    "Suma de los ángulos interiores de un cuadrilátero",
+    "Comprobación mediante plegado o recorte",
+    "Uso del transportador",
+    "Cálculo de un ángulo faltante"
+  ],
+  "matematica--e3--a1s5": [
+    "Triángulos, cuadriláteros y círculos",
+    "Prismas y pirámides",
+    "Cilindros y conos",
+    "Elementos y propiedades de las figuras",
+    "Comparación entre figuras y cuerpos"
+  ],
+  "matematica--e3--a1s6": [
+    "Construcción de figuras con regla y compás",
+    "Construcción a partir de propiedades",
+    "Datos suficientes y necesarios",
+    "Instrumentos de geometría",
+    "Análisis de la construcción realizada"
+  ],
+  "matematica--e3--a1s7": [
+    "Propiedad triangular",
+    "Suma de los ángulos interiores",
+    "Producción de argumentos",
+    "Validación de una propiedad",
+    "Contraejemplos"
+  ],
+  "matematica--e3--a1s8": [
+    "Condiciones sobre los lados",
+    "Condiciones sobre los ángulos",
+    "Diagonales y radios",
+    "Unicidad de la construcción",
+    "Exploración con instrumentos y software"
+  ],
+  "matematica--e3--a1s9": [
+    "Estimación de volúmenes",
+    "Medición de volúmenes",
+    "Equivalencia entre volumen y capacidad",
+    "Elección de la unidad adecuada",
+    "Litro, mililitro y centímetro cúbico"
+  ],
+  "matematica--e3--a1s10": [
+    "Cuerpos de igual volumen",
+    "Construcciones con cubos",
+    "Comparación de volúmenes",
+    "Conservación del volumen",
+    "Representación de construcciones"
+  ],
+  "matematica--e3--a1s11": [
+    "Ángulos de un triángulo",
+    "Ángulos de un cuadrilátero",
+    "Ángulos interiores de polígonos",
+    "Ángulos exteriores",
+    "Problemas de cálculo de ángulos"
+  ],
+  "matematica--e3--a1s12": [
+    "Perímetro de polígonos",
+    "Longitud de la circunferencia",
+    "El número pi",
+    "Cálculo de perímetros en situaciones reales",
+    "Problemas de contorno"
+  ],
+  "matematica--e3--a1s13": [
+    "Área de figuras planas",
+    "Área como suma de áreas conocidas",
+    "Descomposición de figuras",
+    "Cálculo de áreas compuestas",
+    "Problemas de superficie"
+  ],
+  "matematica--e3--a1s14": [
+    "Magnitud y unidad de medida",
+    "Relación entre unidad y magnitud",
+    "Unidades de longitud, superficie y volumen",
+    "Elección de la unidad conveniente",
+    "Instrumentos de medición"
+  ],
+  "matematica--e3--a1s15": [
+    "Distintas expresiones de una misma cantidad",
+    "Equivalencias entre unidades",
+    "Argumentación sobre la equivalencia",
+    "Conversión de unidades",
+    "Uso de múltiplos y submúltiplos"
+  ],
+  "matematica--e3--a1s16": [
+    "Expresión algebraica del perímetro",
+    "Expresión algebraica del área",
+    "Expresión algebraica del volumen",
+    "Fórmulas y su significado",
+    "Uso de fórmulas en problemas"
+  ],
+  "matematica--e3--a1s17": [
+    "Volumen de prismas",
+    "Equivalencia entre cuerpos de distinta forma",
+    "Composición y descomposición de cuerpos",
+    "Cálculo del volumen",
+    "Problemas de capacidad y volumen"
+  ],
+  "matematica--e3--a1s18": [
+    "Unidades de longitud del SIMELA",
+    "Unidades de área",
+    "Unidades de volumen y capacidad",
+    "Relaciones entre las unidades",
+    "Problemas de medida en contexto"
+  ],
+  "matematica--e4--a1s1": [
+    "Tablas de doble entrada",
+    "Lectura de un dato en una tabla",
+    "Filas y columnas",
+    "Organización de datos en cuadros",
+    "Interpretación de la información"
+  ],
+  "matematica--e4--a1s2": [
+    "Cuadro estadístico",
+    "Correspondencia entre cuadro y gráfico",
+    "Tipos de gráficos estadísticos",
+    "Lectura conjunta de tabla y gráfico",
+    "Verificación de la correspondencia"
+  ],
+  "matematica--e4--a1s3": [
+    "Elaboración de instrumentos de recolección",
+    "Encuestas y cuestionarios",
+    "Recolección de datos",
+    "Formas de agrupar la información",
+    "Registro y tabulación"
+  ],
+  "matematica--e4--a1s4": [
+    "Gráficos de barras",
+    "Pictogramas",
+    "Lectura de datos en el gráfico",
+    "Comparación de frecuencias",
+    "Escalas del gráfico"
+  ],
+  "matematica--e4--a1s5": [
+    "Pictogramas y diagramas de barras",
+    "Gráficos circulares",
+    "Gráficos de línea",
+    "Interpretación de tablas",
+    "Elección del gráfico adecuado"
+  ],
+  "matematica--e4--a1s6": [
+    "Media aritmética",
+    "Cálculo del promedio",
+    "Significado del promedio en contexto",
+    "Comparación de promedios",
+    "Limitaciones de la media"
+  ],
+  "matematica--e4--a1s7": [
+    "Magnitudes discretas y continuas",
+    "Relaciones entre magnitudes",
+    "Datos presentados en tablas",
+    "Datos presentados en gráficos",
+    "Problemas de interpretación"
+  ],
+  "matematica--e4--a1s8": [
+    "Interpretación de un gráfico de barras",
+    "Completamiento de un gráfico",
+    "Lectura de frecuencias",
+    "Título, ejes y referencias",
+    "Problemas sencillos con gráficos"
+  ],
+  "matematica--e4--a1s9": [
+    "Información estadística en los medios",
+    "Descripción e interpretación de datos",
+    "Análisis crítico de la información",
+    "Gráficos engañosos",
+    "Situaciones de la vida cotidiana"
+  ],
+  "matematica--e4--a1s10": [
+    "Nociones de azar e incertidumbre",
+    "La probabilidad como cuantificación",
+    "Sucesos aleatorios",
+    "Situaciones problemáticas con azar",
+    "Predicciones y frecuencia"
+  ],
+  "matematica--e4--a1s11": [
+    "Cálculo de la probabilidad de un suceso",
+    "Casos favorables y casos posibles",
+    "Experiencias con monedas y dados",
+    "Registro de resultados",
+    "Comparación entre lo esperado y lo obtenido"
+  ],
+  "matematica--e4--a1s12": [
+    "Comparación de probabilidades",
+    "Sucesos seguros",
+    "Sucesos imposibles",
+    "Espacio muestral",
+    "Ordenamiento de sucesos según su probabilidad"
+  ],
+  "matematica--e4--a1s13": [
+    "Simulación de experiencias aleatorias",
+    "Uso de recursos tecnológicos",
+    "Equiprobabilidad",
+    "Juegos de azar",
+    "Verificación experimental de la probabilidad"
+  ],
+  "matematica--e1--a2s1": [
+    "Números enteros: positivos y negativos",
+    "El número entero como número relativo",
+    "Temperaturas bajo cero y altitudes",
+    "Comparación y orden de números enteros",
+    "Contextos de uso de los enteros"
+  ],
+  "matematica--e1--a2s2": [
+    "Representación de enteros en la recta numérica",
+    "Distancia entre dos números enteros",
+    "Valor absoluto",
+    "Números opuestos",
+    "Orden en la recta numérica"
+  ],
+  "matematica--e1--a2s3": [
+    "Registro de números enteros",
+    "Comunicación de cantidades con signo",
+    "Interpretación de enteros en distintos contextos",
+    "Notación de los números enteros",
+    "Situaciones de la vida cotidiana"
+  ],
+  "matematica--e1--a2s4": [
+    "Operaciones en el conjunto Z",
+    "Propiedades de las operaciones con enteros",
+    "Extensión de las propiedades de N a Z",
+    "Regla de los signos",
+    "Comparación entre N y Z"
+  ],
+  "matematica--e1--a2s5": [
+    "Suma y resta de números enteros",
+    "Multiplicación de enteros",
+    "División de enteros",
+    "Potenciación con enteros",
+    "Problemas con operaciones en Z"
+  ],
+  "matematica--e1--a2s6": [
+    "Comparación de números enteros",
+    "Situaciones de deuda y haber",
+    "Niveles sobre y bajo el nivel del mar",
+    "Variación de temperatura",
+    "Problemas de comparación en contexto"
+  ],
+  "matematica--e1--a2s7": [
+    "Propiedades de la divisibilidad en N",
+    "Suma de dos múltiplos",
+    "Divisibilidad de un producto",
+    "Uso de las propiedades en la resolución",
+    "Justificación de afirmaciones"
+  ],
+  "matematica--e1--a2s8": [
+    "El número racional como cociente",
+    "Conjunto Q",
+    "Fracciones y división",
+    "Representación de racionales",
+    "Racionales positivos y negativos"
+  ],
+  "matematica--e1--a2s9": [
+    "Propiedades de los números enteros",
+    "Propiedades de los números racionales",
+    "Diferencias entre Z y Q",
+    "Densidad de los racionales",
+    "Comparación entre conjuntos numéricos"
+  ],
+  "matematica--e1--a2s10": [
+    "Potenciación con exponente entero",
+    "Exponente negativo",
+    "Radicación en Q",
+    "Propiedades de la potenciación",
+    "Propiedades de la radicación"
+  ],
+  "matematica--e1--a2s11": [
+    "Expresiones fraccionarias",
+    "Expresiones decimales",
+    "Notación científica",
+    "Porcentaje",
+    "Equivalencia entre representaciones"
+  ],
+  "matematica--e1--a2s12": [
+    "Cálculo de potencias con exponente entero",
+    "Cálculo de raíces en Q",
+    "Aplicación de las propiedades",
+    "Operaciones combinadas con potencias",
+    "Uso de la calculadora"
+  ],
+  "matematica--e1--a2s13": [
+    "Elección de la representación adecuada",
+    "Pasaje entre fracción, decimal y porcentaje",
+    "Notación científica en números grandes y pequeños",
+    "Uso en situaciones reales",
+    "Comparación de representaciones"
+  ],
+  "matematica--e1--a2s14": [
+    "Jerarquía de las operaciones",
+    "Uso de paréntesis, corchetes y llaves",
+    "Propiedades en el cálculo",
+    "Producción de cálculos",
+    "Interpretación de expresiones numéricas"
+  ],
+  "matematica--e2--a2s1": [
+    "Relaciones entre variables",
+    "Tablas de valores",
+    "Gráficos cartesianos",
+    "Fórmulas que relacionan variables",
+    "Interpretación en distintos contextos"
+  ],
+  "matematica--e2--a2s2": [
+    "Concepto de función",
+    "Variable dependiente e independiente",
+    "Lectura de gráficos contextualizados",
+    "Dominio e imagen",
+    "Identificación de funciones en situaciones reales"
+  ],
+  "matematica--e2--a2s3": [
+    "Proporción",
+    "Representaciones de una proporción",
+    "Tablas, gráficos y fórmulas",
+    "Constante de proporcionalidad",
+    "Reconocimiento de la proporcionalidad"
+  ],
+  "matematica--e2--a2s4": [
+    "Variaciones uniformes",
+    "Modelos proporcionales",
+    "Modelización de situaciones",
+    "Identificación de la variación constante",
+    "Comparación entre variaciones"
+  ],
+  "matematica--e2--a2s5": [
+    "Sistema de referencia en el plano",
+    "Ejes cartesianos",
+    "Coordenadas de un punto",
+    "Ubicación de puntos en el plano",
+    "Lectura de coordenadas"
+  ],
+  "matematica--e2--a2s6": [
+    "Ecuación lineal con una variable",
+    "Condición sobre un conjunto numérico",
+    "Resolución de la ecuación",
+    "Conjunto solución",
+    "Problemas que se modelizan con ecuaciones"
+  ],
+  "matematica--e2--a2s7": [
+    "Funciones de proporcionalidad directa",
+    "Variación uniforme",
+    "Propiedades de la función lineal",
+    "Gráfico de la proporcionalidad directa",
+    "Análisis de la pendiente"
+  ],
+  "matematica--e2--a2s8": [
+    "Fórmulas de perímetro",
+    "Fórmulas de área",
+    "Fórmulas de volumen",
+    "Comparación de fórmulas",
+    "Análisis de las variaciones"
+  ],
+  "matematica--e2--a2s9": [
+    "Regularidades numéricas",
+    "Producción de fórmulas",
+    "Generalización de patrones",
+    "Expresiones equivalentes",
+    "Validación de la fórmula obtenida"
+  ],
+  "matematica--e2--a2s10": [
+    "Propiedades de las operaciones",
+    "Expresión oral de una propiedad",
+    "Expresión simbólica",
+    "Generalización con letras",
+    "Uso de las propiedades en el cálculo"
+  ],
+  "matematica--e2--a2s11": [
+    "Ecuaciones con una variable",
+    "Condiciones sobre un conjunto de números",
+    "Resolución y verificación",
+    "Ecuaciones equivalentes",
+    "Problemas con ecuaciones"
+  ],
+  "matematica--e2--a2s12": [
+    "Afirmaciones sobre propiedades de las operaciones",
+    "Criterios de divisibilidad",
+    "Producción de afirmaciones",
+    "Análisis de su validez",
+    "Contraejemplos"
+  ],
+  "matematica--e2--a2s13": [
+    "Ecuaciones aditivas",
+    "Ecuaciones multiplicativas",
+    "Comprobación de la solución",
+    "Sustitución del valor hallado",
+    "Detección de errores"
+  ],
+  "matematica--e2--a2s14": [
+    "Expresiones algebraicas equivalentes",
+    "Conversión de expresiones",
+    "Propiedad distributiva",
+    "Factor común",
+    "Reconocimiento de relaciones entre expresiones"
+  ],
+  "matematica--e2--a2s15": [
+    "Relación entre variables",
+    "Situaciones en tablas, gráficos y fórmulas",
+    "Resolución de problemas contextualizados",
+    "Elección de la representación",
+    "Interpretación de resultados"
+  ],
+  "matematica--e3--a2s1": [
+    "Circunferencia y círculo",
+    "Mediatriz de un segmento",
+    "Bisectriz de un ángulo",
+    "Lugares geométricos",
+    "Construcción con regla y compás"
+  ],
+  "matematica--e3--a2s2": [
+    "Construcción de polígonos",
+    "Uso de regla no graduada y compás",
+    "Construcción a partir de datos",
+    "Polígonos regulares",
+    "Análisis de la construcción"
+  ],
+  "matematica--e3--a2s3": [
+    "Construcción de triángulos",
+    "Condiciones para construir un triángulo",
+    "Propiedad triangular",
+    "Unicidad de la construcción",
+    "Argumentación sobre las condiciones necesarias"
+  ],
+  "matematica--e3--a2s4": [
+    "Justificación de los procedimientos",
+    "Uso de los datos disponibles",
+    "Propiedades de las figuras",
+    "Validación de una construcción",
+    "Comunicación del procedimiento"
+  ],
+  "matematica--e3--a2s5": [
+    "Perímetro de figuras usuales",
+    "Área de triángulos y cuadriláteros",
+    "Área del círculo",
+    "Figuras compuestas",
+    "Problemas de perímetro y área"
+  ],
+  "matematica--e3--a2s6": [
+    "Ángulos entre paralelas y una transversal",
+    "Propiedades del paralelogramo",
+    "Ángulos opuestos por el vértice",
+    "Ángulos complementarios y suplementarios",
+    "Cálculo de ángulos sin medir"
+  ],
+  "matematica--e3--a2s7": [
+    "Ángulos interiores de polígonos",
+    "Ángulos exteriores",
+    "Suma de los ángulos de un polígono",
+    "Polígonos regulares y sus ángulos",
+    "Problemas de cálculo de ángulos"
+  ],
+  "matematica--e3--a2s8": [
+    "Estimación de cantidades",
+    "Cálculo de medidas",
+    "Elección de la unidad conveniente",
+    "Formas de expresar una cantidad",
+    "Aproximación y error"
+  ],
+  "matematica--e3--a2s9": [
+    "Variación del perímetro",
+    "Variación del área",
+    "Cambio de las dimensiones de una figura",
+    "Relación entre dimensiones y medida",
+    "Exploración con software geométrico"
+  ],
+  "matematica--e3--a2s10": [
+    "Área lateral de un cuerpo",
+    "Cuerpos de igual área y distinto volumen",
+    "Cuerpos de igual volumen y distinta área",
+    "Comparación entre cuerpos",
+    "Exploración de las relaciones"
+  ],
+  "matematica--e4--a2s1": [
+    "Variables cualitativas",
+    "Variables cuantitativas",
+    "Organización de los datos",
+    "Construcción de tablas de frecuencia",
+    "Clasificación de variables"
+  ],
+  "matematica--e4--a2s2": [
+    "Datos discretos y acotados",
+    "Organización de conjuntos de datos",
+    "Estudio de un fenómeno real",
+    "Recolección de información",
+    "Presentación de los datos"
+  ],
+  "matematica--e4--a2s3": [
+    "La media aritmética",
+    "El modo o moda",
+    "Significado de las medidas en contexto",
+    "Comparación entre media y modo",
+    "Descripción de un conjunto de datos"
+  ],
+  "matematica--e4--a2s4": [
+    "Comunicación de la información",
+    "Toma de decisiones a partir de datos",
+    "Análisis del proceso de relevamiento",
+    "Confiabilidad de la muestra",
+    "Presentación de conclusiones"
+  ],
+  "matematica--e4--a2s5": [
+    "Información estadística en los medios",
+    "Descripción e interpretación de datos",
+    "Análisis crítico de la presentación",
+    "Situaciones de la vida cotidiana",
+    "Detección de usos engañosos"
+  ],
+  "matematica--e4--a2s6": [
+    "Valores estadísticos representativos",
+    "Uso de planillas de cálculo",
+    "Recursos tecnológicos para estadística",
+    "Cálculo de la media y el modo",
+    "Generación de gráficos con tecnología"
+  ],
+  "matematica--e4--a2s7": [
+    "Lectura de gráficos de situaciones reales",
+    "Extracción de información",
+    "Resolución de problemas con datos",
+    "Comparación de conjuntos de datos",
+    "Conclusiones fundamentadas"
+  ],
+  "matematica--e4--a2s8": [
+    "La probabilidad como cuantificación de la incertidumbre",
+    "Sucesos aleatorios",
+    "Cálculo de probabilidades simples",
+    "Expresión de la probabilidad",
+    "Situaciones problemáticas con azar"
+  ],
+  "matematica--e4--a2s9": [
+    "Situaciones de certeza",
+    "Situaciones de azar",
+    "Juegos con dados y cartas",
+    "Identificación del tipo de situación",
+    "Análisis de las reglas del juego"
+  ],
+  "matematica--e4--a2s10": [
+    "Sucesos simples",
+    "Sucesos compuestos",
+    "Uso de material concreto",
+    "Espacio muestral",
+    "Diferenciación entre tipos de sucesos"
+  ],
+  "matematica--e4--a2s11": [
+    "Comparación de probabilidades",
+    "Conteo ordenado de casos",
+    "Diagramas de árbol",
+    "Casos favorables y posibles",
+    "Problemas de conteo"
+  ],
+  "matematica--e4--a2s12": [
+    "Pictogramas",
+    "Gráficos de barras",
+    "Interpretación de gráficos",
+    "Realización de un gráfico",
+    "Elección de la escala adecuada"
+  ],
+  "matematica--e1--a3s1": [
+    "El conjunto de los números racionales",
+    "Reconocimiento de números racionales",
+    "Usos de los racionales en la vida cotidiana",
+    "Racionales positivos y negativos",
+    "Representación en la recta numérica"
+  ],
+  "matematica--e1--a3s2": [
+    "Números naturales, enteros y racionales",
+    "Fracciones y expresiones decimales",
+    "Comparación entre conjuntos numéricos",
+    "Representación en la recta",
+    "Orden de los números racionales"
+  ],
+  "matematica--e1--a3s3": [
+    "Expresión oral de una fracción",
+    "Representación gráfica de fracciones",
+    "Expresión simbólica",
+    "Lectura y escritura de fracciones",
+    "Equivalencia entre representaciones"
+  ],
+  "matematica--e1--a3s4": [
+    "Operaciones en Q",
+    "Propiedades de las operaciones con racionales",
+    "Extensión de las propiedades de N y Z",
+    "Elemento neutro e inverso",
+    "Comparación entre conjuntos numéricos"
+  ],
+  "matematica--e1--a3s5": [
+    "Densidad de los números racionales",
+    "Número comprendido entre otros dos",
+    "Propiedades de los conjuntos numéricos",
+    "Discretitud de N y Z",
+    "Exploración entre dos racionales dados"
+  ],
+  "matematica--e1--a3s6": [
+    "Elección de la operación adecuada",
+    "Operaciones en Q para resolver problemas",
+    "Interpretación del enunciado",
+    "Validación del resultado",
+    "Problemas con racionales"
+  ],
+  "matematica--e1--a3s7": [
+    "Propiedades de la adición en Q",
+    "Propiedades de la multiplicación en Q",
+    "Elemento neutro",
+    "Inverso aditivo e inverso multiplicativo",
+    "Aplicación de las propiedades"
+  ],
+  "matematica--e1--a3s8": [
+    "Tipos de cálculo: mental, escrito y con calculadora",
+    "Cálculo exacto y aproximado",
+    "Forma de expresar los números",
+    "Razonabilidad del resultado",
+    "Estimación previa al cálculo"
+  ],
+  "matematica--e1--a3s9": [
+    "Expresiones decimales periódicas",
+    "Equivalencia entre periódico y fracción",
+    "Fracción generatriz",
+    "Período y anteperíodo",
+    "Pasaje de decimal periódico a fracción"
+  ],
+  "matematica--e1--a3s10": [
+    "Fracciones mayores que la unidad",
+    "Representación gráfica",
+    "Número mixto",
+    "Pasaje de fracción impropia a número mixto",
+    "Ubicación en la recta numérica"
+  ],
+  "matematica--e1--a3s11": [
+    "Propiedades de los conjuntos numéricos",
+    "Discretitud",
+    "Densidad",
+    "Construcción de enunciados sobre las propiedades",
+    "Comparación entre N, Z y Q"
+  ],
+  "matematica--e1--a3s12": [
+    "Propiedades de la divisibilidad en N",
+    "Producción de argumentos",
+    "Validación de propiedades",
+    "Uso de ejemplos y contraejemplos",
+    "Comunicación de la argumentación"
+  ],
+  "matematica--e1--a3s13": [
+    "Problemas con números racionales",
+    "Operaciones y sus propiedades",
+    "Elección de la estrategia de resolución",
+    "Interpretación del resultado",
+    "Situaciones de la vida cotidiana"
+  ],
+  "matematica--e1--a3s14": [
+    "Regularidades en colecciones de racionales",
+    "Números que cumplen ciertas condiciones",
+    "Exploración de patrones",
+    "Generalización de regularidades",
+    "Validación de conjeturas"
+  ],
+  "matematica--e1--a3s15": [
+    "Problemas de varios pasos",
+    "Sentidos de las cuatro operaciones",
+    "Operaciones combinadas en Q",
+    "Planificación de la resolución",
+    "Verificación del resultado"
+  ],
+  "matematica--e2--a3s1": [
+    "Relación de dependencia entre variables",
+    "Variable dependiente e independiente",
+    "Representación en tablas, gráficos y fórmulas",
+    "Análisis de la dependencia",
+    "Ejemplos de la vida cotidiana"
+  ],
+  "matematica--e2--a3s2": [
+    "Variaciones lineales",
+    "Variaciones no lineales",
+    "Interpretación de gráficos",
+    "Interpretación de fórmulas",
+    "Modelización de situaciones"
+  ],
+  "matematica--e2--a3s3": [
+    "Función lineal",
+    "Expresión algebraica de la función lineal",
+    "Gráfico de la función lineal",
+    "Pasaje de la fórmula al gráfico",
+    "Pasaje del gráfico a la fórmula"
+  ],
+  "matematica--e2--a3s4": [
+    "Puntos que pertenecen a una función",
+    "Verificación de la pertenencia",
+    "Sustitución en la fórmula",
+    "Tabla de valores",
+    "Validación de la expresión algebraica"
+  ],
+  "matematica--e2--a3s5": [
+    "Variaciones lineales",
+    "Pendiente de la recta",
+    "Ordenada al origen",
+    "Interpretación de los parámetros",
+    "Relación entre parámetros y gráfico"
+  ],
+  "matematica--e2--a3s6": [
+    "Ecuación lineal con una variable",
+    "Planteo de la ecuación a partir del problema",
+    "Resolución de la ecuación",
+    "Verificación de la solución",
+    "Interpretación del resultado en contexto"
+  ],
+  "matematica--e2--a3s7": [
+    "Sistemas de ecuaciones lineales",
+    "Conjunto solución de un sistema",
+    "Métodos de resolución",
+    "Interpretación gráfica del sistema",
+    "Sistemas con una, ninguna o infinitas soluciones"
+  ],
+  "matematica--e2--a3s8": [
+    "Modelización de variaciones lineales",
+    "Gráficos y fórmulas",
+    "Interpretación de los parámetros",
+    "Construcción del modelo",
+    "Contraste del modelo con la situación"
+  ],
+  "matematica--e2--a3s9": [
+    "Modelización de variaciones lineales y no lineales",
+    "Elección del modelo adecuado",
+    "Análisis de la situación planteada",
+    "Producción de la fórmula",
+    "Validación del modelo"
+  ],
+  "matematica--e2--a3s10": [
+    "Afirmaciones con expresiones algebraicas",
+    "Equivalencia de expresiones",
+    "Argumentación sobre la validez",
+    "Uso de propiedades para justificar",
+    "Contraejemplos"
+  ],
+  "matematica--e2--a3s11": [
+    "Expresiones algebraicas equivalentes",
+    "Propiedades usadas en la resolución",
+    "Ecuaciones de primer grado",
+    "Transformaciones válidas",
+    "Resolución justificada"
+  ],
+  "matematica--e2--a3s12": [
+    "De la expresión algebraica al lenguaje coloquial",
+    "Elaboración de enunciados",
+    "Interpretación de fórmulas",
+    "Producción de problemas",
+    "Comunicación matemática"
+  ],
+  "matematica--e2--a3s13": [
+    "Ecuaciones equivalentes",
+    "Argumentación sobre la equivalencia",
+    "Ecuaciones de primer grado",
+    "Resolución de situaciones problemáticas",
+    "Justificación de los pasos"
+  ],
+  "matematica--e2--a3s14": [
+    "Ecuaciones lineales con una variable",
+    "Ecuaciones lineales con dos variables",
+    "Conjunto solución",
+    "Representación gráfica de la solución",
+    "Análisis del conjunto solución"
+  ],
+  "matematica--e2--a3s15": [
+    "Relaciones entre dos rectas",
+    "Rectas paralelas, secantes y coincidentes",
+    "Conjunto solución del sistema",
+    "Interpretación geométrica",
+    "Determinación de la pertinencia de la relación"
+  ],
+  "matematica--e2--a3s16": [
+    "Problemas con variaciones lineales",
+    "Problemas con variaciones no lineales",
+    "Uso de gráficos y fórmulas",
+    "Elección de la representación",
+    "Interpretación de los resultados"
+  ],
+  "matematica--e3--a3s1": [
+    "Construcción de figuras",
+    "Noción de lugar geométrico",
+    "Argumentación basada en propiedades",
+    "Análisis de la construcción",
+    "Uso de instrumentos y software"
+  ],
+  "matematica--e3--a3s2": [
+    "Propiedades de las figuras",
+    "Propiedades de los ángulos",
+    "Propiedades de los lados y las diagonales",
+    "Producción de argumentos",
+    "Validación de las propiedades"
+  ],
+  "matematica--e3--a3s3": [
+    "Construcción de triángulos con regla y compás",
+    "Congruencia de triángulos",
+    "Criterios de congruencia",
+    "Validación de la construcción",
+    "Problemas de construcción"
+  ],
+  "matematica--e3--a3s4": [
+    "Figuras semejantes",
+    "Razón de semejanza",
+    "Condiciones necesarias para la semejanza",
+    "Construcción de figuras semejantes",
+    "Escalas y ampliaciones"
+  ],
+  "matematica--e3--a3s5": [
+    "Teorema de Tales",
+    "Condiciones de aplicación",
+    "Proporcionalidad de segmentos",
+    "Validación de propiedades",
+    "Problemas con el teorema de Tales"
+  ],
+  "matematica--e3--a3s6": [
+    "Variaciones en triángulos y cuadriláteros",
+    "Propiedades que se conservan",
+    "Exploración con software dinámico",
+    "Invariantes geométricas",
+    "Conjeturas y validación"
+  ],
+  "matematica--e3--a3s7": [
+    "Área de polígonos regulares",
+    "Perímetro de polígonos regulares",
+    "Apotema",
+    "Descomposición en triángulos",
+    "Problemas de área y perímetro"
+  ],
+  "matematica--e3--a3s8": [
+    "Unidades convencionales de medida",
+    "Aplicación en problemas de otras disciplinas",
+    "Nociones de exactitud y aproximación",
+    "Error de medición",
+    "Elección de la unidad adecuada"
+  ],
+  "matematica--e3--a3s9": [
+    "Independencia entre área y perímetro",
+    "Figuras de igual perímetro y distinta área",
+    "Figuras de igual área y distinto perímetro",
+    "Problemas de comparación",
+    "Análisis de casos"
+  ],
+  "matematica--e3--a3s10": [
+    "Teorema de Pitágoras",
+    "Condiciones de aplicación",
+    "Triángulos rectángulos",
+    "Cálculo de lados",
+    "Problemas con la relación pitagórica"
+  ],
+  "matematica--e4--a3s1": [
+    "Variables cualitativas y cuantitativas",
+    "Variables discretas y continuas",
+    "Clasificación de variables",
+    "Ejemplos de cada tipo",
+    "Elección de la variable según el estudio"
+  ],
+  "matematica--e4--a3s2": [
+    "La media aritmética",
+    "La mediana",
+    "El modo",
+    "Cálculo de los parámetros centrales",
+    "Significado de cada parámetro"
+  ],
+  "matematica--e4--a3s3": [
+    "Límites de la media",
+    "Límites de la mediana y el modo",
+    "Valores atípicos",
+    "Elección del parámetro adecuado",
+    "Análisis crítico de las medidas"
+  ],
+  "matematica--e4--a3s4": [
+    "Situaciones estadísticas con dos variables",
+    "Relación entre variables",
+    "Tablas de doble entrada",
+    "Gráficos de dispersión",
+    "Verificación de la existencia de relación"
+  ],
+  "matematica--e4--a3s5": [
+    "Agrupamiento de datos en intervalos",
+    "Intervalos de clase",
+    "Variables discretas y continuas",
+    "Amplitud del intervalo",
+    "Organización de los datos"
+  ],
+  "matematica--e4--a3s6": [
+    "Tipos de gráficos estadísticos",
+    "Elección del gráfico adecuado",
+    "Construcción de gráficos",
+    "Escalas y referencias",
+    "Comunicación de la información"
+  ],
+  "matematica--e4--a3s7": [
+    "Tablas de series simples",
+    "Tablas de frecuencias",
+    "Intervalos de clase",
+    "Frecuencia absoluta y relativa",
+    "Confección de la tabla"
+  ],
+  "matematica--e4--a3s8": [
+    "Gráfico de barras con dos variables",
+    "Clasificación de los datos",
+    "Relación entre las variables",
+    "Lectura del gráfico",
+    "Conclusiones a partir del gráfico"
+  ],
+  "matematica--e4--a3s9": [
+    "Inferencias a partir de los datos",
+    "Argumentos para la toma de decisiones",
+    "Límites de la información disponible",
+    "Validez de las conclusiones",
+    "Comunicación de los resultados"
+  ],
+  "matematica--e4--a3s10": [
+    "Lectura de gráficos estadísticos",
+    "Extracción de información",
+    "Interpretación de los datos",
+    "Resolución de problemas con gráficos",
+    "Comparación entre gráficos"
+  ],
+  "matematica--e4--a3s11": [
+    "Organización de datos de un fenómeno",
+    "Toma de decisiones a partir de datos",
+    "Análisis del proceso de relevamiento",
+    "Diseño de la recolección",
+    "Presentación del estudio"
+  ],
+  "matematica--e4--a3s12": [
+    "La probabilidad y la incertidumbre",
+    "Cálculo de probabilidades",
+    "Espacio muestral",
+    "Sucesos y su probabilidad",
+    "Usos de la probabilidad"
+  ],
+  "matematica--e4--a3s13": [
+    "Problemas que requieren probabilidad",
+    "Cuantificación de la incertidumbre",
+    "Cálculo en situaciones reales",
+    "Interpretación del resultado",
+    "Toma de decisiones con probabilidad"
+  ],
+  "matematica--e4--a3s14": [
+    "Razonabilidad de una inferencia",
+    "Datos estadísticos obtenidos",
+    "Evaluación de conclusiones",
+    "Tamaño de la muestra",
+    "Análisis crítico de inferencias"
+  ],
+  "matematica--e4--a3s15": [
+    "Frecuencia relativa de un suceso",
+    "Experimentación real",
+    "Simulación con recursos tecnológicos",
+    "Comparación con la probabilidad teórica",
+    "Ley de los grandes números"
+  ]
+}
