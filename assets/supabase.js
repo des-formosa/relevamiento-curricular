@@ -17,6 +17,13 @@ const CONFIG_SUPABASE = {
   claveAnon: 'sb_publishable_5eK1cRIfuuU72QWHBPKqFg_FNQ3YoMF',
 };
 
+// El catálogo publicado por el equipo desde el panel. Es un archivo estático
+// servido por el CDN de Supabase: diez mil descargas no tocan la base. Si no
+// está o falla, el formulario usa datos/catalogo.json del repositorio.
+const URL_CATALOGO_PUBLICADO = CONFIG_SUPABASE.url
+  ? CONFIG_SUPABASE.url + '/storage/v1/object/public/catalogo/catalogo.json'
+  : '';
+
 // Modo demostración: con «?demo» en la URL el flujo es el mismo, pero no se
 // escribe nada en la base. Sirve para mostrar el formulario en reuniones.
 const MODO_DEMO = new URLSearchParams(window.location.search).has('demo');

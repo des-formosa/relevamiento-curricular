@@ -10,6 +10,7 @@ const Catalogo = (function () {
   'use strict';
 
   let datos = null;       // { areas, espacios, ejes, saberes, contenidos }
+  let origenCatalogo = null;  // 'publicado' (Storage) | 'repositorio'
   let institucion = null; // { departamentos, escuelas }
   const idx = {};
   const cacheTramos = new Map();
@@ -27,9 +28,35 @@ const Catalogo = (function () {
     return mapa;
   }
 
+  // Un catálogo sirve si tiene la forma esperada. Vale la pena chequearlo:
+  // si el archivo publicado quedara a medias, el formulario no arranca.
+  function sirve(c) {
+    return Boolean(c) && ['areas', 'espacios', 'ejes', 'saberes', 'contenidos']
+      .every((k) => Array.isArray(c[k]) && c[k].length > 0);
+  }
+
+  // Primero el catálogo que publicó el equipo desde el panel; si no está o
+  // viene mal, el que viaja con la página. El formulario nunca se queda sin uno.
+  async function traerCatalogo() {
+    const publicado = typeof URL_CATALOGO_PUBLICADO === 'string' ? URL_CATALOGO_PUBLICADO : '';
+    if (publicado) {
+      try {
+        const r = await fetch(publicado, { cache: 'no-cache' });
+        if (r.ok) {
+          const c = await r.json();
+          if (sirve(c)) { origenCatalogo = 'publicado'; return c; }
+        }
+      } catch (e) { /* sin conexión al CDN: seguimos con el del repositorio */ }
+    }
+    const r = await fetch('datos/catalogo.json');
+    if (!r.ok) throw new Error('catalogo');
+    origenCatalogo = 'repositorio';
+    return r.json();
+  }
+
   async function cargar() {
     const [c, e] = await Promise.all([
-      fetch('datos/catalogo.json').then((r) => { if (!r.ok) throw new Error('catalogo'); return r.json(); }),
+      traerCatalogo(),
       fetch('datos/escuelas.json').then((r) => { if (!r.ok) throw new Error('escuelas'); return r.json(); }),
     ]);
     datos = c;
@@ -184,6 +211,8 @@ const Catalogo = (function () {
 
   return {
     cargar,
+    origen: () => origenCatalogo,
+    version: () => (datos ? datos.exportado_en || null : null),
     areas, area, espacio, espaciosPorArea, espaciosAgrupados, eje, saber, contenido,
     esArtistica, nombreCorto, subtituloArea,
     saberesPorTramo, contenidosDeSaber, sugerencias,

@@ -17,6 +17,7 @@ const Editor = (function () {
   let sb = null;
   let alRefrescar = null;
   let relojAviso = null;   // el aviso anterior no tiene que borrar al siguiente
+  let ultimoExportado = null;   // para que «descargar una copia» no vuelva a pedirlo
 
   const estado = {
     datos: null,          // { saberes: [...] }
@@ -29,6 +30,8 @@ const Editor = (function () {
     confirmar: null,      // { tipo, id, texto, respuestas, archivar }
     historial: null,      // [] cuando está abierto
     aviso: null,
+    publicacion: null,    // { publicado_en, publicado_por, cambios_sin_publicar }
+    publicando: false,
   };
 
   /* ---------- Utilidades ---------- */
@@ -49,7 +52,8 @@ const Editor = (function () {
     restaurar: svg('<path d="M4 12a8 8 0 1 0 2.3-5.6"/><path d="M4 4v5h5"/>', { color: '#0B4F4A' }),
     mas: svg('<path d="M12 5v14"/><path d="M5 12h14"/>'),
     reloj: svg('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>', { color: '#55605A' }),
-    bajar: svg('<path d="M12 4v11"/><path d="M7 11l5 5 5-5"/><path d="M4 20h16"/>', { tam: 19, color: '#FFFFFF', grosor: 2.4 }),
+    bajar: svg('<path d="M12 4v11"/><path d="M7 11l5 5 5-5"/><path d="M4 20h16"/>', { color: '#55605A' }),
+    subir: svg('<path d="M12 20V9"/><path d="M7 13l5-5 5 5"/><path d="M4 4h16"/>', { tam: 19, color: '#FFFFFF', grosor: 2.4 }),
   };
 
   /* ---------- Datos ---------- */
@@ -58,7 +62,11 @@ const Editor = (function () {
     estado.cargando = true;
     estado.error = null;
     pintar();
-    const { data, error } = await sb.rpc('catalogo_editar', { p_espacio_id: espacio_id, p_anio: anio });
+    const [{ data, error }, pub] = await Promise.all([
+      sb.rpc('catalogo_editar', { p_espacio_id: espacio_id, p_anio: anio }),
+      sb.rpc('estado_publicacion'),
+    ]);
+    if (pub && !pub.error && pub.data && pub.data.publicado_en !== undefined) estado.publicacion = pub.data;
     estado.cargando = false;
     if (error || (data && data.error)) {
       estado.datos = null;
@@ -216,6 +224,39 @@ const Editor = (function () {
     </div>`;
   }
 
+  function haceCuanto(iso) {
+    const min = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
+    if (min < 1) return 'recién';
+    if (min < 60) return 'hace ' + min + ' ' + plural(min, 'minuto', 'minutos');
+    const h = Math.round(min / 60);
+    if (h < 24) return 'hace ' + h + ' ' + plural(h, 'hora', 'horas');
+    const d = Math.round(h / 24);
+    return 'hace ' + d + ' ' + plural(d, 'día', 'días');
+  }
+
+  // Lo que edita el equipo vale enseguida para los resultados, pero el docente
+  // lee el catálogo publicado. Esta línea dice en cuál de los dos estados está.
+  function notaPublicar() {
+    const p = estado.publicacion || {};
+    const pendientes = Number(p.cambios_sin_publicar || 0);
+    if (!p.publicado_en) {
+      return `<div class="ed-nota-publicar">
+        El catálogo todavía no se publicó desde acá: los docentes ven el que viaja con la página.
+        Cuando toques <strong>Publicar</strong>, pasan a ver este.
+      </div>`;
+    }
+    if (pendientes > 0) {
+      return `<div class="ed-nota-publicar">
+        Hay <strong>${pendientes} ${plural(pendientes, 'cambio sin publicar', 'cambios sin publicar')}</strong>.
+        Los docentes siguen viendo lo que se publicó ${esc(haceCuanto(p.publicado_en))}.
+        Tocá <strong>Publicar</strong> para que lo vean.
+      </div>`;
+    }
+    return `<div class="ed-nota-publicar ed-nota-publicar--ok">
+      Todo publicado. Los docentes ven este catálogo desde ${esc(haceCuanto(p.publicado_en))}${p.publicado_por ? ', lo publicó ' + esc(p.publicado_por) : ''}.
+    </div>`;
+  }
+
   /* ---------- Pantalla ---------- */
 
   function pantalla({ nombreMateria, textoAnio }) {
@@ -245,13 +286,11 @@ const Editor = (function () {
         </div>
         <div class="ed-barra__botones">
           <button type="button" class="ed-boton" data-accion="ed-historial">${Icono.reloj} Ver historial</button>
-          <button type="button" class="ed-boton ed-boton--publicar" data-accion="ed-publicar">${Icono.bajar} Publicar</button>
+          <button type="button" class="ed-boton" data-accion="ed-descargar">${Icono.bajar} Descargar copia</button>
+          <button type="button" class="ed-boton ed-boton--publicar" data-accion="ed-publicar"${estado.publicando ? ' disabled' : ''}>${Icono.subir} ${estado.publicando ? 'Publicando…' : 'Publicar'}</button>
         </div>
       </div>
-      <div class="ed-nota-publicar">
-        Lo que edites acá ya vale para los resultados, pero el formulario del docente lee el
-        catálogo publicado. Para que lo vean, usá <strong>Publicar</strong> y subí el archivo al repositorio.
-      </div>
+      ${notaPublicar()}
       ${estado.saberNuevo ? `
         <article class="ed-saber ed-saber--nuevo">
           <header class="ed-saber__cabecera"><div class="ed-saber__datos"><span class="ed-saber__eje">Saber nuevo</span></div></header>
@@ -340,6 +379,7 @@ const Editor = (function () {
       }
       case 'ed-cerrar-historial': estado.historial = null; pintar(); break;
       case 'ed-publicar': await publicar(); break;
+      case 'ed-descargar': await descargarCopia(); break;
       default: return false;
     }
     return true;
@@ -350,18 +390,60 @@ const Editor = (function () {
     if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
   }
 
-  // Baja datos/catalogo.json con lo que hay en la base, listo para el repositorio
+  // Sube el catálogo al bucket que lee el formulario. Es un archivo estático
+  // servido por el CDN, no la base: diez mil docentes lo descargan el mismo día
+  // sin que PostgreSQL se entere.
   async function publicar() {
-    estado.guardando = true; estado.error = null; pintar();
-    const { data, error } = await sb.rpc('exportar_catalogo');
-    estado.guardando = false;
-    if (error || (data && data.error)) {
-      estado.error = (data && data.error) || 'No pudimos armar el archivo.';
+    estado.publicando = true; estado.error = null; estado.aviso = null; pintar();
+    try {
+      const { data, error } = await sb.rpc('exportar_catalogo');
+      if (error || (data && data.error)) throw new Error((data && data.error) || error.message);
+      if (!data.saberes || !data.saberes.length) throw new Error('el catálogo vendría vacío');
+
+      const cuerpo = new Blob([JSON.stringify(data)], { type: 'application/json' });
+      const subida = await sb.storage.from('catalogo').upload('catalogo.json', cuerpo, {
+        upsert: true,
+        contentType: 'application/json',
+        cacheControl: '300',    // cinco minutos: lo que tarda una corrección en verse
+      });
+      if (subida && subida.error) throw new Error(subida.error.message);
+
+      await sb.rpc('registrar_publicacion', {
+        p_saberes: data.saberes.length,
+        p_contenidos: data.contenidos.length,
+      });
+
+      ultimoExportado = data;
+      estado.publicando = false;
+      clearTimeout(relojAviso);
+      estado.aviso = `Publicado: ${data.saberes.length} saberes y ${data.contenidos.length} contenidos. `
+        + 'Los docentes que entren de ahora en más ven esta versión; los que ya estaban cargando '
+        + 'terminan con la anterior.';
+      if (alRefrescar) await alRefrescar();
+      relojAviso = setTimeout(() => { estado.aviso = null; pintar(); }, 9000);
+    } catch (e) {
+      estado.publicando = false;
+      estado.error = 'No pudimos publicar: ' + ((e && e.message) || 'error desconocido')
+        + '. Probá de nuevo; si sigue fallando, descargá una copia y subila al repositorio.';
       pintar();
-      return;
     }
-    const texto = JSON.stringify(data, null, 1);
-    const url = URL.createObjectURL(new Blob([texto], { type: 'application/json' }));
+  }
+
+  // Respaldo: el mismo archivo, para guardarlo en el repositorio
+  async function descargarCopia() {
+    estado.error = null;
+    let data = ultimoExportado;
+    if (!data) {
+      const r = await sb.rpc('exportar_catalogo');
+      if (r.error || (r.data && r.data.error)) {
+        estado.error = 'No pudimos armar el archivo.';
+        pintar();
+        return;
+      }
+      data = r.data;
+      ultimoExportado = data;
+    }
+    const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 1)], { type: 'application/json' }));
     const a = document.createElement('a');
     a.href = url;
     a.download = 'catalogo.json';
@@ -369,8 +451,10 @@ const Editor = (function () {
     a.click();
     a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 2000);
-    estado.aviso = `Se descargó catalogo.json con ${data.saberes.length} saberes y ${data.contenidos.length} contenidos. Reemplazá con ese archivo datos/catalogo.json en el repositorio para que lo vean los docentes.`;
+    clearTimeout(relojAviso);
+    estado.aviso = 'Se descargó catalogo.json. Es el respaldo: reemplazá con él datos/catalogo.json en el repositorio.';
     pintar();
+    relojAviso = setTimeout(() => { estado.aviso = null; pintar(); }, 9000);
   }
 
   /* ---------- Enganche con el dashboard ---------- */

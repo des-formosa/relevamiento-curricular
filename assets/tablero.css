@@ -909,7 +909,7 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
   margin-bottom: 10px;
 }
 .ed-barra__texto { font-size: 18px; color: var(--tinta-2); }
-.ed-barra__botones { display: flex; gap: 10px; }
+.ed-barra__botones { display: flex; gap: 10px; flex-wrap: wrap; }
 
 .ed-nota-publicar {
   font-family: var(--texto);
@@ -921,6 +921,13 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
   line-height: 1.45;
   color: var(--ocre);
   margin-bottom: 18px;
+}
+
+.ed-nota-publicar--ok {
+  background: var(--fondo-suave, #E9F0ED);
+  border-style: solid;
+  border-color: #C6D8D1;
+  color: var(--verde);
 }
 
 .ed-aviso {
@@ -959,6 +966,7 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
 .ed-boton--guardar:hover { background: var(--verde-profundo); color: var(--blanco); }
 .ed-boton--publicar { background: var(--verde); border-color: var(--verde); color: var(--blanco); }
 .ed-boton--publicar:hover { background: var(--verde-profundo); color: var(--blanco); }
+.ed-boton--publicar[disabled] { opacity: .6; cursor: default; }
 
 .ed-icono {
   width: 38px;

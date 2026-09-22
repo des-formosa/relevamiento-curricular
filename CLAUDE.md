@@ -39,7 +39,7 @@ sistema aguanta.
 
 | Capa | Dónde vive | Quién la escribe |
 |---|---|---|
-| Catálogo curricular (áreas, espacios, ejes, saberes, contenidos sugeridos) | `datos/catalogo.json` en el repo | el equipo, desde el panel: edita en la base y publica el JSON |
+| Catálogo curricular (áreas, espacios, ejes, saberes, contenidos sugeridos) | Supabase Storage (bucket `catalogo`), con `datos/catalogo.json` del repo como respaldo | el equipo, desde el panel: edita en la base y publica con un botón |
 | Escuelas y departamentos | `datos/escuelas.json` en el repo | nadie desde la app |
 | Aportes de los docentes | Supabase | el formulario, vía una función RPC |
 | Usuarios del dashboard | Supabase Auth | administrador |
@@ -84,6 +84,7 @@ fijada, nunca por bundler.
     ├── 07_cargar_catalogo.sql  generado: el catálogo sin los contenidos
     ├── 08_cargar_contenidos_N.sql  generado: los contenidos, en lotes
     ├── 09_edicion_catalogo.sql  editar el catálogo desde el panel, con auditoría
+    ├── 10_publicar_catalogo.sql  bucket `catalogo`, registro de publicaciones
     └── generar_cargas.py   regenera 06, 07 y 08 cuando cambian los JSON
 ```
 
@@ -305,11 +306,22 @@ depende de que el front se acuerde: si alguien edita desde el SQL Editor, tambi�
 cargas masivas del JSON se saltean la auditoría (`app.carga_masiva`), porque ya quedan
 registradas en el repositorio.
 
-**Editar no publica.** El formulario del docente sigue leyendo `datos/catalogo.json`, que es
-lo que permite que diez mil personas entren el mismo día sin tocar la base. El botón
-«Publicar» llama a `exportar_catalogo()` y descarga el JSON con lo que hay en la base (solo
-los activos), para reemplazar ese archivo en el repositorio. La pantalla lo dice con todas
-las letras, para que nadie crea que editar alcanza.
+**Editar no publica, pero publicar es un botón.** El formulario del docente nunca lee el
+catálogo de la base: eso es lo que permite que diez mil personas entren el mismo día sin
+tocarla. Lee un archivo estático. «Publicar» llama a `exportar_catalogo()` (solo los activos)
+y sube el JSON al bucket `catalogo` de Supabase Storage, que se sirve por CDN igual que
+GitHub Pages; después anota la publicación con `registrar_publicacion()`.
+
+El formulario pide primero `…/storage/v1/object/public/catalogo/catalogo.json` y, si no está,
+falla o viene incompleto, usa `datos/catalogo.json` del repositorio. Esa caída es la red de
+seguridad: el formulario nunca se queda sin catálogo. `Catalogo.origen()` dice cuál cargó.
+El `cacheControl` es de cinco minutos, así que una corrección tarda eso en verse; quien ya
+estaba cargando termina con el catálogo que bajó al entrar.
+
+La barra del editor dice en qué estado está —«hay 4 cambios sin publicar», «todo publicado
+desde hace 2 horas, lo publicó fulano»— usando `estado_publicacion()`, que compara la última
+publicación contra la auditoría. Al lado queda «Descargar copia», para guardar el archivo en
+el repositorio cuando conviene versionarlo.
 
 Las funciones del panel (`catalogo_editar`, `guardar_saber`, `guardar_contenido`,
 `archivar_catalogo`, `historial_catalogo`, `exportar_catalogo`) son `security definer` y
@@ -471,8 +483,12 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
   "propuesto_equipo"`. Fuente editable en `datos/contenidos/`
 - **Edición del catálogo desde el panel** (22/09/2026): `sql/09_edicion_catalogo.sql` y
   `assets/editor.js`. Editar, agregar y archivar saberes y contenidos, con historial de
-  cambios y botón para publicar el JSON. Probado con un cliente simulado; falta correr el
-  SQL en Supabase y probarlo con un usuario del equipo
+  cambios. Probado con un cliente simulado; falta correr el SQL en Supabase y probarlo con
+  un usuario del equipo
+- **Publicar con un botón** (22/09/2026): `sql/10_publicar_catalogo.sql` sube el catálogo al
+  bucket `catalogo` de Storage y el formulario lo lee de ahí, con el JSON del repositorio
+  como respaldo. Probado con un cliente simulado: sube 1,2 MB, muestra los cambios sin
+  publicar, cae al repositorio si el bucket no está o el archivo viene roto
 - **Recorrido guiado del panel** (`assets/tour.js`): diez pasos para leer los resultados y
   ocho para editar el catálogo. Arranca solo la primera vez y se repite desde «¿Cómo se usa?»
 - Dashboard completo (`dashboard.html` + `assets/dashboard.js` + `assets/tablero.css`):
@@ -500,6 +516,9 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
   3. `select public.generar_datos_ejemplo();` para rehacer la demo sobre el catálogo nuevo
 - **Ejecutar `sql/09_edicion_catalogo.sql`** en el SQL Editor para habilitar la edición del
   catálogo desde el panel (agrega `estado`, la auditoría y las funciones; se puede repetir)
+- **Ejecutar `sql/10_publicar_catalogo.sql`** después del 09: crea el bucket `catalogo` y el
+  registro de publicaciones. Hasta que no se corra, «Publicar» va a dar error y el formulario
+  sigue leyendo el JSON del repositorio, que es lo correcto
 - Crear los usuarios del dashboard en Supabase Auth y agregarlos a `equipo_planificacion`
 - Prueba real con 5 o 6 docentes cargando desde sus celulares antes del 26
 

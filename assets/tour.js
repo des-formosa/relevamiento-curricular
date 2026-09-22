@@ -93,7 +93,7 @@ const Tour = (function () {
       {
         objetivo: '.ed-nota-publicar',
         titulo: 'Editar no es publicar',
-        texto: 'Lo que edites vale enseguida para los resultados, pero el formulario del docente lee el catálogo publicado. Para que lo vean, hay un paso más: el botón «Publicar».',
+        texto: 'Lo que edites vale enseguida para los resultados, pero el docente sigue viendo el catálogo publicado. Esta línea te avisa si quedaron cambios sin publicar.',
       },
       {
         objetivo: '.ed-saber__texto',
@@ -127,7 +127,7 @@ const Tour = (function () {
       {
         objetivo: '[data-accion="ed-publicar"]',
         titulo: 'Publicar, el último paso',
-        texto: 'Descarga el catálogo actualizado en un archivo. Hay que subirlo al repositorio para que los docentes lo vean: mientras tanto siguen con el anterior.',
+        texto: 'Un toque y el catálogo corregido queda disponible para los docentes: los que entren de ahí en más lo ven así. Los que estaban cargando terminan con el anterior, y nada de lo que ya mandaron se pierde.',
       },
     ],
   };
