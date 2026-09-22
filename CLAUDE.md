@@ -55,7 +55,7 @@ fijada, nunca por bundler.
 ```
 /
 ├── CLAUDE.md
-├── index.html              formulario del docente
+├── index.html              formulario del docente (con «?demo» no escribe en la base)
 ├── dashboard.html          panel del equipo (requiere login)
 ├── assets/
 │   ├── estilos.css         sistema visual (tokens, componentes, móvil y escritorio)
@@ -63,7 +63,8 @@ fijada, nunca por bundler.
 │   ├── catalogo.js         carga los JSON y arma los índices en memoria
 │   ├── supabase.js         configuración del proyecto y enviarAporte()
 │   ├── formulario.js       estado, navegación y pantallas del flujo del docente
-│   ├── dashboard.js        lógica del panel (pendiente)
+│   ├── dashboard.js        panel: sesión, selectores, Detalle, Mapa de calor, exportar
+│   ├── tablero.css         estilos propios del panel (usa los tokens de estilos.css)
 │   ├── fuentes/            Kumbh Sans, Didact Gothic y Noto Serif Ahom en woff2, embebidas
 │   └── img/                logos del Ministerio y de la Dirección de Educación Secundaria
 ├── datos/
@@ -215,23 +216,33 @@ está mal.
 
 **Es prácticamente una sola pantalla:**
 
-1. **Barra de selección** siempre visible: Materia · Año · Trimestre · Alcance
-   (toda la provincia / un departamento / una escuela). Arranca con una selección puesta y
-   datos a la vista, nunca vacío.
+1. **Barra de selección** siempre visible: Materia · Año · Alcance (toda la provincia / un
+   departamento / una escuela). No hay filtro de trimestre: se ve el año entero, con los tres
+   trimestres en columnas. Arranca con una selección puesta y datos a la vista, nunca vacío;
+   si la selección real todavía está vacía, lo dice y ofrece ver los datos de ejemplo.
 2. **Línea de contexto**: "Basado en 147 docentes de 62 escuelas." Nada más.
 3. **Cuerpo**: los saberes de esa combinación, uno debajo del otro. Para cada saber, su texto
    completo y debajo los contenidos más elegidos, ordenados de mayor a menor, con barra
    horizontal y porcentaje. Mostrar 3 por saber y un enlace "ver los demás" que expande.
 4. **Exportar**: un botón que abre un panel chico con dos opciones — lo que estoy viendo, o
    todo el relevamiento provincial — y elección de formato (Excel para trabajar, PDF para
-   presentar).
+   presentar). Excel se arma con SheetJS por CDN; PDF abre la impresión del navegador con
+   una hoja de estilos de impresión. «Todo el relevamiento» baja `v_relevamiento` paginada.
 
-Cuando un saber tiene pocas respuestas, en vez de porcentajes engañosos mostrar
-"Solo 3 docentes informaron este saber. Muestra insuficiente."
+Dos vistas de la misma información, no dos reportes: **Detalle** (contenidos con su barra)
+y **Mapa de calor** (los ejes del diseño por trimestre, con los contenidos más elegidos). La
+barra de 18 px es el único elemento gráfico: se lee proyectada desde el fondo de una sala.
 
-**Lo que NO va:** mapas de calor, índices de divergencia, comparación entre escuelas lado a
-lado, pantalla de normalización de textos libres, gráficos de torta, tarjetas de métricas
-grandes, pestañas ni menú lateral.
+Cuando un saber tiene pocas respuestas (menos de 5 docentes lo trabajan), en vez de
+porcentajes engañosos mostrar "Solo 3 docentes informaron este saber. Muestra insuficiente."
+
+Los datos de ejemplo (`es_ejemplo = true`) se activan con un interruptor en la cabecera o con
+`#ejemplo=1` en la URL, y aparecen con una banda que dice que son inventados. La selección
+completa vive en el hash de la URL, así una vista se puede marcar y compartir.
+
+**Lo que NO va:** índices de divergencia, comparación entre escuelas lado a lado, pantalla de
+normalización de textos libres, gráficos de torta, tarjetas de métricas grandes, pestañas ni
+menú lateral.
 
 El acceso requiere login (Supabase Auth). Los usuarios los crea el administrador; no hay
 registro público.
@@ -372,9 +383,15 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
 - Modelo de datos definido
 - Diseño de pantallas (en Claude Design, en paralelo)
 
+- Dashboard completo (`dashboard.html` + `assets/dashboard.js` + `assets/tablero.css`):
+  ingreso con Supabase Auth, chequeo de `equipo_planificacion`, Detalle, Mapa de calor,
+  datos de ejemplo, exportar a Excel y PDF. Probado con un cliente simulado y el ingreso
+  contra el proyecto real; falta probarlo con un usuario del equipo
+- Publicado en GitHub Pages bajo la organización `des-formosa`:
+  https://des-formosa.github.io/relevamiento-curricular/ (formulario) y
+  https://des-formosa.github.io/relevamiento-curricular/dashboard.html (panel)
+
 **Pendiente**
-- Dashboard (`dashboard.html` + `assets/dashboard.js`)
-- Repositorio publicado en GitHub Pages (git ya inicializado, rama `main`)
 - Merge de las correcciones del equipo al catálogo (llegan por Excel, se aplican por id)
 - Completar en el catálogo los primeros años de Lengua, Historia, Educación Física y
   Geografía: quedaron cortos porque la primera página de cada tabla tiene el encabezado
