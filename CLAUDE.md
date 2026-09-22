@@ -247,6 +247,11 @@ Dos vistas de la misma información, no dos reportes: **Detalle** (contenidos co
 y **Mapa de calor** (los ejes del diseño por trimestre, con los contenidos más elegidos). La
 barra de 18 px es el único elemento gráfico: se lee proyectada desde el fondo de una sala.
 
+Es de escritorio y se proyecta, pero se abre igual desde el teléfono. Hasta 899 px todo se
+apila —selectores, trimestres, celdas del mapa de calor, que pasan a un bloque por eje con el
+trimestre rotulado— y el panel de exportar sube desde abajo. Entre 900 y 1279 px los
+selectores dejan de tener ancho fijo. Ningún ancho produce scroll horizontal.
+
 Cuando un saber tiene pocas respuestas (menos de 5 docentes lo trabajan), en vez de
 porcentajes engañosos mostrar "Solo 3 docentes informaron este saber. Muestra insuficiente."
 

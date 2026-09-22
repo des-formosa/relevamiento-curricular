@@ -383,7 +383,8 @@
       const totalContenidos = saberes.reduce((n, s) => n + (s.contenidos || []).length, 0);
       const celdas = [1, 2, 3].map((t) => {
         const del = saberes.filter((s) => s.trimestre === t);
-        if (!del.length) return `<div class="t-celda"><div class="t-celda__vacia">Sin saberes de este eje</div></div>`;
+        const rotulo = `<div class="t-celda__trimestre">${ORDINAL[t]} TRIMESTRE</div>`;
+        if (!del.length) return `<div class="t-celda">${rotulo}<div class="t-celda__vacia">El diseño curricular no ubica ningún saber de este eje en el ${ORDINAL[t]} trimestre.</div></div>`;
         const tiles = [];
         for (const s of del) {
           if (s.suficiente) {
@@ -396,8 +397,8 @@
         tiles.sort((a, b) => b.pct - a.pct);
         const visibles = tiles.slice(0, TILES_POR_CELDA);
         const mas = tiles.length - visibles.length;
-        if (!tiles.length) return `<div class="t-celda"><div class="t-celda__vacia">Sin contenidos informados</div></div>`;
-        return `<div class="t-celda">${visibles.map((t2) => t2.insuficiente ? `
+        if (!tiles.length) return `<div class="t-celda">${rotulo}<div class="t-celda__vacia">Ningún docente informó todavía contenidos de este eje en el ${ORDINAL[t]} trimestre.</div></div>`;
+        return `<div class="t-celda">${rotulo}${visibles.map((t2) => t2.insuficiente ? `
           <div class="t-tile t-tile--insuficiente" title="${esc(t2.saber)} · ${esc(t2.nombre)}: ${t2.informan ? `solo ${t2.informan} ${plural(t2.informan, 'docente informó', 'docentes informaron')} este saber` : 'ningún docente informó este saber'}, muestra insuficiente">
             <div class="t-tile__fila"><div class="t-tile__nombre">${esc(t2.nombre)}</div><div class="t-tile__pct">—</div></div>
             <div class="t-tile__saber">${esc(t2.saber)} · muestra insuficiente</div>
@@ -406,7 +407,7 @@
             <div class="t-tile__fila"><div class="t-tile__nombre">${esc(t2.nombre)}</div><div class="t-tile__pct">${t2.pct}%</div></div>
             <div class="t-tile__saber">${esc(t2.saber)}</div>
           </div>`).join('')}
-          ${mas > 0 ? `<div class="t-celda__mas">+ ${mas} ${plural(mas, 'contenido más', 'contenidos más')} en este eje y trimestre</div>` : ''}
+          ${mas > 0 ? `<div class="t-celda__mas">+ ${mas} ${plural(mas, 'contenido más de este eje', 'contenidos más de este eje')} en el ${ORDINAL[t]} trimestre</div>` : ''}
         </div>`;
       }).join('');
       return `<div class="t-mapa__fila">

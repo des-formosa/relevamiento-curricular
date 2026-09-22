@@ -425,7 +425,8 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
   gap: 8px;
   justify-content: center;
 }
-.t-celda__vacia { font-size: 14.5px; color: #B4BAB4; padding-left: 4px; }
+.t-celda__trimestre { display: none; }
+.t-celda__vacia { font-size: 14.5px; color: #B4BAB4; padding-left: 4px; line-height: 1.35; }
 .t-celda__mas { font-size: 13.5px; color: var(--t-gris-2); padding-left: 4px; margin-top: 2px; }
 .t-tile {
   border-radius: 10px;
@@ -674,6 +675,175 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
   .t-hero__items { display: none; }
   .t-ingreso__cuerpo { padding: 32px 24px; align-items: flex-start; }
   .t-ingreso__tarjeta { padding: 28px 24px; }
+}
+
+/* Notebooks y tablets anchas (900–1279 px): los selectores dejan de tener
+   ancho fijo y se reparten el lugar, así nada se sale de la pantalla. */
+@media (min-width: 900px) and (max-width: 1279px) {
+  /* La fecha y el nombre de la Dirección se pisan: queda el símbolo, que ya se reconoce */
+  .t-cabecera__marca .t-cabecera__nombre + .t-cabecera__separador + .t-cabecera__simbolo + .t-cabecera__nombre { display: none; }
+  .t-cabecera { padding: 0 24px; }
+  .t-selectores { flex-wrap: wrap; padding: 18px 24px 16px; gap: 16px; }
+  .t-selectores .espaciador { display: none; }
+  .t-selector { flex: 1 1 200px; min-width: 0; }
+  .t-select--materia, .t-select--anio, .t-select--alcance { width: 100%; }
+  .t-select--anio { max-width: 160px; }
+  .t-exportar { flex: 0 0 auto; align-self: flex-end; }
+  .t-contexto { padding: 18px 24px 16px; gap: 20px; }
+  .t-contexto__texto { font-size: 19px; }
+  .t-cuerpo { padding: 0 24px 24px; }
+  .t-columnas { gap: 16px; }
+  .t-saber { padding: 18px 20px; }
+  .t-saber__texto { font-size: 19px; }
+  .t-mapa__eje { width: 220px; }
+  .t-mapa__eje-nombre { font-size: 18px; }
+  .t-mapa__eje-titulo { width: 220px; }
+}
+
+/* ============================================================================
+   Celular y tablet angosta (hasta 899 px)
+
+   El tablero es de escritorio y se proyecta, pero se abre igual desde el
+   teléfono: en una reunión, en la escuela, camino a la oficina. Acá todo se
+   apila —selectores, trimestres, celdas del mapa— y nada mide un ancho fijo.
+   ============================================================================ */
+
+@media (max-width: 899px) {
+  /* Cabecera: marca compacta arriba, controles debajo */
+  .t-cabecera {
+    height: auto;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    padding: 0;
+    border-bottom-width: 2px;
+  }
+  .t-cabecera__marca {
+    gap: 10px;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--t-borde);
+  }
+  .t-cabecera__simbolo { height: 30px; }
+  .t-cabecera__simbolo--des { height: 23px; }
+  .t-cabecera__separador { height: 24px; }
+  .t-cabecera__nombre { margin-right: 0; min-width: 0; }
+  .t-cabecera__nombre span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .t-cabecera__nombre span:first-child { font-size: 12px; }
+  .t-cabecera__nombre span + span { font-size: 9.5px; }
+  /* Del segundo lockup, en el teléfono, alcanza con el símbolo */
+  .t-cabecera__marca .t-cabecera__nombre + .t-cabecera__separador + .t-cabecera__simbolo + .t-cabecera__nombre { display: none; }
+  .t-cabecera__rotulo, .t-cabecera__fecha { display: none; }
+  .t-cabecera__derecha {
+    gap: 10px;
+    padding: 10px 16px;
+    justify-content: flex-end;
+  }
+  .t-interruptor { height: 44px; }
+  .t-salir { height: 44px; padding: 0 18px; }
+
+  .t-banda-ejemplo { padding: 10px 16px; font-size: 14.5px; line-height: 1.35; }
+
+  /* Selectores: uno debajo del otro, a todo el ancho */
+  .t-selectores {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+    padding: 16px;
+  }
+  .t-selectores .espaciador { display: none; }
+  .t-select--materia, .t-select--anio, .t-select--alcance { width: 100%; }
+  .t-select { height: 56px; font-size: 18px; }
+  .t-exportar { height: 56px; }
+
+  /* Contexto y cambio de vista */
+  .t-contexto {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+    padding: 16px 16px 14px;
+  }
+  .t-contexto__texto { font-size: 17px; line-height: 1.4; }
+  .t-vistas { align-self: stretch; }
+  .t-vista { flex: 1 1 0; justify-content: center; height: 46px; font-size: 16px; }
+
+  /* Cuerpo: los tres trimestres, uno debajo del otro */
+  .t-cuerpo { padding: 0 16px 24px; }
+  .t-columnas { flex-direction: column; gap: 22px; }
+  .t-columna { gap: 12px; }
+  .t-columna__cabecera { padding: 11px 14px; position: sticky; top: 0; z-index: 2; }
+  .t-columna__titulo { font-size: 14px; }
+  .t-saber { padding: 16px 18px; border-radius: 12px; }
+  .t-saber--abierto { padding: 15.5px 17.5px; }
+  .t-saber__texto { font-size: 18.5px; line-height: 1.36; }
+  .t-saber__eje { font-size: 11px; line-height: 1.35; }
+  .t-fila__texto { font-size: 16px; }
+  .t-pista { height: 16px; }
+  .t-barra { height: 16px; }
+  .t-pct { width: 48px; font-size: 18px; }
+  .t-aviso { padding: 14px 16px; }
+  .t-aviso__texto { font-size: 15.5px; }
+  .t-ver__boton { height: 44px; }
+
+  /* Mapa de calor: cada eje es un bloque y los trimestres se apilan */
+  .t-mapa { padding: 4px 14px 16px; border-radius: 12px; }
+  .t-mapa__cabecera { display: none; }
+  .t-mapa__fila {
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px 0;
+  }
+  .t-mapa__eje {
+    width: auto;
+    padding-right: 0;
+    gap: 3px;
+  }
+  .t-mapa__eje-nombre { font-size: 18px; }
+  .t-celda { gap: 8px; }
+  .t-celda__trimestre {
+    display: block;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.07em;
+    color: var(--verde);
+    padding-left: 2px;
+  }
+  .t-tile { padding: 10px 14px; }
+  .t-tile__nombre { white-space: normal; font-size: 15.5px; }
+  .t-mapa__pie { flex-direction: column; align-items: flex-start; gap: 14px; padding-top: 14px; }
+  .t-mapa__leyenda-texto { font-size: 15.5px; line-height: 1.4; }
+  .t-leyenda { flex-wrap: wrap; gap: 12px 20px; }
+  .t-leyenda__escala div { width: 26px; }
+
+  /* Exportar: hoja que sube desde abajo, como en el formulario */
+  .t-panel {
+    right: 0;
+    left: 0;
+    top: auto;
+    bottom: 0;
+    width: 100%;
+    max-height: 92vh;
+    overflow-y: auto;
+    border-radius: 18px 18px 0 0;
+    padding: 20px 18px calc(20px + env(safe-area-inset-bottom, 0px));
+    gap: 16px;
+  }
+  .t-panel__titulo { font-size: 24px; }
+  .t-opcion, .t-formato { padding: 14px 16px; }
+  .t-opcion--elegida, .t-formato--elegido { padding: 13.5px 15.5px; }
+  .t-opcion__titulo, .t-formato__titulo { font-size: 17.5px; }
+  .t-opcion__sub, .t-formato__sub { font-size: 14.5px; }
+  .t-panel__acciones { flex-direction: column-reverse; gap: 10px; }
+  .t-descargar, .t-cancelar { width: 100%; height: 56px; }
+
+  .t-estado { padding: 40px 16px; }
+  .t-estado__titulo { font-size: 22px; line-height: 1.2; }
+  .t-estado__texto { font-size: 16.5px; }
+}
+
+/* Teléfonos angostos: que el nombre del Ministerio no empuje a los botones */
+@media (max-width: 400px) {
+  .t-cabecera__nombre span:first-child { font-size: 11px; }
+  .t-interruptor, .t-salir { font-size: 13.5px; }
 }
 
 /* ---------- Impresión (PDF) ---------- */
