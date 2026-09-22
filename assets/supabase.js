@@ -17,6 +17,10 @@ const CONFIG_SUPABASE = {
   claveAnon: 'sb_publishable_5eK1cRIfuuU72QWHBPKqFg_FNQ3YoMF',
 };
 
+// Modo demostración: con «?demo» en la URL el flujo es el mismo, pero no se
+// escribe nada en la base. Sirve para mostrar el formulario en reuniones.
+const MODO_DEMO = new URLSearchParams(window.location.search).has('demo');
+
 // Librería oficial, por CDN y con versión fijada. Se carga solo si hace falta.
 const URL_LIBRERIA_SUPABASE = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js';
 
@@ -55,7 +59,7 @@ const Envio = (function () {
 
   // Se llama al llegar al resumen, para que el envío después sea inmediato.
   function precargar() {
-    if (configurado()) cargarLibreria().catch(() => {});
+    if (configurado() && !MODO_DEMO) cargarLibreria().catch(() => {});
   }
 
   const esperar = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -73,6 +77,10 @@ const Envio = (function () {
     escrito para el docente y se puede mostrar tal cual.
   */
   async function enviarAporte(payload) {
+    if (MODO_DEMO) {
+      await esperar(600);
+      return { ok: true, prueba: true, demo: true };
+    }
     if (!configurado()) {
       await esperar(600);
       return { ok: true, prueba: true };
@@ -87,5 +95,5 @@ const Envio = (function () {
     }
   }
 
-  return { configurado, precargar, enviarAporte };
+  return { configurado, precargar, enviarAporte, esDemo: () => MODO_DEMO };
 })();

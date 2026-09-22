@@ -131,6 +131,7 @@
     saberes: {},            // saber_id → { contenidos: [{ tipo, contenido_sugerido_id, texto }], noTrabajado }
     saberesDe: null,        // «espacio|año» al que pertenecen los saberes cargados
     volverA: null,          // 'resumen' | { tramo, indice } cuando se edita un saber puntual
+    resumenDesde: null,     // { tramo } cuando se abrió «Ver lo que cargué hasta acá» a mitad de camino
     ultimoEnvio: null,      // lo que se muestra en la confirmación
     historial: [],          // aportes enviados en esta sesión
   });
@@ -278,6 +279,13 @@
         else ir('tramo');
         break;
       case 'resumen': {
+        if (estado.resumenDesde) {
+          estado.tramo = estado.resumenDesde.tramo;
+          estado.indice = 0;
+          estado.resumenDesde = null;
+          ir('tramo');
+          break;
+        }
         const ultimo = tramoNoVacioAntes(4);
         if (ultimo) { estado.tramo = ultimo; estado.indice = tr[ultimo].length - 1; ir('saber'); }
         else irAEleccionDeEspacio();
@@ -408,6 +416,7 @@
     if (estado.indice + 1 < tr[estado.tramo].length) { estado.indice += 1; ir('saber'); return; }
     const proximo = tramoNoVacioDesde(estado.tramo + 1);
     if (proximo) { estado.tramo = proximo; estado.indice = 0; ir('tramo'); return; }
+    estado.resumenDesde = null;
     ir('resumen');
   }
 
@@ -468,6 +477,7 @@
     const p = saberesPendientes()[0];
     if (!p) { ir('resumen'); return; }
     estado.volverA = null;
+    estado.resumenDesde = null;
     estado.tramo = p.tramo;
     estado.indice = p.indice;
     ir(p.indice === 0 && !tramoResueltoParcialmente(p.tramo) ? 'tramo' : 'saber');
@@ -531,6 +541,7 @@
       escuelaCorta: nombreEscuela({ corto: true }),
       saberes: totalSaberes(),
       prueba: Boolean(resultado.prueba),
+      demo: Boolean(resultado.demo),
     };
     estado.historial.push({ espacio_id: estado.espacio_id, anio: estado.anio, enviado_en: new Date().toISOString() });
     // Queda listo para otra materia: se conservan nombre, apellido y escuela
@@ -1170,14 +1181,21 @@
       : `<button type="button" class="boton boton--primario boton--21" data-accion="confirmar-enviar" ${ui.enviando ? 'disabled' : ''}>${ui.enviando ? 'Enviando…' : 'Confirmar y enviar'}</button>`;
     const error = ui.errorEnvio ? `<div class="aviso aviso--error" role="alert">${esc(ui.errorEnvio)}</div>` : '';
 
+    const parcial = pendientes.length > 0;
+    const paso = parcial ? `Tramo ${estado.resumenDesde ? estado.resumenDesde.tramo : estado.tramo} de 3` : 'Último paso';
+    const titulo = parcial ? 'Lo que cargaste hasta acá' : 'Revisá antes de enviar';
+    const bajada = parcial
+      ? `<span class="solo-movil">Está ordenado por trimestre. Podés corregir lo que quieras y después seguir cargando.</span><span class="solo-escritorio">Los tres trimestres lado a lado. Podés corregir lo que quieras y después seguir cargando.</span>`
+      : `<span class="solo-movil">Está ordenado por trimestre, como lo fuiste cargando. Es la última pantalla para corregir.</span><span class="solo-escritorio">Los tres trimestres lado a lado. Cada columna se recorre por separado.</span>`;
+
     return pantalla('pantalla--resumen pantalla--centrada-ancha', `
       ${cabecera()}
-      ${subcabecera('Último paso')}
+      ${subcabecera(paso)}
       <div class="cuerpo" style="padding-top:4px;padding-bottom:24px">
         <div class="resumen__encabezado">
           <div class="columna" style="gap:8px">
-            <h1 class="titulo titulo--29">Revisá antes de enviar</h1>
-            <p class="bajada bajada--16"><span class="solo-movil">Está ordenado por trimestre, como lo fuiste cargando. Es la última pantalla para corregir.</span><span class="solo-escritorio">Los tres trimestres lado a lado. Cada columna se recorre por separado.</span></p>
+            <h1 class="titulo titulo--29">${titulo}</h1>
+            <p class="bajada bajada--16">${bajada}</p>
           </div>
           <div class="resumen__acciones">
             ${botonPrincipal}
@@ -1209,7 +1227,9 @@
 
   function pantallaConfirmacion() {
     const u = estado.ultimoEnvio || {};
-    const prueba = u.prueba ? `<div class="banda-prueba">Modo prueba: la base de datos todavía no está conectada, así que esta carga no se envió.</div>` : '';
+    let prueba = '';
+    if (u.demo) prueba = `<div class="banda-prueba">Modo demostración: esta carga no se guardó en la base.</div>`;
+    else if (u.prueba) prueba = `<div class="banda-prueba">Modo prueba: la base de datos todavía no está conectada, así que esta carga no se envió.</div>`;
     return pantalla('pantalla--centrada', `
       ${cabecera()}
       <div class="cuerpo" style="gap:22px;padding-top:34px">
@@ -1398,7 +1418,7 @@
       case 'elegir-area': elegirArea(d.id); break;
       case 'elegir-espacio': elegirEspacio(d.id); break;
       case 'comenzar-tramo': comenzarTramo(); break;
-      case 'ver-resumen': ir('resumen'); break;
+      case 'ver-resumen': estado.resumenDesde = { tramo: estado.tramo }; ir('resumen'); break;
       case 'elegir-sugerencia': agregarContenido({ contenido: Catalogo.contenido(d.id) }); break;
       case 'agregar-libre': agregarContenido({ textoLibre: ui.textoContenido }); break;
       case 'quitar-contenido': quitarContenido(Number(d.pos)); break;
