@@ -732,7 +732,7 @@
     const objetivo = e.target.closest('[data-accion]');
     if (!objetivo) return;
     const d = objetivo.dataset;
-    if (d.accion.startsWith('ed-')) { Editor.manejar(d.accion, d); return; }
+    if (d.accion.startsWith('ed-') || d.accion.startsWith('ar-')) { Editor.manejar(d.accion, d, objetivo); return; }
     switch (d.accion) {
       case 'salir': salir(); break;
       case 'reintentar': cargarDatos(); break;
@@ -757,6 +757,9 @@
   });
 
   app.addEventListener('change', (e) => {
+    // El archivo que sube el equipo para importar el catálogo
+    const subida = e.target.closest('[data-accion="ar-elegir"]');
+    if (subida) { Editor.manejar('ar-elegir', subida.dataset, subida); return; }
     const el = e.target.closest('[data-cambio]');
     if (!el) return;
     switch (el.dataset.cambio) {

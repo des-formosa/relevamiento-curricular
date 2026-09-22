@@ -125,6 +125,11 @@ const Tour = (function () {
         texto: 'El historial muestra cada cambio: qué decía antes, qué dice ahora, quién lo hizo y cuándo. El reloj de cada saber muestra solo los cambios de ese saber.',
       },
       {
+        objetivo: '[data-accion="ar-abrir"]',
+        titulo: 'Corregir en Excel y volver',
+        texto: 'Baja el catálogo como Excel, una fila por contenido, para repartir entre el equipo y corregir con más comodidad. Cuando lo subís de vuelta te mostramos qué cambiaría antes de tocar nada, y lo que el archivo no menciona queda como está.',
+      },
+      {
         objetivo: '[data-accion="ed-publicar"]',
         titulo: 'Publicar, el último paso',
         texto: 'Un toque y el catálogo corregido queda disponible para los docentes: los que entren de ahí en más lo ven así. Los que estaban cargando terminan con el anterior, y nada de lo que ya mandaron se pierde.',

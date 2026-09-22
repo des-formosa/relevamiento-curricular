@@ -65,6 +65,7 @@ fijada, nunca por bundler.
 │   ├── formulario.js       estado, navegación y pantallas del flujo del docente
 │   ├── dashboard.js        panel: sesión, selectores, Detalle, Mapa de calor, exportar
 │   ├── editor.js           edición del catálogo desde el panel, con historial
+│   ├── archivo.js          exportar el catálogo a Excel/JSON e importarlo corregido
 │   ├── tour.js             recorrido guiado del panel y del editor
 │   ├── tablero.css         estilos propios del panel (usa los tokens de estilos.css)
 │   ├── fuentes/            Kumbh Sans, Didact Gothic y Noto Serif Ahom en woff2, embebidas
@@ -85,6 +86,7 @@ fijada, nunca por bundler.
     ├── 08_cargar_contenidos_N.sql  generado: los contenidos, en lotes
     ├── 09_edicion_catalogo.sql  editar el catálogo desde el panel, con auditoría
     ├── 10_publicar_catalogo.sql  bucket `catalogo`, registro de publicaciones
+    ├── 11_importar_catalogo.sql  exportar a filas e importar correcciones
     └── generar_cargas.py   regenera 06, 07 y 08 cuando cambian los JSON
 ```
 
@@ -320,8 +322,40 @@ estaba cargando termina con el catálogo que bajó al entrar.
 
 La barra del editor dice en qué estado está —«hay 4 cambios sin publicar», «todo publicado
 desde hace 2 horas, lo publicó fulano»— usando `estado_publicacion()`, que compara la última
-publicación contra la auditoría. Al lado queda «Descargar copia», para guardar el archivo en
-el repositorio cuando conviene versionarlo.
+publicación contra la auditoría.
+
+### Exportar e importar (assets/archivo.js + sql/11_importar_catalogo.sql)
+
+Corregir de a un saber en la pantalla sirve para un arreglo suelto. Una revisión completa se
+hace en Excel: se lee de corrido y se reparte entre varias personas. El botón «Exportar e
+importar» de la barra del editor cubre las dos direcciones del mismo archivo.
+
+**Exportar** baja el catálogo como Excel (`catalogo_filas()`), de esta materia y año o
+completo: una fila por contenido, con `eje_id`, `saber_id` y `contenido_id` en columnas y el
+estado de cada uno. También baja el JSON (`exportar_catalogo()`), que es el respaldo para
+`datos/catalogo.json` y no se corrige a mano.
+
+**Importar** acepta ese mismo Excel corregido o un `catalogo.json`; el navegador deja las dos
+cosas en la misma forma de filas y `importar_catalogo()` hace el resto. Cuatro reglas:
+
+1. **Ausencia no es baja.** Lo que el archivo no menciona no se toca. El Excel que revisa el
+   equipo tiene menos saberes que el catálogo, así que un importador que archivara lo que
+   falta borraría media Resolución sin que nadie se entere. Para archivar hay que escribirlo
+   en la columna «estado».
+2. **Un saber se resuelve una sola vez**, aunque venga en muchas filas. Como el archivo trae
+   una fila por contenido, un saber con cinco contenidos aparece cinco veces con su texto
+   repetido. Si se tomara fila por fila, corregirlo en una sola dejaría el texto yendo y
+   viniendo. Primero se junta lo que el archivo dice de cada saber; si dos filas se
+   contradicen, se avisa y no se aplica nada.
+3. **Primero se mira.** Con `p_aplicar` en false devuelve el resumen sin escribir: «1 saber
+   corregido, 1 contenido nuevo». La pantalla lo muestra con ejemplos del antes y el después,
+   y recién ahí ofrece confirmar.
+4. **Todo o nada.** Una fila con problemas cancela la importación entera, y el panel dice
+   cuáles son y por qué.
+
+Escribe llamando a `guardar_saber`, `guardar_contenido` y `archivar_catalogo`, las mismas del
+panel: valen sus validaciones y cada cambio queda en la auditoría con la nota «Importado de
+\<archivo\>». Importar tampoco publica: después hay que tocar «Publicar».
 
 Las funciones del panel (`catalogo_editar`, `guardar_saber`, `guardar_contenido`,
 `archivar_catalogo`, `historial_catalogo`, `exportar_catalogo`) son `security definer` y
@@ -471,13 +505,17 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
 - SQL completo en `sql/` (esquema, RLS, `registrar_aporte`, vistas, `panel_resultados`, datos
   de ejemplo, carga de catálogo y escuelas), probado en PostgreSQL local: `normalizar_texto`
   da idéntico a `normalizarTexto()` de JS en los 2.597 textos del catálogo y escuelas
-- Proyecto de Supabase "Relevamiento Curricular" (región sa-east-1, São Paulo) con todo el SQL
-  aplicado, escuelas y catálogo cargados, y 1.500 docentes de ejemplo (`es_ejemplo = true`);
-  el catálogo que tiene la base es el viejo, ver Pendiente.
-  `assets/supabase.js` ya apunta al proyecto: lo que se envíe desde el formulario se guarda de verdad
+- Proyecto de Supabase "Relevamiento Curricular" (región sa-east-1, São Paulo) con el SQL del
+  `01` al `10` aplicado, escuelas y catálogo nuevo cargados, y datos de ejemplo
+  (`es_ejemplo = true`). `assets/supabase.js` ya apunta al proyecto: lo que se envíe desde el
+  formulario se guarda de verdad
 - **Catálogo curricular terminado** (22/09/2026): las 16 materias transcritas a mano contra el
   PDF. 942 saberes con trimestre asignado y 45 ejes reales, en `datos/catalogo.json`. Todos
   `calidad: buena`, ninguna combinación materia/año vacía
+- El SQL se puede probar entero fuera de Supabase: alcanza con un PostgreSQL 16 y un
+  andamiaje mínimo (roles `anon`/`authenticated`, `auth.users`, `auth.uid()` leyendo
+  `request.jwt.claim.sub`, y los esqueletos de `storage.buckets` y `storage.objects`).
+  Con eso corren del `01` al `11` sin tocar nada
 - **Contenidos sugeridos reescritos** (22/09/2026): 4.716, cinco por saber, escritos por el
   equipo porque los de la transcripción eran recortes del texto del saber. `origen:
   "propuesto_equipo"`. Fuente editable en `datos/contenidos/`
@@ -489,12 +527,20 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
   bucket `catalogo` de Storage y el formulario lo lee de ahí, con el JSON del repositorio
   como respaldo. Probado con un cliente simulado: sube 1,2 MB, muestra los cambios sin
   publicar, cae al repositorio si el bucket no está o el archivo viene roto
+- **Exportar e importar el catálogo** (22/09/2026): `sql/11_importar_catalogo.sql` y
+  `assets/archivo.js`. El catálogo baja como Excel, vuelve corregido y se aplica cruzando por
+  id, con resumen previo. Probado contra PostgreSQL 16 local con el catálogo real (942
+  saberes, 4.716 contenidos): reimportar el archivo entero sin tocarlo da cero cambios y no
+  archiva nada; un saber corregido en sus cinco filas genera una sola edición y una sola
+  entrada de auditoría; corregido en una sola fila, se rechaza por contradictorio
 - **Recorrido guiado del panel** (`assets/tour.js`): diez pasos para leer los resultados y
   ocho para editar el catálogo. Arranca solo la primera vez y se repite desde «¿Cómo se usa?»
 - Dashboard completo (`dashboard.html` + `assets/dashboard.js` + `assets/tablero.css`):
   ingreso con Supabase Auth, chequeo de `equipo_planificacion`, Detalle, Mapa de calor,
-  datos de ejemplo, exportar a Excel y PDF. Probado con un cliente simulado y el ingreso
-  contra el proyecto real; falta probarlo con un usuario del equipo
+  datos de ejemplo, exportar a Excel y PDF
+- **Usuarios del panel creados** (22/09/2026): el equipo técnico, más de diez personas, ya
+  entra al dashboard. Hay docentes probando el formulario y devolviendo comentarios; las
+  mejoras que salen de ahí se van aplicando
 - Listado de escuelas: 81 E.P.E.S. en 9 departamentos, en `datos/escuelas.json`
 - Modelo de datos definido
 - Diseño de pantallas (en Claude Design, en paralelo)
@@ -503,24 +549,10 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
   https://des-formosa.github.io/relevamiento-curricular/dashboard.html (panel)
 
 **Pendiente**
-- **Subir el catálogo nuevo a Supabase** (incluye los contenidos reescritos). En el SQL Editor,
-  en este orden:
-  1. `select public.borrar_datos_ejemplo();` y borrar los envíos de prueba reales
-     (`delete from public.aportes where es_ejemplo = false;`), porque un saber con respuestas
-     no se puede borrar y quedaría colgado del catálogo viejo
-  2. ejecutar `sql/03_funciones.sql` (trae `cargar_contenidos`), después
-     `sql/07_cargar_catalogo.sql` y después cada `sql/08_cargar_contenidos_N.sql`.
-     Van separados porque el SQL Editor rechaza las consultas de más o menos un
-     mega: "Query is too large to be run via the SQL Editor". Cada archivo se
-     puede repetir sin problema
-  3. `select public.generar_datos_ejemplo();` para rehacer la demo sobre el catálogo nuevo
-- **Ejecutar `sql/09_edicion_catalogo.sql`** en el SQL Editor para habilitar la edición del
-  catálogo desde el panel (agrega `estado`, la auditoría y las funciones; se puede repetir)
-- **Ejecutar `sql/10_publicar_catalogo.sql`** después del 09: crea el bucket `catalogo` y el
-  registro de publicaciones. Hasta que no se corra, «Publicar» va a dar error y el formulario
-  sigue leyendo el JSON del repositorio, que es lo correcto
-- Crear los usuarios del dashboard en Supabase Auth y agregarlos a `equipo_planificacion`
+- **Ejecutar `sql/11_importar_catalogo.sql`** en el SQL Editor, después del 09 y el 10:
+  habilita «Exportar e importar» en el panel. Se puede repetir
 - Prueba real con 5 o 6 docentes cargando desde sus celulares antes del 26
 
-**Orden sugerido**: subir el catálogo nuevo a Supabase, probar el formulario en celulares
-reales y crear los usuarios del panel. El sitio ya está publicado y las dos pantallas andan.
+**Orden sugerido**: correr el `11`, probar el formulario en celulares reales y seguir juntando
+el feedback del equipo. El sitio está publicado, los usuarios del panel están creados y el
+equipo técnico ya lo está usando.

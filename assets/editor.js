@@ -6,9 +6,12 @@
    formulario abierto con el catálogo viejo y su envío tiene que entrar igual.
    Cada cambio queda registrado con quién y cuándo (ver sql/09_edicion_catalogo.sql).
 
-   Editar no publica: el formulario del docente lee datos/catalogo.json del
-   repositorio. Por eso está el botón «Publicar», que baja el JSON actualizado
-   para reemplazar ese archivo.
+   Editar no publica: el formulario del docente lee el catálogo publicado, no
+   la base. Por eso está el botón «Publicar», que sube el catálogo al bucket
+   que lee el formulario (ver sql/10_publicar_catalogo.sql).
+
+   Para corregir de a muchos está «Exportar e importar», en assets/archivo.js:
+   el catálogo baja como Excel y vuelve corregido.
    ============================================================================ */
 
 const Editor = (function () {
@@ -17,7 +20,6 @@ const Editor = (function () {
   let sb = null;
   let alRefrescar = null;
   let relojAviso = null;   // el aviso anterior no tiene que borrar al siguiente
-  let ultimoExportado = null;   // para que «descargar una copia» no vuelva a pedirlo
 
   const estado = {
     datos: null,          // { saberes: [...] }
@@ -59,6 +61,8 @@ const Editor = (function () {
   /* ---------- Datos ---------- */
 
   async function cargar(espacio_id, anio) {
+    estado.espacio_id = espacio_id;
+    estado.anio = anio;
     estado.cargando = true;
     estado.error = null;
     pintar();
@@ -260,6 +264,8 @@ const Editor = (function () {
   /* ---------- Pantalla ---------- */
 
   function pantalla({ nombreMateria, textoAnio }) {
+    estado.nombreMateria = nombreMateria;
+    estado.textoAnio = textoAnio;
     if (estado.cargando) return `<div class="t-estado"><div class="t-estado__texto">Trayendo el catálogo…</div></div>`;
     if (estado.error && !estado.datos) {
       return `<div class="t-estado">
@@ -286,7 +292,7 @@ const Editor = (function () {
         </div>
         <div class="ed-barra__botones">
           <button type="button" class="ed-boton" data-accion="ed-historial">${Icono.reloj} Ver historial</button>
-          <button type="button" class="ed-boton" data-accion="ed-descargar">${Icono.bajar} Descargar copia</button>
+          <button type="button" class="ed-boton" data-accion="ar-abrir">${Icono.bajar} Exportar e importar</button>
           <button type="button" class="ed-boton ed-boton--publicar" data-accion="ed-publicar"${estado.publicando ? ' disabled' : ''}>${Icono.subir} ${estado.publicando ? 'Publicando…' : 'Publicar'}</button>
         </div>
       </div>
@@ -310,6 +316,7 @@ const Editor = (function () {
       <div class="ed-lista">${saberes.map(tarjetaSaber).join('')}</div>
       ${panelConfirmar()}
       ${panelHistorial()}
+      ${Archivo.panel()}
     `;
   }
 
@@ -317,7 +324,17 @@ const Editor = (function () {
 
   const valor = (id) => { const el = document.getElementById(id); return el ? el.value : ''; };
 
-  async function manejar(accion, d) {
+  async function manejar(accion, d, el) {
+    if (accion.startsWith('ar-')) {
+      const mensaje = await Archivo.accion(accion, el, alRefrescar);
+      if (mensaje) {
+        clearTimeout(relojAviso);
+        estado.aviso = mensaje;
+        pintar();
+        relojAviso = setTimeout(() => { estado.aviso = null; pintar(); }, 12000);
+      }
+      return;
+    }
     switch (accion) {
       case 'ed-reintentar': if (alRefrescar) await alRefrescar(); break;
       case 'ed-editar': estado.editando = d.id; estado.agregandoEn = null; estado.saberNuevo = null; pintar(); enfocar(); break;
@@ -379,7 +396,6 @@ const Editor = (function () {
       }
       case 'ed-cerrar-historial': estado.historial = null; pintar(); break;
       case 'ed-publicar': await publicar(); break;
-      case 'ed-descargar': await descargarCopia(); break;
       default: return false;
     }
     return true;
@@ -413,7 +429,6 @@ const Editor = (function () {
         p_contenidos: data.contenidos.length,
       });
 
-      ultimoExportado = data;
       estado.publicando = false;
       clearTimeout(relojAviso);
       estado.aviso = `Publicado: ${data.saberes.length} saberes y ${data.contenidos.length} contenidos. `
@@ -424,37 +439,10 @@ const Editor = (function () {
     } catch (e) {
       estado.publicando = false;
       estado.error = 'No pudimos publicar: ' + ((e && e.message) || 'error desconocido')
-        + '. Probá de nuevo; si sigue fallando, descargá una copia y subila al repositorio.';
+        + '. Probá de nuevo; si sigue fallando, bajá el JSON desde «Exportar e importar» y '
+        + 'subilo al repositorio.';
       pintar();
     }
-  }
-
-  // Respaldo: el mismo archivo, para guardarlo en el repositorio
-  async function descargarCopia() {
-    estado.error = null;
-    let data = ultimoExportado;
-    if (!data) {
-      const r = await sb.rpc('exportar_catalogo');
-      if (r.error || (r.data && r.data.error)) {
-        estado.error = 'No pudimos armar el archivo.';
-        pintar();
-        return;
-      }
-      data = r.data;
-      ultimoExportado = data;
-    }
-    const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 1)], { type: 'application/json' }));
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'catalogo.json';
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 2000);
-    clearTimeout(relojAviso);
-    estado.aviso = 'Se descargó catalogo.json. Es el respaldo: reemplazá con él datos/catalogo.json en el repositorio.';
-    pintar();
-    relojAviso = setTimeout(() => { estado.aviso = null; pintar(); }, 9000);
   }
 
   /* ---------- Enganche con el dashboard ---------- */
@@ -465,6 +453,13 @@ const Editor = (function () {
     sb = cliente;
     pintar = render;
     alRefrescar = refrescar;
+    Archivo.iniciar(cliente, {
+      render,
+      datosContexto: () => ({
+        espacio_id: estado.espacio_id, anio: estado.anio,
+        nombreMateria: estado.nombreMateria, textoAnio: estado.textoAnio,
+      }),
+    });
   }
 
   return {
