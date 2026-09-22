@@ -58,10 +58,14 @@ fijada, nunca por bundler.
 ├── index.html              formulario del docente
 ├── dashboard.html          panel del equipo (requiere login)
 ├── assets/
-│   ├── estilos.css         estilos compartidos
-│   ├── supabase.js         cliente y configuración
-│   ├── formulario.js       lógica del flujo del docente
-│   └── dashboard.js        lógica del panel
+│   ├── estilos.css         sistema visual (tokens, componentes, móvil y escritorio)
+│   ├── normalizar.js       normalizarTexto(), espejo exacto de normalizar_texto() en SQL
+│   ├── catalogo.js         carga los JSON y arma los índices en memoria
+│   ├── supabase.js         configuración del proyecto y enviarAporte()
+│   ├── formulario.js       estado, navegación y pantallas del flujo del docente
+│   ├── dashboard.js        lógica del panel (pendiente)
+│   ├── fuentes/            Kumbh Sans, Didact Gothic y Noto Serif Ahom en woff2, embebidas
+│   └── img/                logos del Ministerio y de la Dirección de Educación Secundaria
 ├── datos/
 │   ├── catalogo.json       831 saberes, 1.552 contenidos sugeridos
 │   └── escuelas.json       81 escuelas E.P.E.S., 9 departamentos
@@ -115,9 +119,10 @@ mismos saberes sin importar el año que eligió. El año igual se guarda en el a
 importa para los reportes.
 
 **3. El trimestre lo asigna el Ministerio, no el docente.**
-Cada saber ya trae su `trimestre` (1, 2 o 3). El docente **no lo elige y no lo ve**: es
-información interna que se comunicará después. No mostrar el trimestre en ninguna pantalla
-del formulario.
+Cada saber ya trae su `trimestre` (1, 2 o 3). El docente **no lo elige**: la carga se recorre
+en tres tramos, uno por trimestre, con una pantalla corta antes de cada uno («Primer
+trimestre · 7 saberes para revisar») y el progreso contado sobre el tramo («Saber 3 de 7»).
+Un tramo sin saberes visibles se salta solo.
 
 La distribución se hizo respetando el orden de los ejes del diseño, de forma lineal, con un
 reparto aproximado de 40 % / 35 % / 25 %.
@@ -152,9 +157,14 @@ Se usa desde el celular tanto como desde la computadora: diseñar mobile-first.
 | 4 | Año | 1°, 2° o 3°; respetar `anios_dictados` |
 | 5 | Área | seis opciones |
 | 6 | Espacio curricular | filtrado por área |
-| 7 | Carga de contenidos | **la pantalla crítica**, ver abajo |
-| 8 | Resumen y chequeo | todo lo cargado, agrupado por eje, editable |
+| 7 | Carga de contenidos | **la pantalla crítica**, ver abajo; antes de cada trimestre hay una pantalla de tramo |
+| 8 | Resumen y chequeo | todo lo cargado, agrupado por trimestre, editable; si quedan saberes sin revisar no deja enviar |
 | 9 | Confirmación | "¿cargás otra materia?" → [misma escuela] [otra escuela] [terminé] |
+
+Cuando un área tiene un solo espacio (Matemática) la pantalla 6 se salta; Educación Artística
+muestra sus cuatro lenguajes agrupados en una tarjeta. Las dos cosas salen del catálogo, no
+están escritas a mano. Si una materia y año no tienen saberes visibles (hoy: Educación Física
+1°, entre otros), se muestra un aviso y se ofrece elegir otra materia u otro año.
 
 ### Pantalla 7 — carga de contenidos
 
@@ -177,9 +187,16 @@ que suena a saber huérfano, y "18 de 22 docentes que efectivamente lo dictan lo
 
 ### Persistencia durante la carga
 
-El borrador vive en el navegador (`sessionStorage`). **Nada se escribe en Supabase hasta que
-el docente confirma en la pantalla 9.** Eso simplifica mucho: no hace falta estado `borrador`
-en la base, ni permisos de UPDATE para el visitante anónimo, ni recuperar sesiones a medias.
+El borrador vive en el navegador (`localStorage`, clave `relevamiento.borrador.v1`): sobrevive
+al cierre de la pestaña, que en celulares viejos pasa seguido. Al volver a entrar, la bienvenida
+ofrece «Seguir con lo que había cargado»; «Terminé» lo borra. **Nada se escribe en Supabase
+hasta que el docente confirma en la pantalla 9.** Eso simplifica mucho: no hace falta estado
+`borrador` en la base, ni permisos de UPDATE para el visitante anónimo, ni recuperar sesiones
+a medias.
+
+Al empezar se genera una `clave` (uuid) que viaja en `payload.docente.clave`: agrupa todas las
+materias de esa persona bajo un mismo docente y hace que reenviar la misma materia reemplace
+el envío anterior.
 
 Al "cargar otra materia" se conservan nombre y apellido, y según la respuesta también la
 escuela. Muchos docentes dan varias materias en varias escuelas: esto es lo que evita que
@@ -338,6 +355,11 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
 ## Estado
 
 **Hecho**
+- Formulario del docente completo (`index.html` + `assets/`), fiel al canvas de diseño en
+  móvil y escritorio. Probado de punta a punta en Chrome: todas las materias particulares
+  (Matemática salta el espacio, artísticas por ciclo, Tecnológica solo 1° y 2°, materias sin
+  saberes), autocompletado, contenidos libres, «no trabajo este saber», resumen, reanudar
+  el borrador y envío real a Supabase
 - SQL completo en `sql/` (esquema, RLS, `registrar_aporte`, vistas, `panel_resultados`, datos
   de ejemplo, carga de catálogo y escuelas), probado en PostgreSQL local: `normalizar_texto`
   da idéntico a `normalizarTexto()` de JS en los 2.597 textos del catálogo y escuelas
@@ -351,8 +373,8 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
 - Diseño de pantallas (en Claude Design, en paralelo)
 
 **Pendiente**
-- Todo el código: formulario y dashboard
-- Repositorio publicado en GitHub Pages
+- Dashboard (`dashboard.html` + `assets/dashboard.js`)
+- Repositorio publicado en GitHub Pages (git ya inicializado, rama `main`)
 - Merge de las correcciones del equipo al catálogo (llegan por Excel, se aplican por id)
 - Completar en el catálogo los primeros años de Lengua, Historia, Educación Física y
   Geografía: quedaron cortos porque la primera página de cada tabla tiene el encabezado
@@ -362,5 +384,5 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
 - Antes de abrir la carga: borrar los envíos de prueba reales (los de ejemplo se quedan para la demo)
 - Prueba real con 5 o 6 docentes cargando desde sus celulares antes del 26
 
-**Orden sugerido**: primero el formulario del docente, que es lo que tiene fecha dura, y el
-dashboard después, mientras la gente ya está cargando.
+**Orden sugerido**: publicar el formulario en Pages y probarlo en celulares reales cuanto
+antes; el dashboard después, mientras la gente ya está cargando.
