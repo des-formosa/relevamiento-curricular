@@ -39,7 +39,7 @@ sistema aguanta.
 
 | Capa | Dónde vive | Quién la escribe |
 |---|---|---|
-| Catálogo curricular (áreas, espacios, ejes, saberes, contenidos sugeridos) | `datos/catalogo.json` en el repo | nadie desde la app |
+| Catálogo curricular (áreas, espacios, ejes, saberes, contenidos sugeridos) | `datos/catalogo.json` en el repo | el equipo, desde el panel: edita en la base y publica el JSON |
 | Escuelas y departamentos | `datos/escuelas.json` en el repo | nadie desde la app |
 | Aportes de los docentes | Supabase | el formulario, vía una función RPC |
 | Usuarios del dashboard | Supabase Auth | administrador |
@@ -64,6 +64,7 @@ fijada, nunca por bundler.
 │   ├── supabase.js         configuración del proyecto y enviarAporte()
 │   ├── formulario.js       estado, navegación y pantallas del flujo del docente
 │   ├── dashboard.js        panel: sesión, selectores, Detalle, Mapa de calor, exportar
+│   ├── editor.js           edición del catálogo desde el panel, con historial
 │   ├── tablero.css         estilos propios del panel (usa los tokens de estilos.css)
 │   ├── fuentes/            Kumbh Sans, Didact Gothic y Noto Serif Ahom en woff2, embebidas
 │   └── img/                logos oficiales, más los símbolos recortados que se usan en pantalla
@@ -81,6 +82,7 @@ fijada, nunca por bundler.
     ├── 06_cargar_escuelas.sql  generado: datos/escuelas.json → base
     ├── 07_cargar_catalogo.sql  generado: el catálogo sin los contenidos
     ├── 08_cargar_contenidos_N.sql  generado: los contenidos, en lotes
+    ├── 09_edicion_catalogo.sql  editar el catálogo desde el panel, con auditoría
     └── generar_cargas.py   regenera 06, 07 y 08 cuando cambian los JSON
 ```
 
@@ -284,6 +286,35 @@ completa vive en el hash de la URL, así una vista se puede marcar y compartir.
 normalización de textos libres, gráficos de torta, tarjetas de métricas grandes, pestañas ni
 menú lateral.
 
+### Editar el catálogo (assets/editor.js + sql/09_edicion_catalogo.sql)
+
+El botón «Editar catálogo» de la cabecera cambia el panel de leer a escribir: los saberes de
+la materia y el año elegidos, con sus contenidos, y en cada uno editar, archivar o agregar.
+Dos reglas sostienen todo:
+
+**Nada se borra: se archiva.** Un docente puede tener el formulario abierto con el catálogo
+viejo descargado. Si el equipo borrara un contenido mientras esa persona carga, su envío
+fallaría al confirmar. Archivado significa que sigue en la base —el envío entra— pero sale
+del catálogo publicado y deja de ofrecerse. Antes de archivar, la pantalla dice cuántas
+respuestas tiene y aclara que se conservan.
+
+**Todo queda registrado.** Un trigger (`auditar_catalogo`) anota alta, edición, archivado y
+restauración con el texto anterior, el nuevo, quién y cuándo, más una nota opcional. No
+depende de que el front se acuerde: si alguien edita desde el SQL Editor, también queda. Las
+cargas masivas del JSON se saltean la auditoría (`app.carga_masiva`), porque ya quedan
+registradas en el repositorio.
+
+**Editar no publica.** El formulario del docente sigue leyendo `datos/catalogo.json`, que es
+lo que permite que diez mil personas entren el mismo día sin tocar la base. El botón
+«Publicar» llama a `exportar_catalogo()` y descarga el JSON con lo que hay en la base (solo
+los activos), para reemplazar ese archivo en el repositorio. La pantalla lo dice con todas
+las letras, para que nadie crea que editar alcanza.
+
+Las funciones del panel (`catalogo_editar`, `guardar_saber`, `guardar_contenido`,
+`archivar_catalogo`, `historial_catalogo`, `exportar_catalogo`) son `security definer` y
+verifican `es_equipo()`: el dashboard nunca escribe en las tablas directamente, igual que el
+formulario solo entra por `registrar_aporte`.
+
 El acceso requiere login (Supabase Auth). Los usuarios los crea el administrador; no hay
 registro público.
 
@@ -424,6 +455,10 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
 - **Contenidos sugeridos reescritos** (22/09/2026): 4.716, cinco por saber, escritos por el
   equipo porque los de la transcripción eran recortes del texto del saber. `origen:
   "propuesto_equipo"`. Fuente editable en `datos/contenidos/`
+- **Edición del catálogo desde el panel** (22/09/2026): `sql/09_edicion_catalogo.sql` y
+  `assets/editor.js`. Editar, agregar y archivar saberes y contenidos, con historial de
+  cambios y botón para publicar el JSON. Probado con un cliente simulado; falta correr el
+  SQL en Supabase y probarlo con un usuario del equipo
 - Dashboard completo (`dashboard.html` + `assets/dashboard.js` + `assets/tablero.css`):
   ingreso con Supabase Auth, chequeo de `equipo_planificacion`, Detalle, Mapa de calor,
   datos de ejemplo, exportar a Excel y PDF. Probado con un cliente simulado y el ingreso
@@ -447,6 +482,8 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
      mega: "Query is too large to be run via the SQL Editor". Cada archivo se
      puede repetir sin problema
   3. `select public.generar_datos_ejemplo();` para rehacer la demo sobre el catálogo nuevo
+- **Ejecutar `sql/09_edicion_catalogo.sql`** en el SQL Editor para habilitar la edición del
+  catálogo desde el panel (agrega `estado`, la auditoría y las funciones; se puede repetir)
 - Crear los usuarios del dashboard en Supabase Auth y agregarlos a `equipo_planificacion`
 - Prueba real con 5 o 6 docentes cargando desde sus celulares antes del 26
 
