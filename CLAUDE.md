@@ -1,0 +1,366 @@
+# Relevamiento Curricular — Ciclo Básico, Provincia de Formosa
+
+Plataforma para que los docentes de secundaria de Formosa declaren qué contenidos priorizan
+de cada saber del diseño curricular, y para que el área de Planificación Curricular del
+Ministerio vea los resultados consolidados.
+
+El objetivo no es juntar planificaciones: es **poder comparar**. Que dos profesores de
+Matemática de 2° año, de escuelas distintas, elijan contenidos escritos de la misma forma es
+lo que después permite ver dónde hay acuerdo, dónde hay dispersión y qué saberes no está
+trabajando nadie.
+
+---
+
+## Fecha límite y alcance
+
+**Viernes 26 de septiembre de 2026.** Ese día pasan dos cosas: se abre la carga para los
+docentes y se presenta el dashboard a las autoridades.
+
+Como la carga arranca ese mismo día, el dashboard va a estar vacío en la presentación.
+**Debe poder mostrarse con datos de ejemplo verosímiles**, claramente marcados como tales.
+
+Volumen esperado: entre 5.000 y 10.000 docentes, unas 81 escuelas, carga distribuida a lo
+largo de varios días a partir del 26.
+
+---
+
+## Arquitectura
+
+Sitio **estático** en GitHub Pages + **Supabase** (PostgreSQL) para las respuestas.
+
+La decisión que ordena todo el diseño: **el catálogo curricular no vive en la base de datos**.
+Es información que no cambia durante el operativo y es idéntica para los diez mil docentes,
+así que viaja como JSON dentro del repositorio. Se descarga una vez con la página y todas las
+pantallas del docente funcionan sin consultar el servidor.
+
+La única vez que el navegador habla con Supabase durante la carga es al confirmar, y es **una
+sola escritura**. Con diez mil personas entrando el mismo día, esa diferencia decide si el
+sistema aguanta.
+
+| Capa | Dónde vive | Quién la escribe |
+|---|---|---|
+| Catálogo curricular (áreas, espacios, ejes, saberes, contenidos sugeridos) | `datos/catalogo.json` en el repo | nadie desde la app |
+| Escuelas y departamentos | `datos/escuelas.json` en el repo | nadie desde la app |
+| Aportes de los docentes | Supabase | el formulario, vía una función RPC |
+| Usuarios del dashboard | Supabase Auth | administrador |
+
+**Sin build, sin framework, sin npm.** HTML + CSS + JavaScript vanilla. GitHub Pages sirve los
+archivos tal cual. Si en algún momento hace falta una librería, se carga por CDN con versión
+fijada, nunca por bundler.
+
+---
+
+## Estructura del repositorio
+
+```
+/
+├── CLAUDE.md
+├── index.html              formulario del docente
+├── dashboard.html          panel del equipo (requiere login)
+├── assets/
+│   ├── estilos.css         estilos compartidos
+│   ├── supabase.js         cliente y configuración
+│   ├── formulario.js       lógica del flujo del docente
+│   └── dashboard.js        lógica del panel
+├── datos/
+│   ├── catalogo.json       831 saberes, 1.552 contenidos sugeridos
+│   └── escuelas.json       81 escuelas E.P.E.S., 9 departamentos
+└── sql/                    se corren en orden en el SQL Editor; todos se pueden re-ejecutar
+    ├── 01_esquema.sql      tablas e índices
+    ├── 02_rls.sql          RLS, permisos, es_equipo()
+    ├── 03_funciones.sql    normalizar_texto, registrar_aporte, cargar_catalogo, cargar_escuelas
+    ├── 04_vistas.sql       vistas para exportar y panel_resultados() para el dashboard
+    ├── 05_datos_ejemplo.sql  generar_datos_ejemplo() / borrar_datos_ejemplo()
+    ├── 06_cargar_escuelas.sql  generado: datos/escuelas.json → base
+    ├── 07_cargar_catalogo.sql  generado: datos/catalogo.json → base
+    └── generar_cargas.py   regenera 06 y 07 cuando cambian los JSON
+```
+
+---
+
+## El catálogo curricular
+
+Sale de la **Resolución 672**, el diseño curricular del Ciclo Básico de Formosa. El PDF
+original es un escaneo sin capa de texto, así que el catálogo se construyó con OCR más
+transcripción manual de las materias que el OCR leyó mal.
+
+Jerarquía: **Área → Espacio Curricular → Eje → Saber → Contenidos sugeridos**
+
+`datos/catalogo.json` usa arrays planos con ids, para que el navegador arme sus índices:
+
+```js
+{
+  areas:      [{ id, nombre, orden }],
+  espacios:   [{ id, nombre, area_id, anios_dictados, saberes_por_ciclo, origen, orden }],
+  ejes:       [{ id, espacio_id, nombre, orden }],
+  saberes:    [{ id, eje_id, anio, trimestre, texto, calidad, orden }],
+  contenidos: [{ id, saber_id, texto, texto_normalizado, origen }]
+}
+```
+
+Las seis áreas son: Lenguaje y Comunicación · Matemática · Ciencias Naturales y Tecnología ·
+Ciencias Sociales · Desarrollo personal y proyecto de vida · Lengua y Cultura Originarias.
+
+### Particularidades del diseño que el código debe respetar
+
+**1. `anios_dictados` no siempre es `[1,2,3]`.**
+Educación Tecnológica solo se dicta en 1° y 2° año. Si un docente de esa materia elige 3°, el
+formulario no debe dejarlo avanzar: hay que mostrarle un mensaje claro y devolverlo al paso
+anterior. Nunca asumir que las tres opciones de año están disponibles para toda materia.
+
+**2. `saberes_por_ciclo: true` en las cuatro artísticas.**
+Música, Danza, Teatro y Artes Visuales no diferencian saberes por año: el diseño los presenta
+para todo el Ciclo Básico. En esos casos `saberes.anio` viene en `null` y el docente ve los
+mismos saberes sin importar el año que eligió. El año igual se guarda en el aporte, porque
+importa para los reportes.
+
+**3. El trimestre lo asigna el Ministerio, no el docente.**
+Cada saber ya trae su `trimestre` (1, 2 o 3). El docente **no lo elige y no lo ve**: es
+información interna que se comunicará después. No mostrar el trimestre en ninguna pantalla
+del formulario.
+
+La distribución se hizo respetando el orden de los ejes del diseño, de forma lineal, con un
+reparto aproximado de 40 % / 35 % / 25 %.
+
+**4. `calidad` marca qué tan confiable es el texto.**
+Vale `buena`, `revisar` o `mala`. Los `mala` vienen de páginas que el OCR leyó mal y el equipo
+todavía está corrigiendo. **Filtrarlos antes de mostrárselos al docente**: un saber ilegible
+hace que el docente no lo reconozca, no lo seleccione, y se pierde la comparabilidad.
+
+Las materias con `origen: "transcripcion_manual"` están verificadas contra el PDF y son todas
+`buena`.
+
+### Regenerar el catálogo
+
+El equipo de Planificación está revisando un Excel con los 831 saberes y sus contenidos. Cuando
+devuelvan las correcciones hay que regenerar `datos/catalogo.json` a partir de ese archivo. El
+`id` de cada saber es estable, así que las correcciones se aplican por id sin romper nada.
+
+---
+
+## Flujo del docente
+
+Nueve pantallas, una decisión por pantalla. **Sin login, sin registro, sin contraseñas.**
+
+Se usa desde el celular tanto como desde la computadora: diseñar mobile-first.
+
+| # | Pantalla | Notas |
+|---|---|---|
+| 1 | Bienvenida | qué es, para qué sirve, cuánto tarda (~10 min) |
+| 2 | Nombre y apellido | dos campos |
+| 3 | Escuela | buscador sobre lista cerrada, agrupada por departamento; enlace discreto "no encuentro mi escuela" que permite escribirla |
+| 4 | Año | 1°, 2° o 3°; respetar `anios_dictados` |
+| 5 | Área | seis opciones |
+| 6 | Espacio curricular | filtrado por área |
+| 7 | Carga de contenidos | **la pantalla crítica**, ver abajo |
+| 8 | Resumen y chequeo | todo lo cargado, agrupado por eje, editable |
+| 9 | Confirmación | "¿cargás otra materia?" → [misma escuela] [otra escuela] [terminé] |
+
+### Pantalla 7 — carga de contenidos
+
+Se recorre **un saber por vez**, con barra de progreso ("Saber 3 de 9").
+
+Arriba, el eje y el texto completo del saber, bien legible. Abajo, un campo donde el docente
+empieza a escribir y se despliegan sugerencias del catálogo **de ese saber**. Toca una y queda
+agregada como ficha.
+
+Si lo que escribe no aparece, puede agregarlo igual con un botón "Agregar como está". Esos
+contenidos se guardan con `tipo = 'libre'` y se marcan visualmente distinto.
+
+Sin límite de contenidos por saber.
+
+Un botón secundario: **"No trabajo este saber"**. No es lo mismo que saltearlo, y el sistema
+necesita distinguirlo: sin ese dato, el denominador de todos los porcentajes del dashboard
+queda mal. La diferencia es entre decir "18 de 163 docentes priorizan este saber (11 %)",
+que suena a saber huérfano, y "18 de 22 docentes que efectivamente lo dictan lo priorizan
+(82 %)", que es alto consenso.
+
+### Persistencia durante la carga
+
+El borrador vive en el navegador (`sessionStorage`). **Nada se escribe en Supabase hasta que
+el docente confirma en la pantalla 9.** Eso simplifica mucho: no hace falta estado `borrador`
+en la base, ni permisos de UPDATE para el visitante anónimo, ni recuperar sesiones a medias.
+
+Al "cargar otra materia" se conservan nombre y apellido, y según la respuesta también la
+escuela. Muchos docentes dan varias materias en varias escuelas: esto es lo que evita que
+abandonen.
+
+---
+
+## Dashboard
+
+Lo usan unas 20 personas del área de Planificación Curricular, desde la computadora. **No son
+perfiles técnicos y no van a explorar datos**: necesitan abrirlo y entender en cinco segundos
+qué está pasando. Además se proyecta en reuniones con autoridades.
+
+Principio rector: la respuesta ya está calculada y escrita. Si algo necesita explicación,
+está mal.
+
+**Es prácticamente una sola pantalla:**
+
+1. **Barra de selección** siempre visible: Materia · Año · Trimestre · Alcance
+   (toda la provincia / un departamento / una escuela). Arranca con una selección puesta y
+   datos a la vista, nunca vacío.
+2. **Línea de contexto**: "Basado en 147 docentes de 62 escuelas." Nada más.
+3. **Cuerpo**: los saberes de esa combinación, uno debajo del otro. Para cada saber, su texto
+   completo y debajo los contenidos más elegidos, ordenados de mayor a menor, con barra
+   horizontal y porcentaje. Mostrar 3 por saber y un enlace "ver los demás" que expande.
+4. **Exportar**: un botón que abre un panel chico con dos opciones — lo que estoy viendo, o
+   todo el relevamiento provincial — y elección de formato (Excel para trabajar, PDF para
+   presentar).
+
+Cuando un saber tiene pocas respuestas, en vez de porcentajes engañosos mostrar
+"Solo 3 docentes informaron este saber. Muestra insuficiente."
+
+**Lo que NO va:** mapas de calor, índices de divergencia, comparación entre escuelas lado a
+lado, pantalla de normalización de textos libres, gráficos de torta, tarjetas de métricas
+grandes, pestañas ni menú lateral.
+
+El acceso requiere login (Supabase Auth). Los usuarios los crea el administrador; no hay
+registro público.
+
+---
+
+## Base de datos
+
+### Esquema
+
+Catálogo (espejo del JSON, para que el dashboard pueda cruzar en SQL):
+
+```sql
+areas(id text pk, nombre, orden)
+espacios_curriculares(id text pk, area_id fk, nombre, anios_dictados int[], saberes_por_ciclo bool, orden)
+ejes(id text pk, espacio_id fk, nombre, orden)
+saberes(id text pk, eje_id fk, anio smallint null, trimestre smallint, texto, calidad, orden)
+contenidos_sugeridos(id text pk, saber_id fk, texto, texto_normalizado, origen)
+```
+
+Institucional:
+
+```sql
+departamentos(id text pk, nombre)
+escuelas(id text pk, departamento_id fk, numero, denominacion, nombre, localidad,
+         nombre_normalizado, origen)   -- origen: 'oficial' | 'agregada_por_docente'
+```
+
+Relevamiento:
+
+```sql
+docentes(id bigserial pk, nombre, apellido, creado_en)
+
+aportes(id bigserial pk, docente_id fk cascade, escuela_id fk, espacio_id fk,
+        anio smallint check 1..3, enviado_en,
+        unique(docente_id, escuela_id, espacio_id, anio))
+
+selecciones(id bigserial pk, aporte_id fk cascade, saber_id fk,
+            tipo text check in ('catalogo','libre'),
+            contenido_sugerido_id fk null,      -- obligatorio si tipo='catalogo', null si 'libre'
+            texto, texto_normalizado, orden,
+            unique(aporte_id, saber_id, texto_normalizado))
+
+saberes_no_trabajados(aporte_id fk cascade, saber_id fk, pk(aporte_id, saber_id))
+```
+
+Normalización posterior (la usa el equipo para agrupar los textos libres):
+
+```sql
+grupos_texto_libre(id, saber_id fk, texto_normalizado, texto_representativo, frecuencia,
+                   contenido_sugerido_id fk null, estado, revisado_por, revisado_en)
+```
+
+Agregados al implementar (sql/01_esquema.sql):
+
+- `docentes.clave uuid`: si el navegador genera un `crypto.randomUUID()` al empezar y lo manda
+  en `payload.docente.clave`, todas las materias de esa persona quedan bajo un solo docente, y
+  reenviar la misma materia/año/escuela reemplaza el envío anterior. Es opcional.
+- `aportes.es_ejemplo`: marca los datos inventados para la demo. El formulario nunca lo pone.
+- `equipo_planificacion(usuario_id)`: además de existir en Supabase Auth, el usuario del
+  dashboard tiene que estar en esta tabla para ver algo.
+
+**No existe tabla de trimestres.** El trimestre es un atributo de `saberes`, no algo que el
+docente elija.
+
+La herencia de "contenido del catálogo" versus "contenido libre" se resuelve con una sola
+tabla `selecciones` y una columna `tipo`. Esa tabla se consulta cientos de miles de veces desde
+el dashboard: sin JOIN es sensiblemente más rápida.
+
+### Seguridad
+
+La clave pública de Supabase queda visible en el JavaScript. Es inevitable en un sitio
+estático, así que hay que diseñar asumiendo que es pública.
+
+1. **RLS activado en todas las tablas.** Ninguna acepta escrituras directas del rol `anon`.
+2. **`escuelas` es la única lectura pública** (la necesita el buscador).
+3. **El envío pasa por una única función** `registrar_aporte(payload jsonb)`, declarada
+   `security definer`, que escribe todo en una transacción. Si algo falla, no queda nada a
+   medias. El rol `anon` tiene `execute` sobre esa función y nada más.
+4. **El dashboard lee con rol `authenticated`.**
+
+Desde el navegador todo el envío es una línea:
+
+```js
+const { data, error } = await supabase.rpc('registrar_aporte', { payload });
+```
+
+Es el mismo principio que hace que una `Seleccion` solo se toque a través de su `Aporte`:
+hay una sola puerta de entrada y está controlada.
+
+### Normalizar texto
+
+Función `normalizar_texto(t)` en SQL, y su equivalente en JavaScript. Baja a minúsculas, quita
+acentos y puntuación, colapsa espacios. Se usa en tres lugares: el autocompletado, el
+anti-duplicado dentro de un mismo aporte, y el agrupamiento de textos libres en el dashboard.
+
+Las dos implementaciones **tienen que dar exactamente el mismo resultado**.
+
+### Volúmenes
+
+Unos 15.000 aportes y 600.000 selecciones. Para PostgreSQL es poco; el punto de atención es la
+concurrencia del primer día, no el tamaño. Conviene el plan Pro durante el mes del
+relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones simultáneas.
+
+---
+
+## Convenciones
+
+- **Todo en español**: nombres de tablas, columnas, variables, funciones, comentarios y
+  mensajes. Sin mezclar inglés.
+- **Sin framework ni build.** HTML, CSS y JavaScript vanilla. Librerías solo por CDN con
+  versión fijada, y solo si hacen falta de verdad.
+- **Mobile-first** en el formulario. El dashboard es de escritorio.
+- Accesible: contraste alto, tipografía grande, objetivos táctiles amplios. Se va a usar con
+  sol, en pantallas viejas y con conexión inestable.
+- **Escribir para el docente, no para el sistema.** Los mensajes de error dicen qué pasó y
+  cómo resolverlo.
+
+---
+
+## Estado
+
+**Hecho**
+- SQL completo en `sql/` (esquema, RLS, `registrar_aporte`, vistas, `panel_resultados`, datos
+  de ejemplo, carga de catálogo y escuelas), probado en PostgreSQL local: `normalizar_texto`
+  da idéntico a `normalizarTexto()` de JS en los 2.597 textos del catálogo y escuelas
+- Proyecto de Supabase "Relevamiento Curricular" (región sa-east-1, São Paulo) con todo el SQL
+  aplicado, escuelas y catálogo cargados, y 1.500 docentes de ejemplo (`es_ejemplo = true`).
+  `assets/supabase.js` ya apunta al proyecto: lo que se envíe desde el formulario se guarda de verdad
+- Catálogo curricular completo: 831 saberes con trimestre asignado y 1.552 contenidos
+  sugeridos, en `datos/catalogo.json`
+- Listado de escuelas: 81 E.P.E.S. en 9 departamentos, en `datos/escuelas.json`
+- Modelo de datos definido
+- Diseño de pantallas (en Claude Design, en paralelo)
+
+**Pendiente**
+- Todo el código: formulario y dashboard
+- Repositorio publicado en GitHub Pages
+- Merge de las correcciones del equipo al catálogo (llegan por Excel, se aplican por id)
+- Completar en el catálogo los primeros años de Lengua, Historia, Educación Física y
+  Geografía: quedaron cortos porque la primera página de cada tabla tiene el encabezado
+  cruzando las columnas y el OCR se desarmó ahí. Son unas 9 páginas del PDF para transcribir
+  a mano, igual que se hizo con las otras seis materias.
+- Crear los usuarios del dashboard en Supabase Auth y agregarlos a `equipo_planificacion`
+- Antes de abrir la carga: borrar los envíos de prueba reales (los de ejemplo se quedan para la demo)
+- Prueba real con 5 o 6 docentes cargando desde sus celulares antes del 26
+
+**Orden sugerido**: primero el formulario del docente, que es lo que tiene fecha dura, y el
+dashboard después, mientras la gente ya está cargando.

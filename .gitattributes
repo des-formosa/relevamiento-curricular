@@ -1,0 +1,4 @@
+# Todo el texto se guarda con saltos de línea LF, también en Windows
+* text=auto eol=lf
+*.woff2 binary
+*.webp binary

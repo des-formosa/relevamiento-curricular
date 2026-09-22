@@ -1,0 +1,11 @@
+# Sistema operativo y editores
+Thumbs.db
+.DS_Store
+*.swp
+.vscode/
+.idea/
+
+# Materiales de trabajo que no se publican en GitHub Pages
+# (los logos ya están en assets/img y las fuentes en assets/fuentes)
+fonts/
+logos/
