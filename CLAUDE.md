@@ -294,6 +294,12 @@ menú lateral.
 
 El botón «Editar catálogo» de la cabecera cambia el panel de leer a escribir: los saberes de
 la materia y el año elegidos, con sus contenidos, y en cada uno editar, archivar o agregar.
+
+A diferencia del resto de la selección, **el modo no viaja en el hash**: siempre se entra por
+los resultados, aunque la última vez hayas quedado editando. Se sale del editor al recargar,
+al volver a entrar y al compartir un link. Editar el catálogo es algo que se elige, no un
+lugar donde amanecer.
+
 Dos reglas sostienen todo:
 
 **Nada se borra: se archiva.** Un docente puede tener el formulario abierto con el catálogo

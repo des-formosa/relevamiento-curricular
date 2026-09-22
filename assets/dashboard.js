@@ -72,7 +72,8 @@
     anio: 1,
     alcance: { tipo: 'provincia' },   // | { tipo: 'departamento', id } | { tipo: 'escuela', id }
     vista: 'detalle',                 // detalle | mapa
-    modo: 'resultados',               // resultados | catalogo (editar el diseño)
+    modo: 'resultados',               // resultados | catalogo (editar el diseño);
+                                      //   no se guarda: siempre se entra por resultados
     ejemplo: false,
     datos: null,
     cargandoDatos: false,
@@ -90,8 +91,10 @@
     if (h.get('departamento')) estado.alcance = { tipo: 'departamento', id: h.get('departamento') };
     else if (h.get('escuela')) estado.alcance = { tipo: 'escuela', id: h.get('escuela') };
     if (h.get('vista') === 'mapa') estado.vista = 'mapa';
-    if (h.get('modo') === 'catalogo') estado.modo = 'catalogo';
     if (h.get('ejemplo') === '1') estado.ejemplo = true;
+    // El modo no viaja en el hash a propósito: se entra siempre por los
+    // resultados. Editar el catálogo es algo que se elige, no un lugar donde
+    // amanecer porque la última vez quedaste ahí.
   }
   function escribirHash() {
     const h = new URLSearchParams();
@@ -100,7 +103,6 @@
     if (estado.alcance.tipo === 'departamento') h.set('departamento', estado.alcance.id);
     if (estado.alcance.tipo === 'escuela') h.set('escuela', estado.alcance.id);
     if (estado.vista === 'mapa') h.set('vista', 'mapa');
-    if (estado.modo === 'catalogo') h.set('modo', 'catalogo');
     if (estado.ejemplo) h.set('ejemplo', '1');
     history.replaceState(null, '', '#' + h.toString());
   }
@@ -196,6 +198,11 @@
     await sb.auth.signOut();
     estado.usuario = null;
     estado.datos = null;
+    // Cerrar sesión no recarga la página, así que el modo hay que bajarlo a
+    // mano: el que entra después tiene que ver los resultados, no el editor
+    estado.modo = 'resultados';
+    Editor.limpiar();
+    escribirHash();
     estado.pantalla = 'ingreso';
     render();
   }
