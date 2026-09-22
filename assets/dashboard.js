@@ -72,6 +72,7 @@
     anio: 1,
     alcance: { tipo: 'provincia' },   // | { tipo: 'departamento', id } | { tipo: 'escuela', id }
     vista: 'detalle',                 // detalle | mapa
+    modo: 'resultados',               // resultados | catalogo (editar el diseño)
     ejemplo: false,
     datos: null,
     cargandoDatos: false,
@@ -89,6 +90,7 @@
     if (h.get('departamento')) estado.alcance = { tipo: 'departamento', id: h.get('departamento') };
     else if (h.get('escuela')) estado.alcance = { tipo: 'escuela', id: h.get('escuela') };
     if (h.get('vista') === 'mapa') estado.vista = 'mapa';
+    if (h.get('modo') === 'catalogo') estado.modo = 'catalogo';
     if (h.get('ejemplo') === '1') estado.ejemplo = true;
   }
   function escribirHash() {
@@ -98,6 +100,7 @@
     if (estado.alcance.tipo === 'departamento') h.set('departamento', estado.alcance.id);
     if (estado.alcance.tipo === 'escuela') h.set('escuela', estado.alcance.id);
     if (estado.vista === 'mapa') h.set('vista', 'mapa');
+    if (estado.modo === 'catalogo') h.set('modo', 'catalogo');
     if (estado.ejemplo) h.set('ejemplo', '1');
     history.replaceState(null, '', '#' + h.toString());
   }
@@ -107,6 +110,11 @@
      ====================================================================== */
 
   async function cargarDatos() {
+    if (estado.modo === 'catalogo') {
+      Editor.estado.anioActual = estado.anio;
+      await Editor.cargar(estado.espacio_id, estado.anio);
+      return;
+    }
     estado.cargandoDatos = true;
     estado.errorDatos = null;
     estado.abiertos = new Set();
@@ -159,6 +167,7 @@
     const { data: fila } = await sb.from('equipo_planificacion').select('usuario_id').eq('usuario_id', sesion.user.id).maybeSingle();
     if (!fila) { estado.pantalla = 'sin-permiso'; render(); return; }
     estado.pantalla = 'panel';
+    Editor.iniciar(sb, { render, refrescar: () => Editor.cargar(estado.espacio_id, estado.anio) });
     await cargarEscuelasAgregadas();
     escribirHash();
     cargarDatos();
@@ -224,7 +233,8 @@
       <div class="t-cabecera__derecha">
         <div class="t-cabecera__fecha">Datos al ${esc(fechaLarga(new Date()))}</div>
         ${estado.pantalla === 'panel' ? `
-        <button type="button" class="t-interruptor ${estado.ejemplo ? 't-interruptor--activo' : ''}" data-accion="alternar-ejemplo" aria-pressed="${estado.ejemplo}">
+        <button type="button" class="t-salir t-modo" data-accion="alternar-modo">${estado.modo === 'catalogo' ? 'Ver resultados' : 'Editar catálogo'}</button>
+        <button type="button" class="t-interruptor ${estado.ejemplo ? 't-interruptor--activo' : ''} ${estado.modo === 'catalogo' ? 'oculto-visual' : ''}" data-accion="alternar-ejemplo" aria-pressed="${estado.ejemplo}">
           <span class="t-interruptor__pista"></span>Datos de ejemplo
         </button>
         <button type="button" class="t-salir" data-accion="salir">Salir</button>` : ''}
@@ -269,12 +279,13 @@
         <label class="t-selector__etiqueta" for="s-anio">Año</label>
         <select class="t-select t-select--anio" id="s-anio" data-cambio="anio">${opcionesAnio}</select>
       </div>
+      ${estado.modo === 'catalogo' ? '' : `
       <div class="t-selector">
         <label class="t-selector__etiqueta" for="s-alcance">Alcance</label>
         <select class="t-select t-select--alcance" id="s-alcance" data-cambio="alcance">${opcionesAlcance}</select>
-      </div>
+      </div>`}
       <div class="espaciador"></div>
-      <button type="button" class="t-exportar" data-accion="abrir-exportar">${Icono.descargar}Exportar</button>
+      ${estado.modo === 'catalogo' ? '' : `<button type="button" class="t-exportar" data-accion="abrir-exportar">${Icono.descargar}Exportar</button>`}
     </div>`;
   }
 
@@ -676,6 +687,15 @@
   }
 
   function pantallaPanel() {
+    if (estado.modo === 'catalogo') {
+      return `<div class="tablero">
+        ${cabecera()}
+        ${selectores()}
+        <div class="t-cuerpo ed-cuerpo">
+          ${Editor.pantalla({ nombreMateria: nombreMateria(), textoAnio: textoAnio() })}
+        </div>
+      </div>`;
+    }
     return `<div class="tablero">
       ${cabecera()}
       ${bandaEjemplo()}
@@ -707,10 +727,17 @@
     const objetivo = e.target.closest('[data-accion]');
     if (!objetivo) return;
     const d = objetivo.dataset;
+    if (d.accion.startsWith('ed-')) { Editor.manejar(d.accion, d); return; }
     switch (d.accion) {
       case 'salir': salir(); break;
       case 'reintentar': cargarDatos(); break;
       case 'alternar-ejemplo': estado.ejemplo = !estado.ejemplo; escribirHash(); cargarDatos(); break;
+      case 'alternar-modo':
+        estado.modo = estado.modo === 'catalogo' ? 'resultados' : 'catalogo';
+        Editor.limpiar();
+        escribirHash();
+        cargarDatos();
+        break;
       case 'vista': if (estado.vista !== d.vista) { estado.vista = d.vista; escribirHash(); render(); } break;
       case 'alternar-saber':
         if (estado.abiertos.has(d.id)) estado.abiertos.delete(d.id); else estado.abiertos.add(d.id);

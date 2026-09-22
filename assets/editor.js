@@ -1,0 +1,394 @@
+/* ============================================================================
+   Editor del catálogo — para el equipo de Planificación Curricular.
+
+   Corrige un saber mal transcripto, agrega el contenido que falta, saca el que
+   no va. Nada se borra: se archiva, porque un docente puede tener el
+   formulario abierto con el catálogo viejo y su envío tiene que entrar igual.
+   Cada cambio queda registrado con quién y cuándo (ver sql/09_edicion_catalogo.sql).
+
+   Editar no publica: el formulario del docente lee datos/catalogo.json del
+   repositorio. Por eso está el botón «Publicar», que baja el JSON actualizado
+   para reemplazar ese archivo.
+   ============================================================================ */
+
+const Editor = (function () {
+  'use strict';
+
+  let sb = null;
+  let alRefrescar = null;
+  let relojAviso = null;   // el aviso anterior no tiene que borrar al siguiente
+
+  const estado = {
+    datos: null,          // { saberes: [...] }
+    cargando: false,
+    error: null,
+    editando: null,       // id del saber o contenido que se está editando
+    agregandoEn: null,    // saber_id al que se le está agregando un contenido
+    saberNuevo: null,     // { eje_id } mientras se da de alta un saber
+    guardando: false,
+    confirmar: null,      // { tipo, id, texto, respuestas, archivar }
+    historial: null,      // [] cuando está abierto
+    aviso: null,
+  };
+
+  /* ---------- Utilidades ---------- */
+
+  function esc(t) {
+    return String(t == null ? '' : t)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+  const plural = (n, uno, varios) => (n === 1 ? uno : varios);
+  const ORDINAL = { 1: '1er', 2: '2do', 3: '3er' };
+
+  const svg = (d, { tam = 18, color = '#0B4F4A', grosor = 2.2 } = {}) =>
+    `<svg width="${tam}" height="${tam}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="${grosor}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+  const Icono = {
+    lapiz: svg('<path d="M4 20h4l10-10-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/>'),
+    archivar: svg('<path d="M3 7h18v3H3z"/><path d="M5 10v9h14v-9"/><path d="M10 14h4"/>', { color: '#7A4E00' }),
+    restaurar: svg('<path d="M4 12a8 8 0 1 0 2.3-5.6"/><path d="M4 4v5h5"/>', { color: '#0B4F4A' }),
+    mas: svg('<path d="M12 5v14"/><path d="M5 12h14"/>'),
+    reloj: svg('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>', { color: '#55605A' }),
+    bajar: svg('<path d="M12 4v11"/><path d="M7 11l5 5 5-5"/><path d="M4 20h16"/>', { tam: 19, color: '#FFFFFF', grosor: 2.4 }),
+  };
+
+  /* ---------- Datos ---------- */
+
+  async function cargar(espacio_id, anio) {
+    estado.cargando = true;
+    estado.error = null;
+    pintar();
+    const { data, error } = await sb.rpc('catalogo_editar', { p_espacio_id: espacio_id, p_anio: anio });
+    estado.cargando = false;
+    if (error || (data && data.error)) {
+      estado.datos = null;
+      estado.error = (data && data.error) || 'No pudimos traer el catálogo. Revisá la conexión y volvé a intentar.';
+    } else {
+      estado.datos = data;
+    }
+    pintar();
+  }
+
+  async function llamar(funcion, params, mensaje) {
+    estado.guardando = true;
+    estado.error = null;
+    pintar();
+    const { data, error } = await sb.rpc(funcion, params);
+    estado.guardando = false;
+    if (error) {
+      // Los mensajes de las funciones ya están escritos para el equipo
+      estado.error = error.message || 'No pudimos guardar el cambio.';
+      pintar();
+      return null;
+    }
+    clearTimeout(relojAviso);
+    estado.aviso = mensaje || null;
+    estado.editando = null;
+    estado.agregandoEn = null;
+    estado.saberNuevo = null;
+    estado.confirmar = null;
+    if (alRefrescar) await alRefrescar();     // vuelve a pedir el catálogo
+    relojAviso = setTimeout(() => { estado.aviso = null; pintar(); }, 6000);
+    return data;
+  }
+
+  /* ---------- Piezas ---------- */
+
+  function fila(c, saber) {
+    const editando = estado.editando === 'c:' + c.id;
+    const archivado = c.estado === 'archivado';
+    if (editando) {
+      return `<div class="ed-fila ed-fila--editando">
+        <textarea class="ed-campo" id="ed-texto" rows="2" maxlength="500">${esc(c.texto)}</textarea>
+        <div class="ed-acciones-campo">
+          <button type="button" class="ed-boton ed-boton--guardar" data-accion="ed-guardar-contenido" data-id="${esc(c.id)}">Guardar</button>
+          <button type="button" class="ed-boton" data-accion="ed-cancelar">Cancelar</button>
+        </div>
+      </div>`;
+    }
+    return `<div class="ed-fila ${archivado ? 'ed-fila--archivada' : ''}">
+      <div class="ed-fila__texto">${esc(c.texto)}${archivado ? ' <span class="ed-chip">archivado</span>' : ''}</div>
+      <div class="ed-fila__datos">${c.respuestas ? `${c.respuestas} ${plural(c.respuestas, 'respuesta', 'respuestas')}` : ''}</div>
+      <div class="ed-fila__botones">
+        ${archivado
+          ? `<button type="button" class="ed-icono" title="Volver a ofrecerlo" data-accion="ed-archivar-contenido" data-id="${esc(c.id)}" data-archivar="0">${Icono.restaurar}</button>`
+          : `<button type="button" class="ed-icono" title="Editar" data-accion="ed-editar" data-id="c:${esc(c.id)}">${Icono.lapiz}</button>
+             <button type="button" class="ed-icono" title="Archivar" data-accion="ed-pedir-archivar" data-tipo="contenido" data-id="${esc(c.id)}" data-respuestas="${c.respuestas || 0}" data-texto="${esc(c.texto)}">${Icono.archivar}</button>`}
+      </div>
+    </div>`;
+  }
+
+  function tarjetaSaber(s) {
+    const editando = estado.editando === 's:' + s.id;
+    const archivado = s.estado === 'archivado';
+    const activos = (s.contenidos || []).filter((c) => c.estado === 'activo');
+    const cabeza = editando
+      ? `<textarea class="ed-campo ed-campo--saber" id="ed-texto" rows="4" maxlength="1500">${esc(s.texto)}</textarea>
+         <div class="ed-acciones-campo">
+           <label class="ed-select-linea">Trimestre
+             <select id="ed-trimestre" class="ed-select">
+               ${[1, 2, 3].map((t) => `<option value="${t}" ${t === s.trimestre ? 'selected' : ''}>${ORDINAL[t]}</option>`).join('')}
+             </select>
+           </label>
+           <button type="button" class="ed-boton ed-boton--guardar" data-accion="ed-guardar-saber" data-id="${esc(s.id)}" data-eje="${esc(s.eje_id)}" data-anio="${s.anio == null ? '' : s.anio}">Guardar</button>
+           <button type="button" class="ed-boton" data-accion="ed-cancelar">Cancelar</button>
+         </div>`
+      : `<div class="ed-saber__texto">${esc(s.texto)}</div>`;
+
+    return `<article class="ed-saber ${archivado ? 'ed-saber--archivado' : ''}">
+      <header class="ed-saber__cabecera">
+        <div class="ed-saber__datos">
+          <span class="ed-saber__eje">${esc(s.eje)}</span>
+          <span class="ed-saber__meta">${ORDINAL[s.trimestre]} trimestre${s.anio ? ` · ${s.anio}° año` : ' · todo el ciclo'}${s.respuestas ? ` · ${s.respuestas} ${plural(s.respuestas, 'respuesta', 'respuestas')}` : ''}</span>
+          ${archivado ? '<span class="ed-chip">archivado</span>' : ''}
+        </div>
+        <div class="ed-saber__botones">
+          <button type="button" class="ed-icono" title="Ver los cambios de este saber" data-accion="ed-historial" data-id="${esc(s.id)}">${Icono.reloj}</button>
+          ${archivado
+            ? `<button type="button" class="ed-icono" title="Volver a ofrecerlo" data-accion="ed-archivar-saber" data-id="${esc(s.id)}" data-archivar="0">${Icono.restaurar}</button>`
+            : `<button type="button" class="ed-icono" title="Editar" data-accion="ed-editar" data-id="s:${esc(s.id)}">${Icono.lapiz}</button>
+               <button type="button" class="ed-icono" title="Archivar" data-accion="ed-pedir-archivar" data-tipo="saber" data-id="${esc(s.id)}" data-respuestas="${s.respuestas || 0}" data-texto="${esc(s.texto)}">${Icono.archivar}</button>`}
+        </div>
+      </header>
+      ${cabeza}
+      <div class="ed-contenidos">
+        <div class="ed-contenidos__titulo">${activos.length} ${plural(activos.length, 'contenido sugerido', 'contenidos sugeridos')}</div>
+        ${(s.contenidos || []).map((c) => fila(c, s)).join('')}
+        ${estado.agregandoEn === s.id
+          ? `<div class="ed-fila ed-fila--editando">
+               <textarea class="ed-campo" id="ed-texto" rows="2" maxlength="500" placeholder="Escribí el contenido"></textarea>
+               <div class="ed-acciones-campo">
+                 <button type="button" class="ed-boton ed-boton--guardar" data-accion="ed-crear-contenido" data-id="${esc(s.id)}">Agregar</button>
+                 <button type="button" class="ed-boton" data-accion="ed-cancelar">Cancelar</button>
+               </div>
+             </div>`
+          : archivado ? ''
+          : `<button type="button" class="ed-agregar" data-accion="ed-agregar-contenido" data-id="${esc(s.id)}">${Icono.mas} Agregar un contenido</button>`}
+      </div>
+    </article>`;
+  }
+
+  function panelConfirmar() {
+    const c = estado.confirmar;
+    if (!c) return '';
+    const conRespuestas = c.respuestas > 0;
+    return `<div class="t-velo" data-accion="ed-cancelar"></div>
+    <div class="t-panel ed-panel" role="dialog" aria-modal="true">
+      <h2 class="t-panel__titulo">¿Archivar este ${c.tipo}?</h2>
+      <p class="bajada">“${esc(c.texto.slice(0, 160))}${c.texto.length > 160 ? '…' : ''}”</p>
+      <p class="bajada">Deja de ofrecerse a los docentes en la próxima publicación${conRespuestas
+        ? `, pero <strong>las ${c.respuestas} ${plural(c.respuestas, 'respuesta que ya tiene se conserva', 'respuestas que ya tiene se conservan')}</strong> y se siguen viendo en los resultados.`
+        : '. No tiene respuestas todavía.'} Se puede volver atrás cuando quieras.</p>
+      ${c.tipo === 'saber' ? '<p class="bajada">Se archivan también sus contenidos.</p>' : ''}
+      <div class="campo">
+        <label class="campo__etiqueta" for="ed-nota">Por qué (queda en el historial)</label>
+        <input class="entrada" id="ed-nota" type="text" maxlength="200" placeholder="Opcional">
+      </div>
+      <div class="t-panel__acciones">
+        <button type="button" class="t-descargar" data-accion="ed-confirmar-archivar" ${estado.guardando ? 'disabled' : ''}>${estado.guardando ? 'Archivando…' : 'Archivar'}</button>
+        <button type="button" class="t-cancelar" data-accion="ed-cancelar">Cancelar</button>
+      </div>
+    </div>`;
+  }
+
+  function panelHistorial() {
+    if (!estado.historial) return '';
+    const filas = estado.historial.length
+      ? estado.historial.map((h) => `
+        <div class="ed-historial__fila">
+          <div class="ed-historial__cabecera">
+            <span class="ed-historial__accion ed-historial__accion--${esc(h.accion)}">${esc(h.accion)}</span>
+            <span class="ed-historial__fecha">${new Date(h.momento).toLocaleString('es-AR')}</span>
+            <span class="ed-historial__usuario">${esc(h.usuario)}</span>
+          </div>
+          ${h.texto_antes && h.texto_antes !== h.texto_despues ? `<div class="ed-historial__antes">${esc(h.texto_antes)}</div>` : ''}
+          ${h.texto_despues ? `<div class="ed-historial__despues">${esc(h.texto_despues)}</div>` : ''}
+          ${h.nota ? `<div class="ed-historial__nota">${esc(h.nota)}</div>` : ''}
+        </div>`).join('')
+      : '<div class="ed-vacio">Todavía no hay cambios registrados.</div>';
+    return `<div class="t-velo" data-accion="ed-cerrar-historial"></div>
+    <div class="t-panel ed-panel ed-panel--historial" role="dialog" aria-modal="true">
+      <div class="t-panel__cabecera">
+        <h2 class="t-panel__titulo">Historial de cambios</h2>
+        <button type="button" class="t-panel__cerrar" data-accion="ed-cerrar-historial" aria-label="Cerrar">${svg('<path d="M6 6l12 12"/><path d="M18 6L6 18"/>', { tam: 21, color: '#55605A', grosor: 2.4 })}</button>
+      </div>
+      <div class="ed-historial">${filas}</div>
+    </div>`;
+  }
+
+  /* ---------- Pantalla ---------- */
+
+  function pantalla({ nombreMateria, textoAnio }) {
+    if (estado.cargando) return `<div class="t-estado"><div class="t-estado__texto">Trayendo el catálogo…</div></div>`;
+    if (estado.error && !estado.datos) {
+      return `<div class="t-estado">
+        <div class="t-estado__titulo">No pudimos traer el catálogo</div>
+        <div class="t-estado__texto">${esc(estado.error)}</div>
+        <button type="button" class="boton boton--primario boton--66" data-accion="ed-reintentar">Volver a intentar</button>
+      </div>`;
+    }
+    const d = estado.datos;
+    if (!d) return '';
+    const saberes = d.saberes || [];
+    const activos = saberes.filter((s) => s.estado === 'activo');
+    const contenidos = saberes.reduce((n, s) => n + (s.contenidos || []).filter((c) => c.estado === 'activo').length, 0);
+    const ejes = [];
+    for (const s of saberes) if (!ejes.some((e) => e.id === s.eje_id)) ejes.push({ id: s.eje_id, nombre: s.eje });
+
+    return `
+      ${estado.aviso ? `<div class="ed-aviso" role="status">${esc(estado.aviso)}</div>` : ''}
+      ${estado.error ? `<div class="ed-aviso ed-aviso--error" role="alert">${esc(estado.error)}</div>` : ''}
+      <div class="ed-barra">
+        <div class="ed-barra__texto">
+          <strong>${esc(nombreMateria)} · ${esc(textoAnio)}</strong> ·
+          ${activos.length} ${plural(activos.length, 'saber', 'saberes')} y ${contenidos} contenidos activos
+        </div>
+        <div class="ed-barra__botones">
+          <button type="button" class="ed-boton" data-accion="ed-historial">${Icono.reloj} Ver historial</button>
+          <button type="button" class="ed-boton ed-boton--publicar" data-accion="ed-publicar">${Icono.bajar} Publicar</button>
+        </div>
+      </div>
+      <div class="ed-nota-publicar">
+        Lo que edites acá ya vale para los resultados, pero el formulario del docente lee el
+        catálogo publicado. Para que lo vean, usá <strong>Publicar</strong> y subí el archivo al repositorio.
+      </div>
+      ${estado.saberNuevo ? `
+        <article class="ed-saber ed-saber--nuevo">
+          <header class="ed-saber__cabecera"><div class="ed-saber__datos"><span class="ed-saber__eje">Saber nuevo</span></div></header>
+          <label class="ed-select-linea">Eje
+            <select id="ed-eje" class="ed-select">${ejes.map((e) => `<option value="${esc(e.id)}">${esc(e.nombre)}</option>`).join('')}</select>
+          </label>
+          <textarea class="ed-campo ed-campo--saber" id="ed-texto" rows="4" maxlength="1500" placeholder="Texto del saber, como lo escribiría el diseño curricular"></textarea>
+          <div class="ed-acciones-campo">
+            <label class="ed-select-linea">Trimestre
+              <select id="ed-trimestre" class="ed-select">${[1, 2, 3].map((t) => `<option value="${t}">${ORDINAL[t]}</option>`).join('')}</select>
+            </label>
+            <button type="button" class="ed-boton ed-boton--guardar" data-accion="ed-crear-saber">Agregar saber</button>
+            <button type="button" class="ed-boton" data-accion="ed-cancelar">Cancelar</button>
+          </div>
+        </article>`
+        : `<button type="button" class="ed-agregar ed-agregar--saber" data-accion="ed-nuevo-saber">${Icono.mas} Agregar un saber</button>`}
+      <div class="ed-lista">${saberes.map(tarjetaSaber).join('')}</div>
+      ${panelConfirmar()}
+      ${panelHistorial()}
+    `;
+  }
+
+  /* ---------- Acciones ---------- */
+
+  const valor = (id) => { const el = document.getElementById(id); return el ? el.value : ''; };
+
+  async function manejar(accion, d) {
+    switch (accion) {
+      case 'ed-reintentar': if (alRefrescar) await alRefrescar(); break;
+      case 'ed-editar': estado.editando = d.id; estado.agregandoEn = null; estado.saberNuevo = null; pintar(); enfocar(); break;
+      case 'ed-cancelar':
+        estado.editando = null; estado.agregandoEn = null; estado.saberNuevo = null; estado.confirmar = null; estado.error = null;
+        pintar();
+        break;
+      case 'ed-agregar-contenido': estado.agregandoEn = d.id; estado.editando = null; pintar(); enfocar(); break;
+      case 'ed-nuevo-saber': estado.saberNuevo = {}; estado.editando = null; pintar(); enfocar(); break;
+
+      case 'ed-guardar-contenido':
+        await llamar('guardar_contenido', { payload: { id: d.id, texto: valor('ed-texto') } }, 'Contenido guardado.');
+        break;
+      case 'ed-crear-contenido':
+        await llamar('guardar_contenido', { payload: { saber_id: d.id, texto: valor('ed-texto') } }, 'Contenido agregado.');
+        break;
+      case 'ed-guardar-saber':
+        await llamar('guardar_saber', {
+          payload: {
+            id: d.id, eje_id: d.eje, texto: valor('ed-texto'),
+            anio: d.anio === '' ? null : Number(d.anio),
+            trimestre: Number(valor('ed-trimestre')),
+          },
+        }, 'Saber guardado.');
+        break;
+      case 'ed-crear-saber':
+        await llamar('guardar_saber', {
+          payload: {
+            eje_id: valor('ed-eje'), texto: valor('ed-texto'),
+            anio: estado.anioActual, trimestre: Number(valor('ed-trimestre')),
+          },
+        }, 'Saber agregado.');
+        break;
+
+      case 'ed-pedir-archivar':
+        estado.confirmar = { tipo: d.tipo, id: d.id, texto: d.texto || '', respuestas: Number(d.respuestas || 0) };
+        pintar();
+        break;
+      case 'ed-confirmar-archivar': {
+        const c = estado.confirmar;
+        await llamar('archivar_catalogo', {
+          p_tabla: c.tipo === 'saber' ? 'saberes' : 'contenidos_sugeridos',
+          p_id: c.id, p_archivar: true, p_nota: valor('ed-nota'),
+        }, c.tipo === 'saber' ? 'Saber archivado.' : 'Contenido archivado.');
+        break;
+      }
+      case 'ed-archivar-saber':
+        await llamar('archivar_catalogo', { p_tabla: 'saberes', p_id: d.id, p_archivar: false }, 'Saber restaurado.');
+        break;
+      case 'ed-archivar-contenido':
+        await llamar('archivar_catalogo', { p_tabla: 'contenidos_sugeridos', p_id: d.id, p_archivar: false }, 'Contenido restaurado.');
+        break;
+
+      case 'ed-historial': {
+        const { data } = await sb.rpc('historial_catalogo', { p_limite: 100, p_registro_id: d.id || null });
+        estado.historial = data || [];
+        pintar();
+        break;
+      }
+      case 'ed-cerrar-historial': estado.historial = null; pintar(); break;
+      case 'ed-publicar': await publicar(); break;
+      default: return false;
+    }
+    return true;
+  }
+
+  function enfocar() {
+    const el = document.getElementById('ed-texto');
+    if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
+  }
+
+  // Baja datos/catalogo.json con lo que hay en la base, listo para el repositorio
+  async function publicar() {
+    estado.guardando = true; estado.error = null; pintar();
+    const { data, error } = await sb.rpc('exportar_catalogo');
+    estado.guardando = false;
+    if (error || (data && data.error)) {
+      estado.error = (data && data.error) || 'No pudimos armar el archivo.';
+      pintar();
+      return;
+    }
+    const texto = JSON.stringify(data, null, 1);
+    const url = URL.createObjectURL(new Blob([texto], { type: 'application/json' }));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'catalogo.json';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+    estado.aviso = `Se descargó catalogo.json con ${data.saberes.length} saberes y ${data.contenidos.length} contenidos. Reemplazá con ese archivo datos/catalogo.json en el repositorio para que lo vean los docentes.`;
+    pintar();
+  }
+
+  /* ---------- Enganche con el dashboard ---------- */
+
+  let pintar = () => {};
+
+  function iniciar(cliente, { render, refrescar }) {
+    sb = cliente;
+    pintar = render;
+    alRefrescar = refrescar;
+  }
+
+  return {
+    iniciar,
+    cargar,
+    pantalla,
+    manejar,
+    estado,
+    limpiar() { estado.datos = null; estado.editando = null; estado.agregandoEn = null; estado.saberNuevo = null; estado.confirmar = null; estado.historial = null; },
+  };
+})();

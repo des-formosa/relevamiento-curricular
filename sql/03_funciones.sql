@@ -411,6 +411,11 @@ begin
     raise exception 'El JSON no tiene saberes: no se carga nada.';
   end if;
 
+  -- La auditoría del catálogo registra los cambios que hace el equipo desde el
+  -- dashboard; una carga del JSON no tiene que dejar miles de filas (queda
+  -- registrada en el repositorio). Ver 09_edicion_catalogo.sql.
+  perform set_config('app.carga_masiva', 'on', true);
+
   -- Áreas
   insert into public.areas (id, nombre, orden)
   select x.id, x.nombre, x.orden
@@ -481,6 +486,14 @@ begin
        and not exists (select 1 from public.grupos_texto_libre g where g.contenido_sugerido_id = c.id);
     get diagnostics v_n = row_count;
     v_resultado := v_resultado || jsonb_build_object('contenidos_borrados', v_n);
+
+    -- Los que no se pudieron borrar porque ya tienen respuestas se archivan:
+    -- dejan de ofrecerse, pero las respuestas siguen ahí.
+    update public.contenidos_sugeridos c
+       set estado = 'archivado'
+     where not (c.id = any (v_ids_contenidos)) and c.estado = 'activo';
+    get diagnostics v_n = row_count;
+    v_resultado := v_resultado || jsonb_build_object('contenidos_archivados', v_n);
   end if;
 
   delete from public.saberes s
@@ -491,6 +504,12 @@ begin
      and not exists (select 1 from public.grupos_texto_libre g    where g.saber_id = s.id);
   get diagnostics v_n = row_count;
   v_resultado := v_resultado || jsonb_build_object('saberes_borrados', v_n);
+
+  update public.saberes s
+     set estado = 'archivado'
+   where not (s.id = any (v_ids_saberes)) and s.estado = 'activo';
+  get diagnostics v_n = row_count;
+  v_resultado := v_resultado || jsonb_build_object('saberes_archivados', v_n);
 
   delete from public.ejes e
    where not (e.id = any (v_ids_ejes))
@@ -554,6 +573,8 @@ begin
     raise exception 'El lote no trae contenidos.';
   end if;
 
+  perform set_config('app.carga_masiva', 'on', true);   -- ver 09_edicion_catalogo.sql
+
   select string_agg(distinct x.saber_id, ', ')
     into v_faltan
     from unnest(v_saberes) as x(saber_id)
@@ -580,6 +601,13 @@ begin
      and not exists (select 1 from public.selecciones s        where s.contenido_sugerido_id = c.id)
      and not exists (select 1 from public.grupos_texto_libre g where g.contenido_sugerido_id = c.id);
   get diagnostics v_borrados = row_count;
+
+  -- Lo que no se pudo borrar porque ya tiene respuestas se archiva
+  update public.contenidos_sugeridos c
+     set estado = 'archivado'
+   where c.saber_id = any (v_saberes)
+     and not (c.id = any (v_ids))
+     and c.estado = 'activo';
 
   select count(*) into v_quedan
     from public.contenidos_sugeridos c
