@@ -202,9 +202,11 @@ strong { font-weight: 700; }
   flex-shrink: 0;
 }
 .cabecera__marca { display: flex; align-items: center; gap: 11px; min-width: 0; }
-.cabecera__logo { height: 30px; width: auto; display: block; }
-.cabecera__logo--secundaria { height: 22px; }
-.cabecera__separador { width: 1px; height: 22px; background: var(--separador); }
+/* En la cabecera compacta van solo los símbolos; el nombre escrito aparece en escritorio */
+.cabecera__simbolo { height: 32px; width: auto; display: block; }
+.cabecera__simbolo--des { height: 24px; }
+.cabecera__nombre { display: none; }
+.cabecera__separador { width: 1px; height: 24px; background: var(--separador); flex-shrink: 0; }
 .cabecera__rotulo {
   margin-left: auto;
   font-size: 10px;
@@ -1053,9 +1055,19 @@ mark.coincidencia {
     border-bottom-width: 3px;
     justify-content: space-between;
   }
-  .cabecera__marca { display: flex; align-items: center; gap: 18px; }
-  .cabecera__logo { height: 60px; }
-  .cabecera__logo--secundaria { height: 46px; }
+  .cabecera__marca { display: flex; align-items: center; gap: 14px; }
+  .cabecera__simbolo { height: 46px; }
+  .cabecera__simbolo--des { height: 34px; }
+  .cabecera__nombre {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-right: 6px;
+    line-height: 1.15;
+    white-space: nowrap;
+  }
+  .cabecera__nombre span:first-child { font-size: 13.5px; font-weight: 700; color: var(--tinta); }
+  .cabecera__nombre span + span { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gris); }
   .cabecera__separador { height: 40px; }
   .cabecera__rotulo { display: none; }
   .cabecera__contexto {
@@ -1089,8 +1101,8 @@ mark.coincidencia {
     min-height: 100dvh;
   }
   .bienvenida__logos { gap: 18px; padding: 14px 20px; }
-  .bienvenida__logos img { height: 58px; }
-  .bienvenida__logos img.logo--secundaria { height: 46px; }
+  .bienvenida__logos img { height: 66px; }
+  .bienvenida__logos img.logo--secundaria { height: 52px; }
   .bienvenida__logos .cabecera__separador { height: 40px; }
   .bienvenida__etiqueta { font-size: 13px; letter-spacing: 0.13em; }
   .bienvenida__titulo { font-size: 51px; line-height: 1.06; }

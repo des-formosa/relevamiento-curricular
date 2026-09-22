@@ -9,8 +9,10 @@
   'use strict';
 
   const CLAVE_BORRADOR = 'relevamiento.borrador.v1';
-  const RUTA_LOGO_MINISTERIO = 'assets/img/logo-ministerio.webp';
+  const RUTA_LOGO_MINISTERIO = 'assets/img/logo-ministerio.webp';    // logos completos: bienvenida
   const RUTA_LOGO_SECUNDARIA = 'assets/img/logo-secundaria.webp';
+  const RUTA_SIMBOLO_MINISTERIO = 'assets/img/simbolo-ministerio.png'; // solo el símbolo: cabeceras
+  const RUTA_SIMBOLO_SECUNDARIA = 'assets/img/simbolo-secundaria.png';
 
   const app = document.getElementById('app');
   const esEscritorio = () => window.matchMedia('(min-width: 1024px)').matches;
@@ -573,9 +575,11 @@
   function cabecera() {
     return `<header class="cabecera">
       <div class="cabecera__marca">
-        <img class="cabecera__logo" src="${RUTA_LOGO_MINISTERIO}" alt="Ministerio de Cultura y Educación — Provincia de Formosa">
+        <img class="cabecera__simbolo" src="${RUTA_SIMBOLO_MINISTERIO}" alt="Ministerio de Cultura y Educación — Provincia de Formosa">
+        <div class="cabecera__nombre" aria-hidden="true"><span>Ministerio de Cultura y Educación</span><span>Provincia de Formosa</span></div>
         <div class="cabecera__separador"></div>
-        <img class="cabecera__logo cabecera__logo--secundaria" src="${RUTA_LOGO_SECUNDARIA}" alt="Dirección de Educación Secundaria">
+        <img class="cabecera__simbolo cabecera__simbolo--des" src="${RUTA_SIMBOLO_SECUNDARIA}" alt="Dirección de Educación Secundaria">
+        <div class="cabecera__nombre" aria-hidden="true"><span>Dirección de Educación Secundaria</span><span>Formosa</span></div>
       </div>
       <div class="cabecera__rotulo">Relevamiento curricular</div>
       <div class="cabecera__contexto">${esc(textoContexto())}</div>

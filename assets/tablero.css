@@ -41,10 +41,21 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
   border-bottom: 3px solid var(--verde);
   flex-shrink: 0;
 }
-.t-cabecera__marca { display: flex; align-items: center; gap: 18px; min-width: 0; }
-.t-cabecera__marca img { height: 60px; width: auto; display: block; }
-.t-cabecera__marca img.logo--secundaria { height: 46px; }
+.t-cabecera__marca { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.t-cabecera__simbolo { height: 46px; width: auto; display: block; }
+.t-cabecera__simbolo--des { height: 34px; }
+.t-cabecera__nombre {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-right: 6px;
+  line-height: 1.15;
+  white-space: nowrap;
+}
+.t-cabecera__nombre span:first-child { font-size: 13.5px; font-weight: 700; color: var(--t-tinta); }
+.t-cabecera__nombre span + span { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--t-gris-2); }
 .t-cabecera__separador { width: 1px; height: 40px; background: var(--t-borde); flex-shrink: 0; }
+@media (max-width: 1439px) { .t-cabecera__rotulo, .t-cabecera__rotulo + .t-cabecera__separador { display: none; } }
 .t-cabecera__rotulo { font-size: 15px; font-weight: 600; color: var(--t-gris); white-space: nowrap; }
 .t-cabecera__derecha { display: flex; align-items: center; gap: 18px; flex-shrink: 0; }
 .t-cabecera__fecha { font-size: 14px; color: var(--t-gris-2); white-space: nowrap; }
@@ -582,14 +593,63 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
 .t-panel__nota { font-family: var(--texto); font-size: 15px; line-height: 1.45; color: var(--t-gris); }
 .t-panel__nota--error { color: var(--ladrillo); }
 
-/* ---------- Ingreso ---------- */
+/* ---------- Ingreso: panel verde + tarjeta, como la bienvenida de escritorio ---------- */
 
-.t-ingreso {
+.t-ingreso { flex-direction: row; background: var(--papel); }
+.t-hero {
+  width: 560px;
+  flex-shrink: 0;
+  min-height: 100vh;
+  background: var(--verde);
+  color: var(--blanco);
+  padding: 56px 56px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 36px;
+}
+.t-hero__logos {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  align-self: flex-start;
+  background: var(--blanco);
+  border-radius: 12px;
+  padding: 14px 20px;
+}
+.t-hero__logos img { height: 66px; width: auto; display: block; }
+.t-hero__logos img.logo--secundaria { height: 52px; }
+.t-hero__separador { width: 1px; height: 40px; background: var(--separador); }
+.t-hero__textos { display: flex; flex-direction: column; gap: 18px; }
+.t-hero__etiqueta {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--cabecera-etiqueta);
+}
+.t-hero__titulo {
+  font-size: 51px;
+  font-weight: 800;
+  line-height: 1.06;
+  letter-spacing: -0.015em;
+  text-wrap: pretty;
+}
+.t-hero__bajada {
+  font-family: var(--texto);
+  font-size: 19px;
+  line-height: 1.5;
+  color: var(--cabecera-bajada);
+  max-width: 420px;
+}
+.t-hero__items { display: flex; flex-direction: column; gap: 16px; }
+.t-hero__item { display: flex; align-items: center; gap: 14px; font-size: 18px; color: #E4EEEA; }
+.t-hero__item svg { flex-shrink: 0; }
+.t-ingreso__cuerpo {
   flex-grow: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 48px 24px;
+  padding: 56px;
 }
 .t-ingreso__tarjeta {
   width: 100%;
@@ -597,15 +657,20 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
   background: var(--blanco);
   border: 1.5px solid var(--borde);
   border-radius: 22px;
-  padding: 40px 44px;
+  padding: 44px 44px 40px;
   display: flex;
   flex-direction: column;
   gap: 22px;
 }
-.t-ingreso__logos { display: flex; align-items: center; gap: 18px; }
-.t-ingreso__logos img { height: 52px; width: auto; display: block; }
-.t-ingreso__logos img.logo--secundaria { height: 40px; }
-.t-ingreso__titulo { font-size: 30px; font-weight: 800; line-height: 1.12; letter-spacing: -0.015em; }
+.t-ingreso__titulo { font-size: 32px; font-weight: 800; line-height: 1.12; letter-spacing: -0.015em; }
+@media (max-width: 1023px) {
+  .t-ingreso { flex-direction: column; }
+  .t-hero { width: 100%; min-height: 0; padding: 32px 24px 36px; gap: 24px; }
+  .t-hero__titulo { font-size: 36px; }
+  .t-hero__items { display: none; }
+  .t-ingreso__cuerpo { padding: 32px 24px; align-items: flex-start; }
+  .t-ingreso__tarjeta { padding: 28px 24px; }
+}
 
 /* ---------- Impresión (PDF) ---------- */
 

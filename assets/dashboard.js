@@ -11,8 +11,10 @@
   'use strict';
 
   const app = document.getElementById('app');
-  const RUTA_LOGO_MINISTERIO = 'assets/img/logo-ministerio.webp';
+  const RUTA_LOGO_MINISTERIO = 'assets/img/logo-ministerio.webp';    // logos completos: ingreso
   const RUTA_LOGO_SECUNDARIA = 'assets/img/logo-secundaria.webp';
+  const RUTA_SIMBOLO_MINISTERIO = 'assets/img/simbolo-ministerio.png'; // solo el símbolo: cabecera
+  const RUTA_SIMBOLO_SECUNDARIA = 'assets/img/simbolo-secundaria.png';
   const URL_SHEETJS = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
 
   const MUESTRA_MINIMA = 5;      // menos docentes que esto: «muestra insuficiente»
@@ -211,9 +213,11 @@
   function cabecera() {
     return `<header class="t-cabecera">
       <div class="t-cabecera__marca">
-        <img src="${RUTA_LOGO_MINISTERIO}" alt="Ministerio de Cultura y Educación — Provincia de Formosa">
+        <img class="t-cabecera__simbolo" src="${RUTA_SIMBOLO_MINISTERIO}" alt="Ministerio de Cultura y Educación — Provincia de Formosa">
+        <div class="t-cabecera__nombre" aria-hidden="true"><span>Ministerio de Cultura y Educación</span><span>Provincia de Formosa</span></div>
         <div class="t-cabecera__separador"></div>
-        <img class="logo--secundaria" src="${RUTA_LOGO_SECUNDARIA}" alt="Dirección de Educación Secundaria">
+        <img class="t-cabecera__simbolo t-cabecera__simbolo--des" src="${RUTA_SIMBOLO_SECUNDARIA}" alt="Dirección de Educación Secundaria">
+        <div class="t-cabecera__nombre" aria-hidden="true"><span>Dirección de Educación Secundaria</span><span>Formosa</span></div>
         <div class="t-cabecera__separador"></div>
         <div class="t-cabecera__rotulo">Contenidos priorizados · Resolución 672</div>
       </div>
@@ -608,20 +612,37 @@
 
   /* ---------- Pantallas ---------- */
 
+  // Ingreso: la misma composición que la bienvenida de escritorio del formulario
+  function heroIngreso() {
+    return `<section class="t-hero">
+      <div class="t-hero__logos">
+        <img src="${RUTA_LOGO_MINISTERIO}" alt="Ministerio de Cultura y Educación — Provincia de Formosa">
+        <div class="t-hero__separador"></div>
+        <img class="logo--secundaria" src="${RUTA_LOGO_SECUNDARIA}" alt="Dirección de Educación Secundaria">
+      </div>
+      <div class="t-hero__textos">
+        <div class="t-hero__etiqueta">Planificación Curricular · Resolución 672</div>
+        <h1 class="t-hero__titulo">Panel de resultados</h1>
+        <p class="t-hero__bajada">Qué contenidos priorizan los docentes de la provincia, materia por materia, escuela por escuela.</p>
+      </div>
+      <div class="espaciador"></div>
+      <div class="t-hero__items">
+        <div class="t-hero__item">${svg('<rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>', { tam: 24, color: '#9FC8BD', grosor: 2 })}<div>Solo para el equipo de Planificación</div></div>
+        <div class="t-hero__item">${svg('<path d="M4 14a8 8 0 0 1 14.5-4.6"/><path d="M18 5v5h-5"/><path d="M20 10a8 8 0 0 1-14.5 4.6"/><path d="M6 19v-5h5"/>', { tam: 24, color: '#9FC8BD', grosor: 2 })}<div>Se actualiza solo a medida que los docentes cargan</div></div>
+        <div class="t-hero__item">${svg('<path d="M12 4v11"/><path d="M7 11l5 5 5-5"/><path d="M4 20h16"/>', { tam: 24, color: '#9FC8BD', grosor: 2 })}<div>Se exporta a Excel para trabajar y a PDF para presentar</div></div>
+      </div>
+    </section>`;
+  }
+
   function pantallaIngreso() {
     const i = estado.ingreso;
-    return `<div class="tablero">
-      ${cabecera()}
-      <div class="t-ingreso">
+    return `<div class="tablero t-ingreso">
+      ${heroIngreso()}
+      <section class="t-ingreso__cuerpo">
         <form class="t-ingreso__tarjeta" data-form="ingreso" novalidate>
-          <div class="t-ingreso__logos">
-            <img src="${RUTA_LOGO_MINISTERIO}" alt="Ministerio de Cultura y Educación — Provincia de Formosa">
-            <div class="t-cabecera__separador"></div>
-            <img class="logo--secundaria" src="${RUTA_LOGO_SECUNDARIA}" alt="Dirección de Educación Secundaria">
-          </div>
           <div class="columna columna--10">
-            <h1 class="t-ingreso__titulo">Panel de resultados</h1>
-            <p class="bajada">Es para el equipo de Planificación Curricular. Entrá con el usuario que te dio el administrador.</p>
+            <h2 class="t-ingreso__titulo">Ingresá</h2>
+            <p class="bajada">Con el correo y la contraseña que te dio el administrador.</p>
           </div>
           <div class="campo">
             <label class="campo__etiqueta" for="email">Correo</label>
@@ -633,21 +654,22 @@
           </div>
           ${i.error ? `<div class="error-campo" role="alert">${esc(i.error)}</div>` : ''}
           <button type="submit" class="boton boton--primario boton--66" ${i.enviando ? 'disabled' : ''}>${i.enviando ? 'Entrando…' : 'Entrar'}</button>
+          <div class="ayuda ayuda--centrada">Si no tenés usuario, pedíselo al área de Planificación Curricular.</div>
         </form>
-      </div>
+      </section>
     </div>`;
   }
 
   function pantallaSinPermiso() {
-    return `<div class="tablero">
-      ${cabecera()}
-      <div class="t-ingreso">
+    return `<div class="tablero t-ingreso">
+      ${heroIngreso()}
+      <section class="t-ingreso__cuerpo">
         <div class="t-ingreso__tarjeta">
-          <h1 class="t-ingreso__titulo">Tu usuario todavía no está habilitado</h1>
+          <h2 class="t-ingreso__titulo">Tu usuario todavía no está habilitado</h2>
           <p class="bajada">Entraste como <strong>${esc(estado.usuario ? estado.usuario.email : '')}</strong>, pero ese usuario no está en el equipo de Planificación. Pedile al administrador que lo agregue y volvé a entrar.</p>
           <button type="button" class="boton boton--secundario" data-accion="salir">Salir</button>
         </div>
-      </div>
+      </section>
     </div>`;
   }
 
