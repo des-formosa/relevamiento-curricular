@@ -75,12 +75,13 @@ fijada, nunca por bundler.
 └── sql/                    se corren en orden en el SQL Editor; todos se pueden re-ejecutar
     ├── 01_esquema.sql      tablas e índices
     ├── 02_rls.sql          RLS, permisos, es_equipo()
-    ├── 03_funciones.sql    normalizar_texto, registrar_aporte, cargar_catalogo, cargar_escuelas
+    ├── 03_funciones.sql    normalizar_texto, registrar_aporte, cargar_catalogo, cargar_contenidos, cargar_escuelas
     ├── 04_vistas.sql       vistas para exportar y panel_resultados() para el dashboard
     ├── 05_datos_ejemplo.sql  generar_datos_ejemplo() / borrar_datos_ejemplo()
     ├── 06_cargar_escuelas.sql  generado: datos/escuelas.json → base
-    ├── 07_cargar_catalogo.sql  generado: datos/catalogo.json → base
-    └── generar_cargas.py   regenera 06 y 07 cuando cambian los JSON
+    ├── 07_cargar_catalogo.sql  generado: el catálogo sin los contenidos
+    ├── 08_cargar_contenidos_N.sql  generado: los contenidos, en lotes
+    └── generar_cargas.py   regenera 06, 07 y 08 cuando cambian los JSON
 ```
 
 ---
@@ -440,7 +441,11 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
   1. `select public.borrar_datos_ejemplo();` y borrar los envíos de prueba reales
      (`delete from public.aportes where es_ejemplo = false;`), porque un saber con respuestas
      no se puede borrar y quedaría colgado del catálogo viejo
-  2. pegar y ejecutar `sql/07_cargar_catalogo.sql` (ya regenerado con `python sql/generar_cargas.py`)
+  2. ejecutar `sql/03_funciones.sql` (trae `cargar_contenidos`), después
+     `sql/07_cargar_catalogo.sql` y después cada `sql/08_cargar_contenidos_N.sql`.
+     Van separados porque el SQL Editor rechaza las consultas de más o menos un
+     mega: "Query is too large to be run via the SQL Editor". Cada archivo se
+     puede repetir sin problema
   3. `select public.generar_datos_ejemplo();` para rehacer la demo sobre el catálogo nuevo
 - Crear los usuarios del dashboard en Supabase Auth y agregarlos a `equipo_planificacion`
 - Prueba real con 5 o 6 docentes cargando desde sus celulares antes del 26

@@ -384,6 +384,11 @@ grant  execute on function public.registrar_aporte(jsonb) to anon, authenticated
 --     usado: eso se conserva para no perder respuestas.
 -- texto_normalizado se recalcula acá con normalizar_texto().
 --
+-- Los contenidos sugeridos pueden venir vacíos: en ese caso no se toca ninguno
+-- y se cargan aparte, en lotes, con cargar_contenidos(). Es lo que hace
+-- generar_cargas.py, porque el catálogo entero no entra en una sola consulta
+-- del SQL Editor de Supabase.
+--
 -- Se usa desde el SQL Editor (archivo 07_cargar_catalogo.sql). No es pública.
 -- ----------------------------------------------------------------------------
 
@@ -402,8 +407,8 @@ declare
   v_ids_saberes     text[] := array(select j ->> 'id' from jsonb_array_elements(datos -> 'saberes') j);
   v_ids_contenidos  text[] := array(select j ->> 'id' from jsonb_array_elements(datos -> 'contenidos') j);
 begin
-  if cardinality(v_ids_saberes) = 0 or cardinality(v_ids_contenidos) = 0 then
-    raise exception 'El JSON no tiene saberes o contenidos: no se carga nada.';
+  if cardinality(v_ids_saberes) = 0 then
+    raise exception 'El JSON no tiene saberes: no se carga nada.';
   end if;
 
   -- Áreas
@@ -466,12 +471,17 @@ begin
   v_resultado := v_resultado || jsonb_build_object('contenidos', v_n);
 
   -- Lo que salió del JSON y nadie usó, se borra (de abajo hacia arriba).
-  delete from public.contenidos_sugeridos c
-   where not (c.id = any (v_ids_contenidos))
-     and not exists (select 1 from public.selecciones s        where s.contenido_sugerido_id = c.id)
-     and not exists (select 1 from public.grupos_texto_libre g where g.contenido_sugerido_id = c.id);
-  get diagnostics v_n = row_count;
-  v_resultado := v_resultado || jsonb_build_object('contenidos_borrados', v_n);
+  -- Si el JSON viene sin contenidos, no se toca ninguno: los contenidos se
+  -- cargan aparte con cargar_contenidos() porque no entran en una sola
+  -- consulta del SQL Editor.
+  if cardinality(v_ids_contenidos) > 0 then
+    delete from public.contenidos_sugeridos c
+     where not (c.id = any (v_ids_contenidos))
+       and not exists (select 1 from public.selecciones s        where s.contenido_sugerido_id = c.id)
+       and not exists (select 1 from public.grupos_texto_libre g where g.contenido_sugerido_id = c.id);
+    get diagnostics v_n = row_count;
+    v_resultado := v_resultado || jsonb_build_object('contenidos_borrados', v_n);
+  end if;
 
   delete from public.saberes s
    where not (s.id = any (v_ids_saberes))
@@ -506,6 +516,85 @@ end;
 $$;
 
 revoke execute on function public.cargar_catalogo(jsonb) from public, anon, authenticated;
+
+
+-- ----------------------------------------------------------------------------
+-- cargar_contenidos(datos jsonb)
+--
+-- Carga SOLO los contenidos sugeridos, en lotes. Existe porque el catálogo
+-- completo no entra en una sola consulta del SQL Editor de Supabase: da
+-- "Query is too large to be run via the SQL Editor".
+--
+-- Cada lote trae saberes enteros con todos sus contenidos, así que para los
+-- saberes que vienen en el lote se borra lo que ya no está y se agrega o
+-- actualiza el resto. Los saberes que no vienen en el lote no se tocan: se
+-- pueden correr los lotes en cualquier orden y repetir los que haga falta.
+--
+--   select public.cargar_contenidos($datos${"contenidos":[...]}$datos$::jsonb);
+--
+-- Un contenido que algún docente ya eligió no se borra: se conserva la
+-- respuesta y el resultado lo informa en "conservados".
+-- ----------------------------------------------------------------------------
+
+create or replace function public.cargar_contenidos(datos jsonb)
+returns jsonb
+language plpgsql
+volatile
+set search_path = ''
+as $$
+declare
+  v_ids      text[] := array(select j ->> 'id'       from jsonb_array_elements(datos -> 'contenidos') j);
+  v_saberes  text[] := array(select distinct j ->> 'saber_id' from jsonb_array_elements(datos -> 'contenidos') j);
+  v_faltan   text;
+  v_nuevos   integer;
+  v_borrados integer;
+  v_quedan   integer;
+begin
+  if cardinality(v_ids) = 0 then
+    raise exception 'El lote no trae contenidos.';
+  end if;
+
+  select string_agg(distinct x.saber_id, ', ')
+    into v_faltan
+    from unnest(v_saberes) as x(saber_id)
+    left join public.saberes s on s.id = x.saber_id
+   where s.id is null;
+  if v_faltan is not null then
+    raise exception 'Hay contenidos de saberes que no existen en la base: %', left(v_faltan, 300);
+  end if;
+
+  insert into public.contenidos_sugeridos (id, saber_id, texto, texto_normalizado, origen)
+  select x.id, x.saber_id, x.texto, public.normalizar_texto(x.texto),
+         coalesce(x.origen, 'propuesto_equipo')
+    from jsonb_to_recordset(datos -> 'contenidos')
+         as x(id text, saber_id text, texto text, origen text)
+  on conflict (id) do update
+    set saber_id = excluded.saber_id, texto = excluded.texto,
+        texto_normalizado = excluded.texto_normalizado, origen = excluded.origen;
+  get diagnostics v_nuevos = row_count;
+
+  -- Dentro de los saberes de este lote, lo que ya no está se borra.
+  delete from public.contenidos_sugeridos c
+   where c.saber_id = any (v_saberes)
+     and not (c.id = any (v_ids))
+     and not exists (select 1 from public.selecciones s        where s.contenido_sugerido_id = c.id)
+     and not exists (select 1 from public.grupos_texto_libre g where g.contenido_sugerido_id = c.id);
+  get diagnostics v_borrados = row_count;
+
+  select count(*) into v_quedan
+    from public.contenidos_sugeridos c
+   where c.saber_id = any (v_saberes)
+     and not (c.id = any (v_ids));
+
+  return jsonb_build_object(
+    'saberes', cardinality(v_saberes),
+    'contenidos', v_nuevos,
+    'borrados', v_borrados,
+    'conservados', v_quedan);   -- viejos que no se pudieron borrar: ya tienen respuestas
+end;
+$$;
+
+revoke execute on function public.cargar_contenidos(jsonb) from public, anon, authenticated;
 
 
 -- ----------------------------------------------------------------------------
