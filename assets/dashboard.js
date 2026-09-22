@@ -11,9 +11,9 @@
   'use strict';
 
   const app = document.getElementById('app');
-  const RUTA_LOGO_MINISTERIO = 'assets/img/logo-ministerio.webp';    // logos completos: ingreso
-  const RUTA_LOGO_SECUNDARIA = 'assets/img/logo-secundaria.webp';
-  const RUTA_SIMBOLO_MINISTERIO = 'assets/img/simbolo-ministerio.png'; // solo el símbolo: cabecera
+  // Los logos oficiales traen el nombre incrustado y a escala chica no se lee:
+  // en pantalla se usa el símbolo recortado, con el nombre escrito al lado.
+  const RUTA_SIMBOLO_MINISTERIO = 'assets/img/simbolo-ministerio.png';
   const RUTA_SIMBOLO_SECUNDARIA = 'assets/img/simbolo-secundaria.png';
   const URL_SHEETJS = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
 
@@ -615,10 +615,11 @@
   // Ingreso: la misma composición que la bienvenida de escritorio del formulario
   function heroIngreso() {
     return `<section class="t-hero">
-      <div class="t-hero__logos">
-        <img src="${RUTA_LOGO_MINISTERIO}" alt="Ministerio de Cultura y Educación — Provincia de Formosa">
-        <div class="t-hero__separador"></div>
-        <img class="logo--secundaria" src="${RUTA_LOGO_SECUNDARIA}" alt="Dirección de Educación Secundaria">
+      <div class="marca-barra">
+        <img class="marca-barra__simbolo" src="${RUTA_SIMBOLO_MINISTERIO}" alt="Ministerio de Cultura y Educación — Provincia de Formosa">
+        <div class="marca-barra__separador"></div>
+        <img class="marca-barra__simbolo marca-barra__simbolo--des" src="${RUTA_SIMBOLO_SECUNDARIA}" alt="Dirección de Educación Secundaria">
+        <div class="marca-barra__nombre" aria-hidden="true"><span>Ministerio de Cultura y Educación</span><span>Educación Secundaria · Formosa</span></div>
       </div>
       <div class="t-hero__textos">
         <div class="t-hero__etiqueta">Planificación Curricular · Resolución 672</div>

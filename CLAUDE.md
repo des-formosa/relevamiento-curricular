@@ -66,9 +66,9 @@ fijada, nunca por bundler.
 │   ├── dashboard.js        panel: sesión, selectores, Detalle, Mapa de calor, exportar
 │   ├── tablero.css         estilos propios del panel (usa los tokens de estilos.css)
 │   ├── fuentes/            Kumbh Sans, Didact Gothic y Noto Serif Ahom en woff2, embebidas
-│   └── img/                logos del Ministerio y de la Dirección de Educación Secundaria
+│   └── img/                logos oficiales, más los símbolos recortados que se usan en pantalla
 ├── datos/
-│   ├── catalogo.json       831 saberes, 1.552 contenidos sugeridos
+│   ├── catalogo.json       942 saberes, 2.724 contenidos sugeridos
 │   └── escuelas.json       81 escuelas E.P.E.S., 9 departamentos
 └── sql/                    se corren en orden en el SQL Editor; todos se pueden re-ejecutar
     ├── 01_esquema.sql      tablas e índices
@@ -86,8 +86,10 @@ fijada, nunca por bundler.
 ## El catálogo curricular
 
 Sale de la **Resolución 672**, el diseño curricular del Ciclo Básico de Formosa. El PDF
-original es un escaneo sin capa de texto, así que el catálogo se construyó con OCR más
-transcripción manual de las materias que el OCR leyó mal.
+original es un escaneo sin capa de texto. Se empezó con OCR, pero la calidad del escaneo no
+alcanzó, así que **las 16 materias terminaron transcritas a mano contra el PDF**. Todo el
+catálogo tiene `origen: "transcripcion_manual"` y `calidad: "buena"`, y todos los saberes
+tienen contenidos sugeridos.
 
 Jerarquía: **Área → Espacio Curricular → Eje → Saber → Contenidos sugeridos**
 
@@ -109,9 +111,18 @@ Ciencias Sociales · Desarrollo personal y proyecto de vida · Lengua y Cultura 
 ### Particularidades del diseño que el código debe respetar
 
 **1. `anios_dictados` no siempre es `[1,2,3]`.**
-Educación Tecnológica solo se dicta en 1° y 2° año. Si un docente de esa materia elige 3°, el
-formulario no debe dejarlo avanzar: hay que mostrarle un mensaje claro y devolverlo al paso
-anterior. Nunca asumir que las tres opciones de año están disponibles para toda materia.
+Dos materias no se dictan los tres años:
+
+| Materia | Años | Qué falta en el diseño |
+|---|---|---|
+| Educación Tecnológica | `[1, 2]` | no tiene columna TERCERO |
+| Formación Ética y Compromiso Comunitario | `[2, 3]` | no tiene columna PRIMERO |
+
+El año se elige en la pantalla 4 y la materia recién en la 6, así que al llegar al año todavía
+no se sabe qué materia va a ser. La validación va en la pantalla 6: el espacio que no se dicta
+en el año elegido aparece como tarjeta apagada que **dice por qué** («Se dicta solo en 2° y 3°
+año, y elegiste 1° año») con un enlace «Cambiar el año». Nunca un botón apagado sin
+explicación, y nunca dejar avanzar una combinación materia/año que el diseño no contempla.
 
 **2. `saberes_por_ciclo: true` en las cuatro artísticas.**
 Música, Danza, Teatro y Artes Visuales no diferencian saberes por año: el diseño los presenta
@@ -129,12 +140,15 @@ La distribución se hizo respetando el orden de los ejes del diseño, de forma l
 reparto aproximado de 40 % / 35 % / 25 %.
 
 **4. `calidad` marca qué tan confiable es el texto.**
-Vale `buena`, `revisar` o `mala`. Los `mala` vienen de páginas que el OCR leyó mal y el equipo
-todavía está corrigiendo. **Filtrarlos antes de mostrárselos al docente**: un saber ilegible
-hace que el docente no lo reconozca, no lo seleccione, y se pierde la comparabilidad.
+Vale `buena`, `revisar` o `mala`. Hoy los 942 saberes son `buena`, porque todo se transcribió a
+mano, así que el filtro no descarta nada. **Se mantiene igual en el formulario, el dashboard y
+`panel_resultados()`**: si en una corrección futura entra un saber ilegible, no tiene que
+llegarle al docente. Un saber que no reconoce no lo selecciona, y se pierde la comparabilidad.
 
-Las materias con `origen: "transcripcion_manual"` están verificadas contra el PDF y son todas
-`buena`.
+**5. La cantidad de saberes por año es muy despareja, y está bien.**
+Va de 7 (Físico-Química 1°) a 65 (Matemática 1°). Por eso la carga se recorre en tres tramos y el
+progreso cuenta sobre el tramo: «Saber 3 de 27» en Matemática y «Saber 1 de 4» en Historia 1°
+usan exactamente la misma pantalla.
 
 ### Regenerar el catálogo
 
@@ -375,31 +389,34 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
   de ejemplo, carga de catálogo y escuelas), probado en PostgreSQL local: `normalizar_texto`
   da idéntico a `normalizarTexto()` de JS en los 2.597 textos del catálogo y escuelas
 - Proyecto de Supabase "Relevamiento Curricular" (región sa-east-1, São Paulo) con todo el SQL
-  aplicado, escuelas y catálogo cargados, y 1.500 docentes de ejemplo (`es_ejemplo = true`).
+  aplicado, escuelas y catálogo cargados, y 1.500 docentes de ejemplo (`es_ejemplo = true`);
+  el catálogo que tiene la base es el viejo, ver Pendiente.
   `assets/supabase.js` ya apunta al proyecto: lo que se envíe desde el formulario se guarda de verdad
-- Catálogo curricular completo: 831 saberes con trimestre asignado y 1.552 contenidos
-  sugeridos, en `datos/catalogo.json`
-- Listado de escuelas: 81 E.P.E.S. en 9 departamentos, en `datos/escuelas.json`
-- Modelo de datos definido
-- Diseño de pantallas (en Claude Design, en paralelo)
-
+- **Catálogo curricular terminado** (22/09/2026): las 16 materias transcritas a mano contra el
+  PDF. 942 saberes con trimestre asignado, 45 ejes reales y 2.724 contenidos sugeridos, en
+  `datos/catalogo.json`. Todos `calidad: buena`, ninguno sin contenidos, ninguna combinación
+  materia/año vacía
 - Dashboard completo (`dashboard.html` + `assets/dashboard.js` + `assets/tablero.css`):
   ingreso con Supabase Auth, chequeo de `equipo_planificacion`, Detalle, Mapa de calor,
   datos de ejemplo, exportar a Excel y PDF. Probado con un cliente simulado y el ingreso
   contra el proyecto real; falta probarlo con un usuario del equipo
+- Listado de escuelas: 81 E.P.E.S. en 9 departamentos, en `datos/escuelas.json`
+- Modelo de datos definido
+- Diseño de pantallas (en Claude Design, en paralelo)
 - Publicado en GitHub Pages bajo la organización `des-formosa`:
   https://des-formosa.github.io/relevamiento-curricular/ (formulario) y
   https://des-formosa.github.io/relevamiento-curricular/dashboard.html (panel)
 
 **Pendiente**
-- Merge de las correcciones del equipo al catálogo (llegan por Excel, se aplican por id)
-- Completar en el catálogo los primeros años de Lengua, Historia, Educación Física y
-  Geografía: quedaron cortos porque la primera página de cada tabla tiene el encabezado
-  cruzando las columnas y el OCR se desarmó ahí. Son unas 9 páginas del PDF para transcribir
-  a mano, igual que se hizo con las otras seis materias.
+- **Subir el catálogo nuevo a Supabase.** La base todavía tiene el de 831 saberes, con ids que
+  ya no existen. En el SQL Editor, en este orden:
+  1. `select public.borrar_datos_ejemplo();` y borrar los envíos de prueba reales
+     (`delete from public.aportes where es_ejemplo = false;`), porque un saber con respuestas
+     no se puede borrar y quedaría colgado del catálogo viejo
+  2. pegar y ejecutar `sql/07_cargar_catalogo.sql` (ya regenerado con `python sql/generar_cargas.py`)
+  3. `select public.generar_datos_ejemplo();` para rehacer la demo sobre el catálogo nuevo
 - Crear los usuarios del dashboard en Supabase Auth y agregarlos a `equipo_planificacion`
-- Antes de abrir la carga: borrar los envíos de prueba reales (los de ejemplo se quedan para la demo)
 - Prueba real con 5 o 6 docentes cargando desde sus celulares antes del 26
 
-**Orden sugerido**: publicar el formulario en Pages y probarlo en celulares reales cuanto
-antes; el dashboard después, mientras la gente ya está cargando.
+**Orden sugerido**: subir el catálogo nuevo a Supabase, probar el formulario en celulares
+reales y crear los usuarios del panel. El sitio ya está publicado y las dos pantallas andan.

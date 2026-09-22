@@ -602,23 +602,19 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
   min-height: 100vh;
   background: var(--verde);
   color: var(--blanco);
-  padding: 56px 56px 48px;
+  padding: 0 0 48px;
   display: flex;
   flex-direction: column;
   gap: 36px;
 }
-.t-hero__logos {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  align-self: flex-start;
-  background: var(--blanco);
-  border-radius: 12px;
-  padding: 14px 20px;
-}
-.t-hero__logos img { height: 66px; width: auto; display: block; }
-.t-hero__logos img.logo--secundaria { height: 52px; }
-.t-hero__separador { width: 1px; height: 40px; background: var(--separador); }
+.t-hero > *:not(.marca-barra) { padding-left: 56px; padding-right: 56px; }
+.t-hero > .marca-barra + * { margin-top: 20px; }
+.t-hero .marca-barra { padding: 16px 56px; gap: 14px; }
+.t-hero .marca-barra__simbolo { height: 44px; }
+.t-hero .marca-barra__simbolo--des { height: 33px; }
+.t-hero .marca-barra__separador { height: 36px; }
+.t-hero .marca-barra__nombre span:first-child { font-size: 13.5px; }
+.t-hero .marca-barra__nombre span + span { font-size: 11px; }
 .t-hero__textos { display: flex; flex-direction: column; gap: 18px; }
 .t-hero__etiqueta {
   font-size: 13px;
@@ -665,7 +661,15 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
 .t-ingreso__titulo { font-size: 32px; font-weight: 800; line-height: 1.12; letter-spacing: -0.015em; }
 @media (max-width: 1023px) {
   .t-ingreso { flex-direction: column; }
-  .t-hero { width: 100%; min-height: 0; padding: 32px 24px 36px; gap: 24px; }
+  .t-hero { width: 100%; min-height: 0; padding: 0 0 36px; gap: 24px; }
+  .t-hero > *:not(.marca-barra) { padding-left: 24px; padding-right: 24px; }
+  .t-hero > .marca-barra + * { margin-top: 4px; }
+  .t-hero .marca-barra { padding: 10px 24px; gap: 10px; }
+  .t-hero .marca-barra__simbolo { height: 34px; }
+  .t-hero .marca-barra__simbolo--des { height: 26px; }
+  .t-hero .marca-barra__separador { height: 28px; }
+  .t-hero .marca-barra__nombre span:first-child { font-size: 11.5px; }
+  .t-hero .marca-barra__nombre span + span { font-size: 9.5px; }
   .t-hero__titulo { font-size: 36px; }
   .t-hero__items { display: none; }
   .t-ingreso__cuerpo { padding: 32px 24px; align-items: flex-start; }

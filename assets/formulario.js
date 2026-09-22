@@ -9,9 +9,9 @@
   'use strict';
 
   const CLAVE_BORRADOR = 'relevamiento.borrador.v1';
-  const RUTA_LOGO_MINISTERIO = 'assets/img/logo-ministerio.webp';    // logos completos: bienvenida
-  const RUTA_LOGO_SECUNDARIA = 'assets/img/logo-secundaria.webp';
-  const RUTA_SIMBOLO_MINISTERIO = 'assets/img/simbolo-ministerio.png'; // solo el símbolo: cabeceras
+  // Los logos oficiales traen el nombre incrustado y a escala chica no se lee:
+  // en pantalla se usa el símbolo recortado, con el nombre escrito al lado.
+  const RUTA_SIMBOLO_MINISTERIO = 'assets/img/simbolo-ministerio.png';
   const RUTA_SIMBOLO_SECUNDARIA = 'assets/img/simbolo-secundaria.png';
 
   const app = document.getElementById('app');
@@ -609,10 +609,11 @@
       : '';
     return pantalla('pantalla--bienvenida', `
       <section class="bienvenida__hero">
-        <div class="bienvenida__logos">
-          <img src="${RUTA_LOGO_MINISTERIO}" alt="Ministerio de Cultura y Educación — Provincia de Formosa">
-          <div class="cabecera__separador"></div>
-          <img class="logo--secundaria" src="${RUTA_LOGO_SECUNDARIA}" alt="Dirección de Educación Secundaria">
+        <div class="marca-barra">
+          <img class="marca-barra__simbolo" src="${RUTA_SIMBOLO_MINISTERIO}" alt="Ministerio de Cultura y Educación — Provincia de Formosa">
+          <div class="marca-barra__separador"></div>
+          <img class="marca-barra__simbolo marca-barra__simbolo--des" src="${RUTA_SIMBOLO_SECUNDARIA}" alt="Dirección de Educación Secundaria">
+          <div class="marca-barra__nombre" aria-hidden="true"><span>Ministerio de Cultura y Educación</span><span>Educación Secundaria · Formosa</span></div>
         </div>
         <div class="columna columna--12">
           <div class="etiqueta bienvenida__etiqueta">Educación Secundaria · Resolución 672</div>
@@ -843,14 +844,28 @@
     `);
   }
 
+  // «Educación Tecnológica no se dicta en 3° año»: se dice en la pantalla, no se
+  // apaga el botón. El año se eligió antes que la materia, así que el docente
+  // necesita saber por qué y cómo cambiarlo.
+  function textoNoSeDicta(esp) {
+    const anios = esp.anios_dictados.map((a) => `${a}°`).join(' y ');
+    return `Se dicta solo en ${anios} año, y elegiste ${textoAnio(estado.anio)}.`;
+  }
+
   function pantallaEspacio() {
     const area = areaActual();
     const { sueltos, artisticas } = Catalogo.espaciosAgrupados(estado.area_id);
-    const opciones = sueltos.map((e) => `
+    const seDicta = (e) => e.anios_dictados.includes(estado.anio);
+    const opciones = sueltos.map((e) => seDicta(e) ? `
       <button type="button" class="opcion opcion--alta" data-accion="elegir-espacio" data-id="${esc(e.id)}">
         <div style="flex-grow:1">${esc(Catalogo.nombreCorto(e))}</div>
         ${Icono.chevron()}
-      </button>`).join('');
+      </button>` : `
+      <div class="opcion opcion--no-disponible">
+        <div class="opcion__titulo">${esc(Catalogo.nombreCorto(e))}</div>
+        <div class="opcion__sub">${esc(textoNoSeDicta(e))}</div>
+        <button type="button" class="enlace" data-accion="ir-anio">Cambiar el año</button>
+      </div>`).join('');
     const grupo = artisticas.length ? `
       <div class="grupo-espacios">
         <div class="grupo-espacios__titulo">Educación Artística</div>
@@ -867,6 +882,7 @@
         <h1 class="titulo">¿Cuál es tu espacio?</h1>
         <div class="columna columna--12">${opciones}${grupo}</div>
         <div class="espaciador"></div>
+        <div class="ayuda">${esc(nombreEscuela({ corto: true }))} · ${esc(textoAnio(estado.anio))}</div>
       </div>
     `);
   }

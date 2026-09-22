@@ -539,6 +539,22 @@ strong { font-weight: 700; }
 .opcion:hover { border-color: var(--verde); }
 .opcion:active { background: var(--verde-suave); border-color: var(--verde); }
 .opcion--seleccionada { border: 2px solid var(--verde); }
+/* Espacio curricular que no se dicta en el año elegido: no es un botón apagado,
+   es una tarjeta que explica por qué y ofrece cambiar el año. */
+.opcion--no-disponible {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  background: var(--crema);
+  border-style: dashed;
+  border-color: var(--borde-campo);
+  cursor: default;
+}
+.opcion--no-disponible:hover { border-color: var(--borde-campo); }
+.opcion--no-disponible .opcion__titulo { font-size: 19px; font-weight: 700; color: var(--gris); }
+.opcion--no-disponible .opcion__sub { font-size: 15px; color: var(--gris); line-height: 1.35; }
+.opcion--no-disponible .enlace { margin-top: 2px; }
 .opcion > svg { flex-shrink: 0; }
 .opcion__textos { display: flex; flex-direction: column; gap: 5px; flex-grow: 1; min-width: 0; }
 .opcion__titulo { font-size: 19px; font-weight: 700; line-height: 1.2; }
@@ -647,27 +663,57 @@ strong { font-weight: 700; }
 
 /* ---------- Bienvenida ---------- */
 
+/* Barra de marca: ocupa todo el ancho arriba del panel verde. Símbolo + nombre
+   escrito, que se lee a cualquier tamaño (los logos oficiales traen el nombre
+   incrustado y a esta escala no se distingue). El panel mide 560 px, así que
+   los dos símbolos comparten un solo bloque de texto. */
+.marca-barra {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--blanco);
+  padding: 10px 24px;
+}
+.marca-barra__simbolo { height: 34px; width: auto; display: block; flex-shrink: 0; }
+.marca-barra__simbolo--des { height: 26px; }
+.marca-barra__separador { width: 1px; height: 28px; background: var(--separador); flex-shrink: 0; }
+.marca-barra__nombre {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  line-height: 1.2;
+  min-width: 0;
+}
+.marca-barra__nombre span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.marca-barra__nombre span:first-child {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--tinta);
+}
+.marca-barra__nombre span + span {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--gris);
+}
+
+
 .bienvenida__hero {
   background: var(--verde);
   color: var(--blanco);
-  padding: 26px 24px 30px;
+  padding: 0 0 30px;
   display: flex;
   flex-direction: column;
   gap: 22px;
   flex-shrink: 0;
 }
-.bienvenida__logos {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  align-self: flex-start;
-  background: var(--blanco);
-  border-radius: 12px;
-  padding: 12px 16px;
-}
-.bienvenida__logos img { height: 50px; width: auto; display: block; }
-.bienvenida__logos img.logo--secundaria { height: 40px; }
-.bienvenida__logos .cabecera__separador { height: 34px; }
+.bienvenida__hero > *:not(.marca-barra) { padding-left: 24px; padding-right: 24px; }
+.bienvenida__hero > .marca-barra + * { margin-top: 4px; }
 .bienvenida__etiqueta { color: var(--cabecera-etiqueta); letter-spacing: 0.12em; }
 .bienvenida__titulo {
   font-size: 32px;
@@ -1095,15 +1141,19 @@ mark.coincidencia {
   .bienvenida__hero {
     width: 560px;
     flex-shrink: 0;
-    padding: 56px 56px 48px;
+    padding: 0 0 48px;
     gap: 36px;
     min-height: 100vh;
     min-height: 100dvh;
   }
-  .bienvenida__logos { gap: 18px; padding: 14px 20px; }
-  .bienvenida__logos img { height: 66px; }
-  .bienvenida__logos img.logo--secundaria { height: 52px; }
-  .bienvenida__logos .cabecera__separador { height: 40px; }
+  .bienvenida__hero > *:not(.marca-barra) { padding-left: 56px; padding-right: 56px; }
+  .bienvenida__hero > .marca-barra + * { margin-top: 20px; }
+  .marca-barra { padding: 16px 56px; gap: 14px; }
+  .marca-barra__simbolo { height: 44px; }
+  .marca-barra__simbolo--des { height: 33px; }
+  .marca-barra__separador { height: 36px; }
+  .marca-barra__nombre span:first-child { font-size: 13.5px; }
+  .marca-barra__nombre span + span { font-size: 11px; }
   .bienvenida__etiqueta { font-size: 13px; letter-spacing: 0.13em; }
   .bienvenida__titulo { font-size: 51px; line-height: 1.06; }
   .bienvenida__bajada { font-size: 19px; line-height: 1.5; max-width: 420px; }
@@ -1218,6 +1268,7 @@ mark.coincidencia {
   .pantalla--carga .cuerpo {
     padding: 34px 48px;
     gap: 22px;
+    align-items: center;   /* el bloque de carga, centrado en el espacio libre */
   }
   .pantalla--carga .cuerpo > * { max-width: 760px; width: 100%; }
   .pantalla--carga .carga__principal .progreso { display: none; }
