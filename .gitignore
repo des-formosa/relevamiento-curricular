@@ -12,3 +12,9 @@ logos/
 
 # Planillas base que se generan desde el panel: se reparten, no se versionan
 planillas/
+
+# Audios y notas de voz del equipo: el repositorio es público
+*.ogg
+*.opus
+*.m4a
+*.mp3

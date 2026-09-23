@@ -653,6 +653,14 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
   sea un saber priorizado (`--pr-`), con sus contenidos. Probado simulando lo que podía haber en
   producción: saberes viejos activos, uno con respuesta y un duplicado del importador. Quedan
   132 y 52 activos, todos priorizados; la respuesta se conserva; la segunda corrida no hace nada
+- **Matemática, lo que la grilla no aclaraba, decidido** (23/09/2026). El equipo no llegó a
+  responder, así que quedó como mejor cierra, y se corrige desde el editor si hace falta:
+  - los 4 saberes sin eje claro (lista en `datos/priorizados/revision.md`) quedan donde los
+    puso el script: ecuaciones en Álgebra, los dos de gráficos en Estadística, números enteros
+    en Número y operaciones;
+  - «Resolución de problemas de varios pasos…» sigue en los tres trimestres de 3° año. Cada
+    aparición trae contenidos distintos: parece un saber que vuelve con más profundidad, y
+    unificarlo perdería contenidos del equipo
 - **Los SQL se instalan desde cero en orden** (23/09/2026): corriendo del `01` al `12` en una
   base vacía, el `07` fallaba porque `cargar_catalogo()` usa la columna `estado` que creaba el
   `09`. Ahora la crea el `01`. Verificado: los trece archivos pasan en orden y se pueden
@@ -705,11 +713,8 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
 **Pendiente**
 - **Correr `sql/mantenimiento/2026-09-23_solo_priorizados.sql`** en el SQL Editor. Al final
   muestra cómo quedó: tiene que dar Lengua 132 activos y Matemática 52, todos priorizados
-- **Preguntas al equipo sobre Matemática**: el eje de 4 saberes que la grilla no aclara (están
-  en `datos/priorizados/revision.md`, «Ejes que conviene confirmar»), y si el saber «Resolución
-  de problemas de varios pasos…» de 3° va de verdad en el 1er y en el 2do trimestre
 - Prueba real con 5 o 6 docentes cargando desde sus celulares antes del 26
 
-**Orden sugerido**: la base está al día (SQL del `01` al `12` aplicado). Falta que el equipo
-responda las preguntas de Matemática, probar el formulario en celulares reales y seguir
-juntando lo que devuelvan los docentes.
+**Orden sugerido**: la base está al día (SQL del `01` al `12` aplicado). Falta correr el script
+de mantenimiento, probar el formulario en celulares reales y seguir juntando lo que devuelvan
+los docentes.
