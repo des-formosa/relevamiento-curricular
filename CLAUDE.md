@@ -40,7 +40,7 @@ sistema aguanta.
 | Capa | Dónde vive | Quién la escribe |
 |---|---|---|
 | Catálogo curricular (áreas, espacios, ejes, saberes, contenidos sugeridos) | Supabase Storage (bucket `catalogo`), con `datos/catalogo.json` del repo como respaldo | el equipo, desde el panel: edita en la base y publica con un botón |
-| Escuelas y departamentos | `datos/escuelas.json` en el repo | nadie desde la app |
+| Escuelas y departamentos | `datos/escuelas.json` en el repo, generado del Excel oficial | nadie desde la app |
 | Aportes de los docentes | Supabase | el formulario, vía una función RPC |
 | Usuarios del dashboard | Supabase Auth | administrador |
 
@@ -73,8 +73,10 @@ fijada, nunca por bundler.
 ├── datos/
 │   ├── catalogo.json       942 saberes, 4.716 contenidos sugeridos
 │   ├── contenidos/         contenidos propuestos por materia + aplicar.py
-│   └── contenidos_672_originales.json   los recortes que traía la transcripción
-│   └── escuelas.json       81 escuelas E.P.E.S., 9 departamentos
+│   ├── contenidos_672_originales.json   los recortes que traía la transcripción
+│   ├── Nomina de Escuelas por Departamentos.xlsx   nómina oficial, la fuente
+│   ├── generar_escuelas.py  el .xlsx → escuelas.json
+│   └── escuelas.json       288 unidades educativas, 9 departamentos
 └── sql/                    se corren en orden en el SQL Editor; todos se pueden re-ejecutar
     ├── 01_esquema.sql      tablas e índices
     ├── 02_rls.sql          RLS, permisos, es_equipo()
@@ -185,6 +187,52 @@ devuelvan las correcciones hay que regenerar `datos/catalogo.json` a partir de e
 
 ---
 
+## La nómina de escuelas
+
+Sale de **«Nomina de Escuelas por Departamentos.xlsx»** (Hoja1), la planilla oficial del
+Ministerio, y se vuelca con `python datos/generar_escuelas.py` (`--revisar` informa sin
+escribir). Cuando llegue una nómina nueva, se reemplaza el .xlsx y se corre el script; no se
+edita `escuelas.json` a mano.
+
+Son **288 unidades educativas**: 113 E.P.E.S. (95 comunes, 12 E.I.B. y 6 agrarias) y 175
+anexos —rurales, de Educación Intercultural Bilingüe y agrarios—. Los anexos están porque el
+docente que trabaja en uno tiene que poder encontrarlo: son más de la mitad de la nómina.
+
+**Los `id` no pueden moverse**, porque quedan escritos en los aportes. Por eso:
+
+- se arman del nombre, no del CUE: hay cinco CUE repetidos en la planilla;
+- un nombre que aparece más de una vez («San Isidro» está tres veces) lleva el CUE **en todas
+  sus apariciones**, contado de antemano. Si el desempate dependiera de cuál se procesa
+  primero, reordenar la planilla intercambiaría dos escuelas y sus aportes;
+- los patrones `epes-N` / `epes-eib-N` / `epes-agraria-N` valen solo para la escuela
+  cabecera. Sus anexos llevan «ANEXO» en el nombre y van por el camino genérico: si no, los
+  nueve anexos de la Agraria N° 2 terminarían con el mismo id.
+
+**El CUE no entra en el índice de búsqueda.** Son nueve dígitos: con él adentro, buscar «41»
+devolvía cualquier escuela que tuviera 41 en el medio del CUE. Sí entran las dos formas de la
+sigla, así que «epes 41» y «e.p.e.s. 41» encuentran lo mismo.
+
+La lista se ordena por el **orden de la nómina**, que deja cada E.P.E.S. seguida de sus
+anexos. Ordenar por número no sirve: 175 escuelas no tienen.
+
+### Lo que cambió respecto de la lista anterior
+
+La lista vieja tenía 81 escuelas y **no coincidía con la oficial**: de las 74 que están en
+ambas, 31 figuraban en otro departamento y 65 en otra localidad. Como el dashboard filtra por
+departamento, todos los reportes departamentales anteriores a este cambio estaban mal. Manda
+la planilla del Ministerio.
+
+Consecuencias que conviene tener presentes:
+
+- **Siete E.P.E.S. ya no están en la nómina**: 5, 24, 75, 79, 85, 86 y 104. `cargar_escuelas`
+  no las borra de la base —haría fallar un aporte que las referencie—, pero dejan de
+  ofrecerse al docente porque el formulario lee el JSON.
+- **Se perdieron 13 denominaciones** («Lethbridge», «Scalabrini Ortiz»…) porque la planilla
+  oficial no trae nombres propios. Están en el historial de git, en la versión anterior de
+  `datos/escuelas.json`, por si el equipo quiere reponerlas con una fuente confiable.
+
+---
+
 ## Flujo del docente
 
 Nueve pantallas, una decisión por pantalla. **Sin login, sin registro, sin contraseñas.**
@@ -195,7 +243,7 @@ Se usa desde el celular tanto como desde la computadora: diseñar mobile-first.
 |---|---|---|
 | 1 | Bienvenida | qué es, para qué sirve, cuánto tarda (~10 min) |
 | 2 | Nombre y apellido | dos campos |
-| 3 | Escuela | buscador sobre lista cerrada, agrupada por departamento; enlace discreto "no encuentro mi escuela" que permite escribirla |
+| 3 | Escuela | buscador sobre lista cerrada de 288, agrupada por departamento; enlace discreto "no encuentro mi escuela" que permite escribirla |
 | 4 | Año | 1°, 2° o 3°; respetar `anios_dictados` |
 | 5 | Área | seis opciones |
 | 6 | Espacio curricular | filtrado por área |
@@ -554,7 +602,12 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
 - **Usuarios del panel creados** (22/09/2026): el equipo técnico, más de diez personas, ya
   entra al dashboard. Hay docentes probando el formulario y devolviendo comentarios; las
   mejoras que salen de ahí se van aplicando
-- Listado de escuelas: 81 E.P.E.S. en 9 departamentos, en `datos/escuelas.json`
+- **Nómina oficial de escuelas** (23/09/2026): 288 unidades educativas en 9 departamentos,
+  generadas del Excel del Ministerio con `datos/generar_escuelas.py`. Probado en el
+  navegador: buscar «41», «epes 41», «e.p.e.s. 41», «corralito» y «clorinda» devuelve lo que
+  corresponde, el orden respeta la nómina y se puede cargar una materia eligiendo un anexo.
+  `normalizar_texto()` de PostgreSQL da idéntico a `normalizarTexto()` de JS en los 295
+  nombres
 - Modelo de datos definido
 - Diseño de pantallas (en Claude Design, en paralelo)
 - Publicado en GitHub Pages bajo la organización `des-formosa`:

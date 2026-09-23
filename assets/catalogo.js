@@ -85,8 +85,10 @@ const Catalogo = (function () {
       if (!idx.escuelasPorDepartamento.has(esc.departamento_id)) idx.escuelasPorDepartamento.set(esc.departamento_id, []);
       idx.escuelasPorDepartamento.get(esc.departamento_id).push(esc);
     }
-    const numero = (e) => parseInt(e.numero, 10) || 0;
-    for (const arr of idx.escuelasPorDepartamento.values()) arr.sort((a, b) => numero(a) - numero(b));
+    // Por el orden de la nómina oficial, que deja cada E.P.E.S. seguida de sus
+    // anexos. Ordenar por número no sirve: los 175 anexos no tienen.
+    const clave = (e) => (e.orden != null ? e.orden : parseInt(e.numero, 10) || 9999);
+    for (const arr of idx.escuelasPorDepartamento.values()) arr.sort((a, b) => clave(a) - clave(b));
   }
 
   /* ---------- Áreas y espacios ---------- */

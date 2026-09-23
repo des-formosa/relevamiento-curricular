@@ -213,10 +213,22 @@
     if (e.manual) return e.manual.nombre;
     const esc_ = Catalogo.escuela(e.id);
     if (!esc_) return '';
-    return corto ? `E.P.E.S. N° ${esc_.numero}` : nombreEscuelaOficial(esc_);
+    return corto ? nombreEscuelaCorto(esc_) : nombreEscuelaOficial(esc_);
   }
+  // El nombre viene armado de la nómina: hay E.P.E.S., E.I.B., agrarias y 175
+  // anexos que no tienen número. Componerlo acá dejaba «E.P.E.S. N° » vacío.
   function nombreEscuelaOficial(e) {
-    return `E.P.E.S. N° ${e.numero}` + (e.denominacion ? ` “${e.denominacion}”` : '');
+    return e.nombre + (e.denominacion ? ` “${e.denominacion}”` : '');
+  }
+  // Para la línea de contexto, donde no entra «Anexo de Educación Rural – El
+  // Corralito». Se corta la parte genérica, no la que identifica a la escuela:
+  // truncar por el final dejaba «Anexo de Educación Rural…», que no dice cuál.
+  function nombreEscuelaCorto(e) {
+    const n = nombreEscuelaOficial(e);
+    if (n.length <= 26) return n;
+    const guion = n.indexOf(' – ');
+    if (guion !== -1) return 'Anexo · ' + n.slice(guion + 3);
+    return n.slice(0, 25).trimEnd() + '…';
   }
   const textoAnio = (a) => `${a}° año`;
   const etiquetaTramo = (t) => `${nombreEspacioCorto().toUpperCase()} · ${estado.anio}° AÑO · ${ORDINAL[t]} TRIMESTRE`;
