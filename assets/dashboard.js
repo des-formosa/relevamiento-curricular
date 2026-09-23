@@ -349,10 +349,14 @@
       ? `<div class="t-saber__base">Lo ${s.trabajan === 1 ? 'trabaja' : 'trabajan'} ${s.trabajan} de ${s.informan} ${plural(s.informan, 'docente que lo informó', 'docentes que lo informaron')}${s.no_trabajan ? ` · ${s.no_trabajan} no lo ${s.no_trabajan === 1 ? 'trabaja' : 'trabajan'}` : ''}</div>`
       : '';
     return `<div class="t-saber ${abierto ? 't-saber--abierto' : ''}">
-      <div class="t-saber__eje">${esc(s.ejeInfo.rotulo)} — ${esc(s.ejeInfo.nombre)}</div>
-      <div class="t-saber__rotulo">Saber ${s.numero}</div>
-      <div class="t-saber__texto">${esc(s.texto)}</div>
-      ${base}
+      <div class="t-saber__cabeza">
+        <div class="t-saber__rotulos">
+          <span class="t-saber__rotulo">Saber ${s.numero}</span>
+          <span class="t-saber__eje">${esc(s.ejeInfo.rotulo)} — ${esc(s.ejeInfo.nombre)}</span>
+        </div>
+        <div class="t-saber__texto">${esc(s.texto)}</div>
+        ${base}
+      </div>
       ${cuerpo}
     </div>`;
   }

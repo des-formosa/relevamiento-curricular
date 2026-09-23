@@ -495,6 +495,13 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
 - **Mobile-first** en el formulario. El dashboard es de escritorio.
 - Accesible: contraste alto, tipografía grande, objetivos táctiles amplios. Se va a usar con
   sol, en pantallas viejas y con conexión inestable.
+- **Registro de documento, no de app.** Esquinas casi rectas (3 px), filetes en vez de
+  sombras, barras de porcentaje rectangulares, casillas en vez de interruptores, solapas
+  subrayadas en vez de segmentados. Es un programa de un ministerio y tiene que parecerlo.
+  Lo que separa bloques es el espacio en blanco, no una línea ni una banda de color más: la
+  primera versión de esta pasada agregó tinta para dar orden y quedó más cargada, no más
+  clara. En el formulario cambia la piel, nunca las medidas: los 68 px de botón y la
+  tipografía grande son el requisito de usarlo con sol en un celular viejo.
 - **Escribir para el docente, no para el sistema.** Los mensajes de error dicen qué pasó y
   cómo resolverlo.
 

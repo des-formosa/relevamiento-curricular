@@ -648,7 +648,6 @@
             <p class="bajada">Vas a elegir tu escuela, el año y tu espacio curricular. Después recorrés los saberes del diseño curricular de a uno.</p>
             <p class="bajada">En cada saber marcás qué contenidos trabajás. El trimestre ya viene asignado: no lo elegís vos.</p>
           </div>
-          <div class="linea-separadora"></div>
           <button type="button" class="boton boton--primario" data-accion="comenzar">Comenzar</button>
           ${reanudar}
           <div class="ayuda ayuda--centrada">No se usa para evaluar tu trabajo ni el de tu escuela.</div>

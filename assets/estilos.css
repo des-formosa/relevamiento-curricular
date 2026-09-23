@@ -100,8 +100,8 @@
   --serif: 'Noto Serif Ahom', Georgia, serif;
 
   /* Medidas */
-  --radio: 14px;
-  --radio-campo: 12px;
+  --radio: 3px;               /* casi recto: esto es un documento, no una app */
+  --radio-campo: 3px;
   --toque: 44px;
   --lateral: 24px;
 }
@@ -234,7 +234,7 @@ strong { font-weight: 700; }
   height: var(--toque);
   padding: 0 8px;
   border: none;
-  border-radius: 10px;
+  border-radius: 3px;
   background: transparent;
   color: var(--verde);
   font-size: 17px;
@@ -495,7 +495,7 @@ strong { font-weight: 700; }
   align-items: center;
   justify-content: center;
   border: none;
-  border-radius: 10px;
+  border-radius: 3px;
   background: transparent;
   cursor: pointer;
 }
@@ -518,7 +518,7 @@ strong { font-weight: 700; }
   padding: 14px 16px;
 }
 .tarjeta--suave { border-color: var(--borde-suave); }
-.tarjeta--16 { padding: 16px; border-radius: 16px; }
+.tarjeta--16 { padding: 16px; border-radius: 3px; }
 
 .opcion {
   display: flex;
@@ -574,7 +574,7 @@ strong { font-weight: 700; }
   padding: 0 22px;
   background: var(--blanco);
   border: 1.5px solid var(--borde);
-  border-radius: 16px;
+  border-radius: 3px;
   color: var(--tinta);
   cursor: pointer;
   font-family: var(--ui);
@@ -762,13 +762,13 @@ mark.coincidencia {
 }
 .progreso__actual { font-size: 17px; font-weight: 700; }
 .progreso__faltan { font-size: 13.5px; color: var(--gris); }
-.progreso__pista { height: 8px; border-radius: 4px; background: var(--pista); overflow: hidden; }
-.progreso__barra { height: 8px; border-radius: 4px; background: var(--verde); transition: width .25s ease; }
+.progreso__pista { height: 8px; background: var(--pista); overflow: hidden; }
+.progreso__barra { height: 8px; background: var(--verde); transition: width .25s ease; }
 
 /* Tres tramos (pantallas de trimestre) */
 .tramos { display: flex; gap: 8px; }
 .tramos__tramo { flex: 1 1 0; display: flex; flex-direction: column; gap: 7px; }
-.tramos__barra { height: 6px; border-radius: 3px; background: var(--pista); }
+.tramos__barra { height: 6px; background: var(--pista); }
 .tramos__nombre { display: flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 600; color: var(--gris); }
 .tramos__tramo--actual .tramos__barra { background: var(--verde); }
 .tramos__tramo--actual .tramos__nombre { font-weight: 800; color: var(--verde); }
@@ -816,13 +816,16 @@ mark.coincidencia {
 
 /* ---------- Saber ---------- */
 
+/* El saber es una cita textual de la Resolución 672, no una tarjeta más: se
+   marca con un filete al margen, como una cita en bloque. El ladrillo es el
+   color reservado para lo que viene del diseño curricular. */
 .saber {
   background: var(--blanco);
-  border: 1.5px solid var(--borde-suave);
-  border-radius: 16px;
-  padding: 18px;
+  border: 1px solid var(--borde-suave);
+  border-left: 4px solid var(--ladrillo);
+  padding: 18px 18px 18px 16px;
 }
-.saber--compacto { padding: 16px; }
+.saber--compacto { padding: 16px 16px 16px 14px; }
 .saber__eje {
   font-size: 11.5px;
   font-weight: 800;
@@ -862,7 +865,7 @@ mark.coincidencia {
   border-radius: var(--radio-campo);
   background: var(--blanco);
   overflow: hidden;
-  box-shadow: 0 10px 24px rgba(23, 33, 30, 0.10);
+  box-shadow: 0 2px 0 rgba(23, 33, 30, 0.06);
 }
 .sugerencias__titulo {
   padding: 10px 14px;
@@ -920,7 +923,7 @@ mark.coincidencia {
   align-items: center;
   height: 22px;
   padding: 0 8px;
-  border-radius: 6px;
+  border-radius: 2px;
   background: var(--ocre-fondo);
   font-size: 10.5px;
   font-weight: 800;
@@ -944,7 +947,7 @@ mark.coincidencia {
   bottom: 0;
   z-index: 21;
   background: var(--blanco);
-  border-radius: 22px 22px 0 0;
+  border-top: 3px solid var(--verde);
   padding: 26px 24px calc(28px + env(safe-area-inset-bottom, 0px));
   display: flex;
   flex-direction: column;
@@ -965,7 +968,7 @@ mark.coincidencia {
   justify-content: space-between;
   gap: 10px;
   background: var(--verde-suave-2);
-  border-radius: 10px;
+  border-radius: 3px;
   padding: 9px 12px;
 }
 .resumen-trimestre__nombre {
@@ -1021,7 +1024,7 @@ mark.coincidencia {
   align-items: center;
   height: 28px;
   padding: 0 10px;
-  border-radius: 7px;
+  border-radius: 2px;
   background: var(--crema-4);
   border: 1px solid var(--borde);
   font-size: 13.5px;
@@ -1068,7 +1071,7 @@ mark.coincidencia {
   padding: 10px 14px;
   background: var(--ocre-fondo);
   border: 1.5px dashed var(--ocre-borde);
-  border-radius: 10px;
+  border-radius: 3px;
   font-size: 14px;
   color: var(--ocre);
 }
@@ -1174,7 +1177,7 @@ mark.coincidencia {
     max-width: 520px;
     background: var(--blanco);
     border: 1.5px solid var(--borde);
-    border-radius: 22px;
+    border-radius: 3px;
     padding: 44px 44px 40px;
   }
   .bienvenida__panel h2 { font-size: 32px; font-weight: 800; line-height: 1.12; letter-spacing: -0.015em; }
@@ -1228,7 +1231,7 @@ mark.coincidencia {
     align-items: flex-start;
     gap: 10px;
     padding: 11px 14px;
-    border-radius: 10px;
+    border-radius: 3px;
     background: var(--crema-3);
     font-size: 15px;
     line-height: 1.3;
@@ -1256,7 +1259,7 @@ mark.coincidencia {
     justify-content: space-between;
     gap: 10px;
     padding: 11px 14px;
-    border-radius: 10px;
+    border-radius: 3px;
     background: var(--crema-4);
     font-size: 13.5px;
     font-weight: 700;
@@ -1277,7 +1280,7 @@ mark.coincidencia {
   .pantalla--carga .saber__texto { font-size: 25px; line-height: 1.36; }
   .pantalla--carga .entrada-icono { height: 62px; padding: 0 16px; gap: 12px; }
   .pantalla--carga .entrada-icono__input { font-size: 18px; }
-  .pantalla--carga .ficha { border-radius: 12px; padding: 14px 10px 14px 18px; gap: 16px; }
+  .pantalla--carga .ficha { border-radius: 3px; padding: 14px 10px 14px 18px; gap: 16px; }
   .pantalla--carga .ficha--libre { padding: 12px 10px 12px 18px; align-items: center; }
   .pantalla--carga .chip-libre {
     height: auto;
@@ -1295,7 +1298,7 @@ mark.coincidencia {
     align-items: center;
     gap: 16px;
   }
-  .pantalla--carga .acciones-saber .boton { width: auto; height: 62px; border-radius: 13px; }
+  .pantalla--carga .acciones-saber .boton { width: auto; height: 62px; border-radius: 3px; }
   .pantalla--carga .acciones-saber .boton--primario { padding: 0 32px; font-size: 19px; }
   .pantalla--carga .acciones-saber .boton--secundario { padding: 0 26px; font-size: 18px; }
   .pantalla--carga .acciones-saber { flex-direction: row; flex-wrap: wrap; }
@@ -1319,7 +1322,7 @@ mark.coincidencia {
     gap: 8px;
     flex-shrink: 0;
   }
-  .resumen__acciones .boton { width: auto; height: 62px; padding: 0 34px; border-radius: 13px; font-size: 20px; }
+  .resumen__acciones .boton { width: auto; height: 62px; padding: 0 34px; border-radius: 3px; font-size: 20px; }
   .resumen__acciones .conteo { font-size: 14.5px; color: var(--gris); }
   .pantalla--resumen .tarjeta--escuela { max-width: 640px; }
   .resumen__columnas {
@@ -1348,12 +1351,12 @@ mark.coincidencia {
   .pantalla--resumen .resumen__pie { display: none; }
 
   /* Hoja inferior centrada */
-  .hoja { border-radius: 22px 22px 0 0; }
+  .hoja { border-radius: 0; }
 
   /* Barra de scroll discreta */
   ::-webkit-scrollbar { width: 10px; }
   ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: #D9D4C6; border-radius: 5px; }
+  ::-webkit-scrollbar-thumb { background: #D9D4C6; border-radius: 2px; }
   ::-webkit-scrollbar-thumb:hover { background: #C4BEAC; }
 }
 

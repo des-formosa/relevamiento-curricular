@@ -89,7 +89,7 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
   height: 40px;
   padding: 0 14px;
   border: 1.5px solid var(--t-borde);
-  border-radius: 10px;
+  border-radius: 3px;
   background: var(--blanco);
   font-family: var(--ui);
   font-size: 14.5px;
@@ -107,7 +107,7 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
   height: 40px;
   padding: 0 14px 0 12px;
   border: 1.5px solid var(--t-borde);
-  border-radius: 10px;
+  border-radius: 3px;
   background: var(--blanco);
   font-family: var(--ui);
   font-size: 14.5px;
@@ -117,28 +117,22 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
   white-space: nowrap;
 }
 .t-interruptor__pista {
-  width: 34px;
-  height: 20px;
-  border-radius: 10px;
-  background: #CFCABD;
+  width: 18px;
+  height: 18px;
+  border: 2px solid #A9A396;
+  border-radius: 2px;
+  background: var(--blanco);
   position: relative;
   flex-shrink: 0;
-  transition: background .15s;
-}
-.t-interruptor__pista::after {
-  content: '';
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: var(--blanco);
-  transition: left .15s;
+  transition: background .15s, border-color .15s;
 }
 .t-interruptor--activo { border-color: var(--ocre-borde); background: var(--ocre-fondo); color: var(--ocre); }
-.t-interruptor--activo .t-interruptor__pista { background: var(--ocre); }
-.t-interruptor--activo .t-interruptor__pista::after { left: 16px; }
+/* El tilde va como trazo SVG: a 14 px, dos bordes girados se empastan y sale
+   un romboide en vez de una tilde. */
+.t-interruptor--activo .t-interruptor__pista {
+  border-color: var(--ocre);
+  background: var(--ocre) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.4 8.4l3.1 3.1 6.1-6.6' fill='none' stroke='white' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 12px 12px no-repeat;
+}
 
 .t-banda-ejemplo {
   display: flex;
@@ -161,59 +155,68 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
 .t-selectores {
   display: flex;
   align-items: flex-end;
-  gap: 20px;
-  padding: 22px 32px 20px;
+  gap: 18px;
+  padding: 12px 32px 13px;
   background: var(--blanco);
   border-bottom: 1px solid var(--t-borde);
   flex-shrink: 0;
 }
-.t-selector { display: flex; flex-direction: column; gap: 7px; }
+.t-selector { display: flex; flex-direction: column; gap: 4px; }
 .t-selector__etiqueta {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.11em;
   text-transform: uppercase;
   color: var(--t-gris-2);
 }
 .t-select {
-  height: 58px;
+  height: 46px;
   border: 2px solid var(--verde);
-  border-radius: 12px;
+  border-radius: 3px;
   background: var(--blanco);
-  padding: 0 44px 0 14px;
+  padding: 0 38px 0 12px;
   font-family: var(--ui);
-  font-size: 20px;
+  font-size: 17.5px;
   font-weight: 700;
   color: var(--t-tinta);
   -webkit-appearance: none;
   appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22' viewBox='0 0 24 24' fill='none' stroke='%230B4F4A' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: right 14px center;
+  background-position: right 11px center;
   cursor: pointer;
 }
 .t-select:focus { outline: 3px solid var(--verde-profundo); outline-offset: 2px; }
-.t-select--materia { width: 340px; }
-.t-select--anio { width: 200px; }
-.t-select--alcance { width: 400px; }
+.t-select--materia { width: 300px; }
+.t-select--anio { width: 150px; }
+.t-select--alcance { width: 340px; }
 
 .t-exportar {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  height: 58px;
-  padding: 0 28px;
+  gap: 10px;
+  height: 46px;
+  padding: 0 22px;
   border: none;
-  border-radius: 12px;
+  border-radius: 3px;
   background: var(--verde);
   font-family: var(--ui);
-  font-size: 19px;
+  font-size: 17px;
   font-weight: 700;
   color: var(--blanco);
   cursor: pointer;
 }
 .t-exportar:hover { background: var(--verde-profundo); }
+
+/* En pantalla ancha el rótulo va al lado del selector, no encima: la barra
+   pasa de 122 a 71 px y esos 50 px son media tarjeta de saber más a la vista.
+   Abajo de 1280 no entran en una línea y vuelven a apilarse. */
+@media (min-width: 1280px) {
+  .t-selectores { align-items: center; gap: 22px; }
+  .t-selector { flex-direction: row; align-items: center; gap: 9px; }
+  .t-selector__etiqueta { font-size: 11.5px; }
+}
 
 /* ---------- Línea de contexto y vista ---------- */
 
@@ -229,25 +232,27 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
 .t-contexto__texto strong { font-weight: 700; color: var(--t-tinta); }
 .t-vistas {
   display: flex;
-  border: 2px solid var(--verde);
-  border-radius: 12px;
-  overflow: hidden;
+  gap: 28px;
+  border-bottom: 2px solid var(--t-borde);
   flex-shrink: 0;
 }
 .t-vista {
   display: flex;
   align-items: center;
-  height: 48px;
-  padding: 0 24px;
+  height: 44px;
+  padding: 0 2px;
   border: none;
-  background: var(--blanco);
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  background: none;
   font-family: var(--ui);
   font-size: 17px;
   font-weight: 700;
   color: var(--verde);
   cursor: pointer;
 }
-.t-vista--activa { background: var(--verde); color: var(--blanco); cursor: default; }
+.t-vista:hover { color: var(--verde); }
+.t-vista--activa { border-bottom-color: var(--verde); color: var(--verde); cursor: default; }
 
 /* ---------- Cuerpo: tres columnas ---------- */
 
@@ -258,53 +263,60 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
 .t-columnas {
   display: flex;
   align-items: flex-start;
-  gap: 24px;
+  gap: 28px;
 }
 .t-columna {
   flex: 1 1 0;
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
 }
 .t-columna__cabecera {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   gap: 10px;
-  background: var(--verde-suave-2);
-  border: 1px solid #CFE0DA;
-  border-radius: 10px;
-  padding: 13px 16px;
+  background: var(--verde);
+  padding: 11px 18px;
 }
-.t-columna__titulo { font-size: 15px; font-weight: 800; letter-spacing: 0.07em; color: var(--verde); }
-.t-columna__resumen { font-size: 14.5px; color: var(--tinta-2); font-variant-numeric: tabular-nums; }
-.t-columna__vacia { font-size: 15.5px; color: var(--t-gris); padding-left: 4px; }
+.t-columna__titulo { font-size: 14px; font-weight: 800; letter-spacing: 0.1em; color: var(--blanco); }
+.t-columna__resumen { font-size: 13.5px; color: #BFD8D1; font-variant-numeric: tabular-nums; }
+.t-columna__vacia { font-size: 15.5px; color: var(--t-gris); padding: 4px 2px; }
 
 /* Tarjeta de saber */
+/* Cada saber, un bloque con aire alrededor. Lo que lo separa del siguiente es
+   el espacio en blanco: alcanzó con eso y sobraban las bandas de color. */
 .t-saber {
   background: var(--blanco);
   border: 1px solid var(--t-borde);
-  border-radius: 14px;
-  padding: 22px 24px;
   break-inside: avoid;
 }
-.t-saber--abierto { border: 1.5px solid var(--verde); padding: 21.5px 23.5px; }
-.t-saber__eje {
-  font-size: 11.5px;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--ladrillo);
-  margin-bottom: 4px;
+.t-saber__cabeza { padding: 18px 20px 0; }
+/* Abierto: una marca al margen, como el corchete de una acotación */
+.t-saber--abierto { border-color: var(--verde); box-shadow: inset 3px 0 0 var(--verde); }
+.t-saber__rotulos {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  margin-bottom: 6px;
 }
 .t-saber__rotulo {
-  font-size: 12.5px;
+  flex-shrink: 0;
+  font-size: 11.5px;
   font-weight: 800;
-  letter-spacing: 0.13em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--verde);
-  margin-bottom: 8px;
+  white-space: nowrap;
+}
+.t-saber__eje {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--ladrillo);
+  line-height: 1.35;
 }
 .t-saber__texto {
   font-family: var(--serif);
@@ -314,11 +326,12 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
   text-wrap: pretty;
 }
 .t-saber__base {
-  font-size: 14px;
+  font-size: 13.5px;
   color: var(--t-gris-2);
-  margin-top: 8px;
+  margin-top: 7px;
 }
-.t-filas { display: flex; flex-direction: column; gap: 14px; margin-top: 18px; }
+.t-filas { display: flex; flex-direction: column; gap: 14px; padding: 16px 20px 18px; }
+.t-saber__cabeza + .t-filas { padding-top: 14px; }
 .t-fila { display: flex; flex-direction: column; gap: 5px; }
 .t-fila--oculta { display: none; }
 .t-fila__texto { font-size: 17px; line-height: 1.25; }
@@ -327,7 +340,7 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
   vertical-align: 2px;
   margin-left: 6px;
   padding: 1px 7px;
-  border-radius: 6px;
+  border-radius: 2px;
   background: var(--ocre-fondo);
   font-size: 11px;
   font-weight: 800;
@@ -337,8 +350,14 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
   white-space: nowrap;
 }
 .t-fila__barra { display: flex; align-items: center; gap: 12px; }
-.t-pista { flex-grow: 1; height: 18px; border-radius: 9px; background: var(--t-pista); overflow: hidden; }
-.t-barra { height: 18px; border-radius: 0 6px 6px 0; background: var(--verde); }
+.t-pista {
+  flex-grow: 1;
+  height: 18px;
+  background: var(--t-pista);
+  border-left: 1px solid var(--t-tono-3);   /* el cero se ve, aunque el valor sea 0 % */
+  overflow: hidden;
+}
+.t-barra { height: 18px; background: var(--verde); }
 .t-pct {
   width: 58px;
   flex-shrink: 0;
@@ -352,7 +371,7 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
   align-items: center;
   gap: 12px;
   background: var(--t-fondo);
-  border-radius: 10px;
+  border-radius: 3px;
   padding: 16px 18px;
   margin-top: 18px;
 }
@@ -363,7 +382,10 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
   line-height: 1.4;
   color: var(--t-gris);
 }
-.t-ver { display: flex; justify-content: flex-end; margin: 12px -12px -6px 0; }
+/* Vive fuera de .t-filas, así que lleva su propio margen: antes quedaba
+   colgado contra el borde de la tarjeta, fuera de la caja de contenido. */
+.t-ver { display: flex; justify-content: center; padding: 0 20px 14px; }
+.t-filas:has(+ .t-ver) { padding-bottom: 4px; }
 .t-ver__boton {
   display: flex;
   align-items: center;
@@ -386,7 +408,7 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
 .t-mapa {
   background: var(--blanco);
   border: 1px solid var(--t-borde);
-  border-radius: 14px;
+  border-radius: 3px;
   padding: 20px 24px 22px;
   display: flex;
   flex-direction: column;
@@ -454,7 +476,7 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
 .t-celda__vacia { font-size: 14.5px; color: #B4BAB4; padding-left: 4px; line-height: 1.35; }
 .t-celda__mas { font-size: 13.5px; color: var(--t-gris-2); padding-left: 4px; margin-top: 2px; }
 .t-tile {
-  border-radius: 10px;
+  border-radius: 3px;
   padding: 8px 14px;
   display: flex;
   flex-direction: column;
@@ -524,8 +546,9 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
   width: 580px;
   z-index: 31;
   background: var(--blanco);
-  border-radius: 16px;
-  box-shadow: 0 18px 44px rgba(18, 28, 25, 0.28);
+  border-radius: 3px;
+  border: 1px solid var(--t-tinta);
+  box-shadow: 0 6px 0 rgba(18, 28, 25, 0.10);
   padding: 26px 28px 24px;
   display: flex;
   flex-direction: column;
@@ -541,7 +564,7 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
   align-items: center;
   justify-content: center;
   border: none;
-  border-radius: 9px;
+  border-radius: 3px;
   background: transparent;
   cursor: pointer;
 }
@@ -560,7 +583,7 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
   gap: 14px;
   padding: 16px 18px;
   border: 1.5px solid #D7D2C4;
-  border-radius: 12px;
+  border-radius: 3px;
   background: var(--blanco);
   cursor: pointer;
 }
@@ -576,7 +599,7 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
   gap: 6px;
   padding: 16px 18px;
   border: 1.5px solid #D7D2C4;
-  border-radius: 12px;
+  border-radius: 3px;
   background: var(--blanco);
   cursor: pointer;
 }
@@ -591,7 +614,7 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
   flex-grow: 1;
   height: 58px;
   border: none;
-  border-radius: 12px;
+  border-radius: 3px;
   background: var(--verde);
   font-family: var(--ui);
   font-size: 19px;
@@ -607,7 +630,7 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
   justify-content: center;
   height: 58px;
   padding: 0 22px;
-  border-radius: 12px;
+  border-radius: 3px;
   border: 1.5px solid #D7D2C4;
   background: var(--blanco);
   font-family: var(--ui);
@@ -678,7 +701,7 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
   max-width: 520px;
   background: var(--blanco);
   border: 1.5px solid var(--borde);
-  border-radius: 22px;
+  border-radius: 3px;
   padding: 44px 44px 40px;
   display: flex;
   flex-direction: column;
@@ -708,7 +731,7 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
   /* La fecha y el nombre de la Dirección se pisan: queda el símbolo, que ya se reconoce */
   .t-cabecera__marca .t-cabecera__nombre + .t-cabecera__separador + .t-cabecera__simbolo + .t-cabecera__nombre { display: none; }
   .t-cabecera { padding: 0 24px; }
-  .t-selectores { flex-wrap: wrap; padding: 18px 24px 16px; gap: 16px; }
+  .t-selectores { flex-wrap: wrap; padding: 12px 24px 13px; gap: 14px; }
   .t-selectores .espaciador { display: none; }
   .t-selector { flex: 1 1 200px; min-width: 0; }
   .t-select--materia, .t-select--anio, .t-select--alcance { width: 100%; }
@@ -758,11 +781,16 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
   /* Del segundo lockup, en el teléfono, alcanza con el símbolo */
   .t-cabecera__marca .t-cabecera__nombre + .t-cabecera__separador + .t-cabecera__simbolo + .t-cabecera__nombre { display: none; }
   .t-cabecera__rotulo, .t-cabecera__fecha { display: none; }
+  /* Cuatro controles no entran en una línea de teléfono: que bajen. Antes
+     «Salir» quedaba fuera de la pantalla y no había forma de cerrar sesión. */
   .t-cabecera__derecha {
-    gap: 10px;
+    flex-wrap: wrap;
+    flex-shrink: 1;
+    gap: 8px;
     padding: 10px 16px;
-    justify-content: flex-end;
+    justify-content: flex-start;
   }
+  .t-cabecera__usuario { flex-basis: 100%; }
   .t-interruptor { height: 44px; }
   .t-salir { height: 44px; padding: 0 18px; }
 
@@ -793,11 +821,11 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
 
   /* Cuerpo: los tres trimestres, uno debajo del otro */
   .t-cuerpo { padding: 0 16px 24px; }
-  .t-columnas { flex-direction: column; gap: 22px; }
+  .t-columnas { flex-direction: column; gap: 28px; }
   .t-columna { gap: 12px; }
   .t-columna__cabecera { padding: 11px 14px; position: sticky; top: 0; z-index: 2; }
   .t-columna__titulo { font-size: 14px; }
-  .t-saber { padding: 16px 18px; border-radius: 12px; }
+  .t-saber { padding: 16px 18px; border-radius: 3px; }
   .t-saber--abierto { padding: 15.5px 17.5px; }
   .t-saber__texto { font-size: 18.5px; line-height: 1.36; }
   .t-saber__eje { font-size: 11px; line-height: 1.35; }
@@ -810,7 +838,7 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
   .t-ver__boton { height: 44px; }
 
   /* Mapa de calor: cada eje es un bloque y los trimestres se apilan */
-  .t-mapa { padding: 4px 14px 16px; border-radius: 12px; }
+  .t-mapa { padding: 4px 14px 16px; border-radius: 3px; }
   .t-mapa__cabecera { display: none; }
   .t-mapa__fila {
     flex-direction: column;
@@ -848,7 +876,8 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
     width: 100%;
     max-height: 92vh;
     overflow-y: auto;
-    border-radius: 18px 18px 0 0;
+    border-radius: 0;
+    border-top: 3px solid var(--verde);
     padding: 20px 18px calc(20px + env(safe-area-inset-bottom, 0px));
     gap: 16px;
   }
@@ -884,8 +913,16 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
   .t-columna:first-child { break-before: auto; }
   .t-fila--oculta { display: flex !important; }
   .t-saber, .t-mapa__fila { break-inside: avoid; }
-  .t-saber--abierto { border: 1px solid var(--t-borde); padding: 22px 24px; }
+  .t-saber--abierto { box-shadow: none; }
   .t-mapa { border: none; padding: 0; }
+  /* El navegador descarta los fondos al imprimir, y acá los fondos son el
+     dato: sin ellos las barras salen vacías y el rótulo del trimestre queda
+     en blanco sobre blanco. */
+  .t-barra, .t-pista, .t-columna__cabecera,
+  .t-celda, .t-chip-libre, .t-mapa__cabecera {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
 }
 .t-impresion { display: none; margin-bottom: 18px; }
 .t-impresion__titulo { font-size: 24px; font-weight: 800; letter-spacing: -0.015em; }
@@ -915,7 +952,7 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
   font-family: var(--texto);
   background: var(--ocre-fondo);
   border: 1.5px dashed var(--ocre-borde);
-  border-radius: 12px;
+  border-radius: 3px;
   padding: 12px 16px;
   font-size: 15.5px;
   line-height: 1.45;
@@ -933,7 +970,7 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
 .ed-aviso {
   background: var(--verde-suave-2);
   border: 1px solid #CFE0DA;
-  border-radius: 10px;
+  border-radius: 3px;
   padding: 12px 16px;
   font-size: 16px;
   font-weight: 600;
@@ -953,7 +990,7 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
   height: 44px;
   padding: 0 16px;
   border: 1.5px solid var(--borde);
-  border-radius: 10px;
+  border-radius: 3px;
   background: var(--blanco);
   font-family: var(--ui);
   font-size: 15.5px;
@@ -975,7 +1012,7 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
   align-items: center;
   justify-content: center;
   border: none;
-  border-radius: 9px;
+  border-radius: 3px;
   background: transparent;
   cursor: pointer;
 }
@@ -986,7 +1023,7 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
 .ed-saber {
   background: var(--blanco);
   border: 1px solid var(--t-borde);
-  border-radius: 14px;
+  border-radius: 3px;
   padding: 18px 20px;
 }
 .ed-saber--archivado { background: #FAF8F2; border-style: dashed; }
@@ -1019,7 +1056,7 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
   align-items: center;
   height: 22px;
   padding: 0 8px;
-  border-radius: 6px;
+  border-radius: 2px;
   background: var(--crema-4);
   border: 1px solid var(--borde);
   font-size: 11px;
@@ -1056,7 +1093,7 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
 .ed-campo {
   width: 100%;
   border: 2px solid var(--verde);
-  border-radius: 10px;
+  border-radius: 3px;
   padding: 10px 12px;
   font-family: var(--ui);
   font-size: 16.5px;
@@ -1077,7 +1114,7 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
 .ed-select {
   height: 40px;
   border: 1.5px solid var(--borde-campo);
-  border-radius: 9px;
+  border-radius: 3px;
   background: var(--blanco);
   padding: 0 10px;
   font-family: var(--ui);
@@ -1093,7 +1130,7 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
   padding: 0 14px;
   margin-top: 6px;
   border: 1.5px dashed var(--borde-campo);
-  border-radius: 10px;
+  border-radius: 3px;
   background: transparent;
   font-family: var(--ui);
   font-size: 15.5px;
@@ -1112,7 +1149,7 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
 .ed-historial { display: flex; flex-direction: column; gap: 12px; }
 .ed-historial__fila {
   border: 1px solid var(--t-borde);
-  border-radius: 10px;
+  border-radius: 3px;
   padding: 12px 14px;
 }
 .ed-historial__cabecera {
@@ -1128,7 +1165,7 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
   letter-spacing: 0.06em;
   text-transform: uppercase;
   padding: 2px 8px;
-  border-radius: 6px;
+  border-radius: 2px;
   background: var(--verde-suave-2);
   color: var(--verde);
 }
@@ -1190,7 +1227,7 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
   min-height: 52px;
   padding: 10px 16px;
   border: 2px solid var(--borde-campo);
-  border-radius: 12px;
+  border-radius: 3px;
   background: var(--blanco);
   font-family: var(--ui);
   font-size: 16.5px;
@@ -1204,7 +1241,7 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
 .ar-botones { display: flex; gap: 12px; flex-wrap: wrap; }
 .ar-botones .t-descargar { flex: 1 1 220px; }
 .ar-ayuda { font-family: var(--texto); font-size: 14.5px; line-height: 1.45; color: var(--gris); }
-.ar-ayuda code { font-size: 13.5px; background: var(--crema-4); padding: 1px 5px; border-radius: 5px; }
+.ar-ayuda code { font-size: 13.5px; background: var(--crema-4); padding: 1px 5px; border-radius: 2px; }
 
 /* El input de archivo real queda tapado por su etiqueta, que es el botón */
 .ar-subir {
@@ -1214,7 +1251,7 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
   justify-content: center;
   min-height: 58px;
   border: 2px dashed var(--borde-campo);
-  border-radius: 12px;
+  border-radius: 3px;
   background: var(--crema-3);
   font-family: var(--ui);
   font-size: 18px;
@@ -1250,7 +1287,7 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
   margin: 0;
   padding: 14px 16px;
   list-style: none;
-  border-radius: 12px;
+  border-radius: 3px;
   background: var(--verde-suave);
   font-family: var(--ui);
   font-size: 17px;
@@ -1314,7 +1351,7 @@ body.tour-abierto { overflow: hidden; }
 /* El «agujero»: una sombra enorme alrededor del recuadro iluminado */
 .tour__foco {
   position: absolute;
-  border-radius: 12px;
+  border-radius: 3px;
   box-shadow: 0 0 0 9999px rgba(18, 28, 25, 0.62);
   border: 2px solid var(--blanco);
   pointer-events: none;
@@ -1326,8 +1363,9 @@ body.tour-abierto { overflow: hidden; }
 .tour__tarjeta {
   position: absolute;
   background: var(--blanco);
-  border-radius: 16px;
-  box-shadow: 0 18px 44px rgba(18, 28, 25, 0.3);
+  border-radius: 3px;
+  border: 1px solid var(--t-tinta);
+  box-shadow: 0 6px 0 rgba(18, 28, 25, 0.12);
   padding: 20px 22px 18px;
   display: flex;
   flex-direction: column;
@@ -1395,13 +1433,13 @@ body.tour-abierto { overflow: hidden; }
   border-radius: 50%;
   background: var(--pista);
 }
-.tour__punto--actual { background: var(--verde); width: 20px; border-radius: 4px; }
+.tour__punto--actual { background: var(--verde); width: 20px; border-radius: 2px; }
 .tour__botones { display: flex; gap: 8px; margin-left: auto; }
 .tour__boton {
   height: 42px;
   padding: 0 16px;
   border: 1.5px solid var(--borde);
-  border-radius: 10px;
+  border-radius: 3px;
   background: var(--blanco);
   font-family: var(--ui);
   font-size: 15.5px;
