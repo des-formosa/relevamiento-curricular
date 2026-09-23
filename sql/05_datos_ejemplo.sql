@@ -12,6 +12,11 @@
 --
 -- Solo se corren desde el SQL Editor. Nadie desde la web puede ejecutarlas.
 -- Requieren que el catálogo y las escuelas ya estén cargados.
+--
+-- Usan solo lo que ve el docente hoy: saberes y contenidos activos, y escuelas
+-- vigentes. Hay que volver a generarlos cada vez que cambia el catálogo: los
+-- del 22/09 se habían armado con Lengua y Matemática viejas, y con esas dos
+-- materias rehechas el panel las mostraba vacías con «Datos de ejemplo».
 -- ============================================================================
 
 
@@ -72,7 +77,8 @@ declare
   v_selecciones integer;
   v_no          integer;
 begin
-  if not exists (select 1 from public.saberes) or not exists (select 1 from public.escuelas where origen = 'oficial') then
+  if not exists (select 1 from public.saberes where estado = 'activo')
+     or not exists (select 1 from public.escuelas where origen = 'oficial' and vigente) then
     raise exception 'Primero hay que cargar el catálogo y las escuelas.';
   end if;
 
@@ -85,6 +91,8 @@ begin
   create temp table tmp_opciones on commit drop as
   select c.saber_id, c.id as contenido_id, c.texto, 'catalogo'::text as tipo
     from public.contenidos_sugeridos c
+    join public.saberes s0 on s0.id = c.saber_id
+   where c.estado = 'activo' and s0.estado = 'activo'
   union all
   select s.id, null, x.texto, 'libre'
     from public.saberes s
@@ -95,10 +103,12 @@ begin
         join public.saberes s2 on s2.id = c.saber_id
         join public.ejes e2    on e2.id = s2.eje_id
        where e2.espacio_id = ej.espacio_id
+         and c.estado = 'activo' and s2.estado = 'activo'
        order by random() + length(s.id) * 0
        limit 4
     ) x
-   where not exists (select 1 from public.contenidos_sugeridos c where c.saber_id = s.id);
+   where s.estado = 'activo'
+     and not exists (select 1 from public.contenidos_sugeridos c where c.saber_id = s.id and c.estado = 'activo');
 
   -- Qué tan elegida es cada opción: en cada saber hay una o dos favoritas
   -- (consenso) y el resto reparte.
@@ -118,7 +128,8 @@ begin
          case when random() < 0.12 then 0.45 + 0.40 * random()
               else 0.02 + 0.13 * random()
          end as p_no_trabaja
-    from public.saberes s;
+    from public.saberes s
+   where s.estado = 'activo';
 
   -- Docentes
   create temp table tmp_docentes on commit drop as
@@ -130,7 +141,7 @@ begin
     returning id
   )
   select n.id,
-         (select e.id from public.escuelas e where e.origen = 'oficial'
+         (select e.id from public.escuelas e where e.origen = 'oficial' and e.vigente
            order by random() + n.id * 0 limit 1) as escuela_principal
     from nuevos n;
 
@@ -143,7 +154,7 @@ begin
     from (
       select d.id as docente_id,
              case when random() < 0.8 then d.escuela_principal
-                  else (select e.id from public.escuelas e where e.origen = 'oficial'
+                  else (select e.id from public.escuelas e where e.origen = 'oficial' and e.vigente
                          order by random() + g * 0 + d.id * 0 limit 1)
              end as escuela_id,
              ec.id as espacio_id,
@@ -158,7 +169,7 @@ begin
   on conflict (docente_id, escuela_id, espacio_id, anio) do nothing;
   get diagnostics v_aportes = row_count;
 
-  -- Saberes que vio cada aporte (los mismos que muestra el formulario:
+  -- Saberes que vio cada aporte (los mismos que muestra el formulario: activos,
   -- de esa materia, de ese año o de todo el ciclo, y sin los de calidad 'mala').
   create temp table tmp_aporte_saber on commit drop as
   select a.id as aporte_id, s.id as saber_id,
@@ -168,6 +179,7 @@ begin
     join public.saberes s  on s.eje_id = ej.id
                           and (s.anio is null or s.anio = a.anio)
                           and s.calidad <> 'mala'
+                          and s.estado = 'activo'
     join tmp_peso_saber ps on ps.id = s.id
    where a.es_ejemplo;
 

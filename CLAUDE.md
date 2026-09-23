@@ -270,7 +270,9 @@ Consecuencias que conviene tener presentes:
 
 - **Siete E.P.E.S. ya no están en la nómina**: 5, 24, 75, 79, 85, 86 y 104. `cargar_escuelas`
   no las borra de la base —haría fallar un aporte que las referencie—, pero dejan de
-  ofrecerse al docente porque el formulario lee el JSON.
+  ofrecerse al docente porque el formulario lee el JSON. En la base quedan con
+  `escuelas.vigente = false`: `cargar_escuelas` marca así toda escuela oficial que no venga en
+  la nómina, y los datos de ejemplo no las usan.
 - **Se perdieron 13 denominaciones** («Lethbridge», «Scalabrini Ortiz»…) porque la planilla
   oficial no trae nombres propios. Están en el historial de git, en la versión anterior de
   `datos/escuelas.json`, por si el equipo quiere reponerlas con una fuente confiable.
@@ -661,6 +663,15 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
   - «Resolución de problemas de varios pasos…» sigue en los tres trimestres de 3° año. Cada
     aparición trae contenidos distintos: parece un saber que vuelve con más profundidad, y
     unificarlo perdería contenidos del equipo
+- **Datos de ejemplo al día con el catálogo** (23/09/2026): los del 22/09 se habían generado
+  con Lengua y Matemática viejas, y con esas materias rehechas el panel las mostraba vacías en
+  «Datos de ejemplo». Además la función no miraba el `estado`, así que regenerarlos tal cual
+  les habría inventado respuestas a saberes y contenidos archivados, y podía ubicar docentes en
+  las 7 escuelas que salieron de la nómina. Ahora `generar_datos_ejemplo()` usa solo lo activo y
+  solo escuelas vigentes. Probado: 1.500 docentes, 2.623 aportes, cero respuestas en lo
+  archivado, cero en escuelas no vigentes; el panel muestra Lengua 1° con 48 saberes y
+  Matemática 1° con 16, todos con barras. **Cada vez que cambie el catálogo hay que volver a
+  generarlos**
 - **Los SQL se instalan desde cero en orden** (23/09/2026): corriendo del `01` al `12` en una
   base vacía, el `07` fallaba porque `cargar_catalogo()` usa la columna `estado` que creaba el
   `09`. Ahora la crea el `01`. Verificado: los trece archivos pasan en orden y se pueden
@@ -711,8 +722,12 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
   https://des-formosa.github.io/relevamiento-curricular/dashboard.html (panel)
 
 **Pendiente**
-- **Correr `sql/mantenimiento/2026-09-23_solo_priorizados.sql`** en el SQL Editor. Al final
-  muestra cómo quedó: tiene que dar Lengua 132 activos y Matemática 52, todos priorizados
+- **Poner al día la base y los datos de ejemplo**, en el SQL Editor y en este orden:
+  1. `sql/mantenimiento/2026-09-23_solo_priorizados.sql` (si no se corrió): tiene que dar
+     Lengua 132 activos y Matemática 52, todos priorizados
+  2. `sql/01_esquema.sql`, `sql/03_funciones.sql` y `sql/05_datos_ejemplo.sql`
+  3. `sql/06_cargar_escuelas.sql`: marca las 7 escuelas que ya no están (`no_vigentes: 7`)
+  4. `select public.generar_datos_ejemplo();` — borra los ejemplos viejos y arma los nuevos
 - Prueba real con 5 o 6 docentes cargando desde sus celulares antes del 26
 
 **Orden sugerido**: la base está al día (SQL del `01` al `12` aplicado). Falta correr el script

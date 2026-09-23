@@ -662,7 +662,14 @@ begin
         origen = 'oficial';
   get diagnostics v_escuelas = row_count;
 
-  return jsonb_build_object('departamentos', v_deptos, 'escuelas', v_escuelas);
+  -- Las oficiales que ya no vienen en la nómina quedan no vigentes. No se
+  -- borran: pueden tener aportes.
+  update public.escuelas e
+     set vigente = (e.id in (select x ->> 'id' from jsonb_array_elements(datos -> 'escuelas') x))
+   where e.origen = 'oficial';
+
+  return jsonb_build_object('departamentos', v_deptos, 'escuelas', v_escuelas,
+    'no_vigentes', (select count(*) from public.escuelas where origen = 'oficial' and not vigente));
 end;
 $$;
 

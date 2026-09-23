@@ -112,6 +112,12 @@ create table if not exists public.escuelas (
   creado_en           timestamptz not null default now()
 );
 
+-- Si la escuela sigue en la nómina oficial. Una que sale no se borra —puede
+-- tener aportes— pero deja de usarse: por ejemplo, los datos de ejemplo no
+-- inventan docentes en ella. La mantiene al día cargar_escuelas().
+alter table public.escuelas
+  add column if not exists vigente boolean not null default true;
+
 
 -- ----------------------------------------------------------------------------
 -- 3. Relevamiento
