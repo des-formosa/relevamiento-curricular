@@ -92,6 +92,7 @@ fijada, nunca por bundler.
     ├── 10_publicar_catalogo.sql  bucket `catalogo`, registro de publicaciones
     ├── 11_importar_catalogo.sql  exportar a filas e importar correcciones por id
     ├── 12_reemplazar_materia.sql  subir la planilla de una materia y reemplazarla
+    ├── mantenimiento/      scripts de una sola vez, con fecha; no forman parte de la instalación
     └── generar_cargas.py   regenera 06, 07 y 08 cuando cambian los JSON
 ```
 
@@ -399,6 +400,12 @@ fallaría al confirmar. Archivado significa que sigue en la base —el envío en
 del catálogo publicado y deja de ofrecerse. Antes de archivar, la pantalla dice cuántas
 respuestas tiene y aclara que se conservan.
 
+**Lo archivado no se muestra salvo que se pida.** Al principio el editor lo mostraba en gris
+junto a lo activo. Después de reemplazar Lengua y Matemática, los saberes viejos quedaron
+mezclados con los nuevos y el equipo pidió «eliminar lo viejo»: la base ya lo tenía archivado,
+pero en pantalla parecía que no. Ahora arriba de la lista hay un «Ver lo archivado (N)» que
+lo muestra para poder recuperarlo, y el aviso al archivar dice que quedó ahí.
+
 **Todo queda registrado.** Un trigger (`auditar_catalogo`) anota alta, edición, archivado y
 restauración con el texto anterior, el nuevo, quién y cuándo, más una nota opcional. No
 depende de que el front se acuerde: si alguien edita desde el SQL Editor, también queda. Las
@@ -641,6 +648,11 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
   respuestas conserva id y respuestas; reescribirlo entero entra como nuevo y archiva el viejo
   con su respuesta. Probado en el navegador de punta a punta, incluido el Excel del equipo para
   Lengua (una fila por contenido), que ahora entra sin duplicar
+- **Lengua y Matemática, solo lo priorizado** (23/09/2026):
+  `sql/mantenimiento/2026-09-23_solo_priorizados.sql` archiva en esas dos materias todo lo que no
+  sea un saber priorizado (`--pr-`), con sus contenidos. Probado simulando lo que podía haber en
+  producción: saberes viejos activos, uno con respuesta y un duplicado del importador. Quedan
+  132 y 52 activos, todos priorizados; la respuesta se conserva; la segunda corrida no hace nada
 - **Los SQL se instalan desde cero en orden** (23/09/2026): corriendo del `01` al `12` en una
   base vacía, el `07` fallaba porque `cargar_catalogo()` usa la columna `estado` que creaba el
   `09`. Ahora la crea el `01`. Verificado: los trece archivos pasan en orden y se pueden
@@ -691,6 +703,8 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
   https://des-formosa.github.io/relevamiento-curricular/dashboard.html (panel)
 
 **Pendiente**
+- **Correr `sql/mantenimiento/2026-09-23_solo_priorizados.sql`** en el SQL Editor. Al final
+  muestra cómo quedó: tiene que dar Lengua 132 activos y Matemática 52, todos priorizados
 - **Preguntas al equipo sobre Matemática**: el eje de 4 saberes que la grilla no aclara (están
   en `datos/priorizados/revision.md`, «Ejes que conviene confirmar»), y si el saber «Resolución
   de problemas de varios pasos…» de 3° va de verdad en el 1er y en el 2do trimestre

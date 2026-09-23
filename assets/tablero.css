@@ -960,6 +960,23 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
   margin-bottom: 18px;
 }
 
+/* «Ver lo archivado»: discreto, a la derecha, arriba de la lista */
+.ed-archivados { display: flex; justify-content: flex-end; margin: -4px 0 10px; }
+.ed-archivados__boton {
+  height: 36px;
+  padding: 0 4px;
+  border: none;
+  background: none;
+  font-family: var(--ui);
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--t-gris);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.ed-archivados__boton:hover { color: var(--verde); }
+
 .ed-nota-publicar--ok {
   background: var(--fondo-suave, #E9F0ED);
   border-style: solid;

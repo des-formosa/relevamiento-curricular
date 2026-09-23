@@ -31,6 +31,7 @@ const Editor = (function () {
     guardando: false,
     confirmar: null,      // { tipo, id, texto, respuestas, archivar }
     historial: null,      // [] cuando está abierto
+    verArchivados: false, // lo archivado se muestra solo si se pide
     aviso: null,
     publicacion: null,    // { publicado_en, publicado_por, cambios_sin_publicar }
     publicando: false,
@@ -134,6 +135,7 @@ const Editor = (function () {
     const editando = estado.editando === 's:' + s.id;
     const archivado = s.estado === 'archivado';
     const activos = (s.contenidos || []).filter((c) => c.estado === 'activo');
+    const visibles = estado.verArchivados ? (s.contenidos || []) : activos;
     const cabeza = editando
       ? `<textarea class="ed-campo ed-campo--saber" id="ed-texto" rows="4" maxlength="1500">${esc(s.texto)}</textarea>
          <div class="ed-acciones-campo">
@@ -165,7 +167,7 @@ const Editor = (function () {
       ${cabeza}
       <div class="ed-contenidos">
         <div class="ed-contenidos__titulo">${activos.length} ${plural(activos.length, 'contenido sugerido', 'contenidos sugeridos')}</div>
-        ${(s.contenidos || []).map((c) => fila(c, s)).join('')}
+        ${visibles.map((c) => fila(c, s)).join('')}
         ${estado.agregandoEn === s.id
           ? `<div class="ed-fila ed-fila--editando">
                <textarea class="ed-campo" id="ed-texto" rows="2" maxlength="500" placeholder="Escribí el contenido"></textarea>
@@ -279,6 +281,12 @@ const Editor = (function () {
     const saberes = d.saberes || [];
     const activos = saberes.filter((s) => s.estado === 'activo');
     const contenidos = saberes.reduce((n, s) => n + (s.contenidos || []).filter((c) => c.estado === 'activo').length, 0);
+    // Lo archivado no se muestra salvo que se pida: después de reemplazar una
+    // materia, los saberes viejos quedaban mezclados en gris con los nuevos y
+    // parecía que no se había reemplazado nada.
+    const nArchivados = saberes.length - activos.length
+      + activos.reduce((n, s) => n + (s.contenidos || []).filter((c) => c.estado !== 'activo').length, 0);
+    const visibles = estado.verArchivados ? saberes : activos;
     const ejes = [];
     for (const s of saberes) if (!ejes.some((e) => e.id === s.eje_id)) ejes.push({ id: s.eje_id, nombre: s.eje });
 
@@ -313,7 +321,14 @@ const Editor = (function () {
           </div>
         </article>`
         : `<button type="button" class="ed-agregar ed-agregar--saber" data-accion="ed-nuevo-saber">${Icono.mas} Agregar un saber</button>`}
-      <div class="ed-lista">${saberes.map(tarjetaSaber).join('')}</div>
+      ${nArchivados ? `<div class="ed-archivados">
+        <button type="button" class="ed-archivados__boton" data-accion="ed-ver-archivados">${estado.verArchivados
+          ? 'Ocultar lo archivado'
+          : `Ver lo archivado (${nArchivados})`}</button>
+      </div>` : ''}
+      ${visibles.length
+        ? `<div class="ed-lista">${visibles.map(tarjetaSaber).join('')}</div>`
+        : '<div class="ed-vacio">No hay saberes activos en este año. Podés agregar uno o subir la planilla de la materia.</div>'}
       ${panelConfirmar()}
       ${panelHistorial()}
       ${Archivo.panel()}
@@ -378,7 +393,7 @@ const Editor = (function () {
         await llamar('archivar_catalogo', {
           p_tabla: c.tipo === 'saber' ? 'saberes' : 'contenidos_sugeridos',
           p_id: c.id, p_archivar: true, p_nota: valor('ed-nota'),
-        }, c.tipo === 'saber' ? 'Saber archivado.' : 'Contenido archivado.');
+        }, c.tipo === 'saber' ? 'Saber archivado. Si lo necesitás, está en «Ver lo archivado».' : 'Contenido archivado. Si lo necesitás, está en «Ver lo archivado».');
         break;
       }
       case 'ed-archivar-saber':
@@ -395,6 +410,7 @@ const Editor = (function () {
         break;
       }
       case 'ed-cerrar-historial': estado.historial = null; pintar(); break;
+      case 'ed-ver-archivados': estado.verArchivados = !estado.verArchivados; pintar(); break;
       case 'ed-publicar': await publicar(); break;
       default: return false;
     }
@@ -468,6 +484,6 @@ const Editor = (function () {
     pantalla,
     manejar,
     estado,
-    limpiar() { estado.datos = null; estado.editando = null; estado.agregandoEn = null; estado.saberNuevo = null; estado.confirmar = null; estado.historial = null; },
+    limpiar() { estado.datos = null; estado.editando = null; estado.agregandoEn = null; estado.saberNuevo = null; estado.confirmar = null; estado.historial = null; estado.verArchivados = false; },
   };
 })();

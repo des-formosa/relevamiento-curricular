@@ -113,7 +113,7 @@ const Tour = (function () {
         objetivo: '.ed-fila .ed-icono[data-accion="ed-pedir-archivar"]',
         opcional: true,
         titulo: 'Nada se borra: se archiva',
-        texto: 'Archivar saca el contenido de circulación, pero las respuestas que ya tiene se conservan y se siguen viendo en los resultados. Siempre se puede volver atrás.',
+        texto: 'Archivar saca el contenido de la lista y de lo que ve el docente, pero no lo borra: las respuestas que ya tiene se conservan. Lo archivado queda guardado en «Ver lo archivado», arriba de la lista, y desde ahí se puede recuperar.',
       },
       {
         objetivo: '.ed-agregar',
