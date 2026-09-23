@@ -1,0 +1,12 @@
+{
+ "_nota": "Contenidos para saberes que llegaron sin ninguno. Se usan solo si ni la grilla ni el archivo de contenidos traen alguno para ese saber. Clave: el texto del saber, tal como está en la grilla.",
+ "matematica": {
+  "Resolución de problemas simples que involucran la interpretación o el completamiento de un gráfico de barras, cuadro o tabla.": [
+   "Lectura de datos en gráficos de barras, cuadros y tablas",
+   "Completamiento de tablas y gráficos de barras con datos faltantes",
+   "Relación entre la información de una tabla y su gráfico de barras",
+   "Problemas que requieren extraer información de un gráfico",
+   "Comparación de cantidades representadas en un gráfico de barras"
+  ]
+ }
+}

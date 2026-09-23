@@ -71,8 +71,9 @@ fijada, nunca por bundler.
 │   ├── fuentes/            Kumbh Sans, Didact Gothic y Noto Serif Ahom en woff2, embebidas
 │   └── img/                logos oficiales, más los símbolos recortados que se usan en pantalla
 ├── datos/
-│   ├── catalogo.json       942 saberes, 4.716 contenidos sugeridos
+│   ├── catalogo.json       848 saberes, 4.273 contenidos sugeridos
 │   ├── contenidos/         contenidos propuestos por materia + aplicar.py
+│   ├── priorizados/        saberes priorizados del equipo (Lengua, Matemática) + convertir.py
 │   ├── contenidos_672_originales.json   los recortes que traía la transcripción
 │   ├── Nomina de Escuelas por Departamentos.xlsx   nómina oficial, la fuente
 │   ├── generar_escuelas.py  el .xlsx → escuelas.json
@@ -178,6 +179,46 @@ llegarle al docente. Un saber que no reconoce no lo selecciona, y se pierde la c
 Va de 7 (Físico-Química 1°) a 65 (Matemática 1°). Por eso la carga se recorre en tres tramos y el
 progreso cuenta sobre el tramo: «Saber 3 de 27» en Matemática y «Saber 1 de 4» en Historia 1°
 usan exactamente la misma pantalla.
+
+### Saberes priorizados (Lengua y Matemática)
+
+El 23/09/2026 el equipo técnico rehízo **Lengua y Matemática** con los saberes que priorizó el
+Ministerio. Reemplazan a los de la Resolución en esas dos materias: Lengua pasa de 106 a 132
+saberes (830 contenidos) y Matemática de 172 a 52 (117 contenidos). Las otras 14 materias no
+cambian.
+
+El equipo no trabaja en nuestro formato: arma una **grilla** en Excel. Obligarlos a pasar por
+el importador del panel fue lo que no funcionó («me los carga pero los pone como la app
+quiere, no como yo lo hago»): el archivo traía los `saber_id` vacíos, y para el importador eso
+es alta, así que los sumaba al lado de los viejos en vez de reemplazarlos. Por eso
+`python datos/priorizados/convertir.py` (`--revisar` no escribe) lee las grillas tal como
+vienen:
+
+- **Lengua** (`Saberes priorizado.xlsx`): un bloque por año, una fila por eje, una columna por
+  trimestre. El eje se toma del romano («Eje II:»), no del nombre, porque en 1° dice «Lectura y
+  Producción no escrita» (errata) y en 3° el nombre viene partido en dos filas. Una celda que
+  arranca en minúscula es la continuación de la de arriba. Los contenidos vienen en otro
+  archivo (`Lengua contenidos v3.xlsx`, una fila por contenido) y se cruzan por texto del
+  saber, año y trimestre: los 132 coinciden.
+- **Matemática** (`PRIORIZACIÓN DE SABERES-CBS.xlsx`): un bloque por trimestre, un par de
+  columnas saber/contenidos por año. **La grilla no dice el eje de cada saber**: cada bloque
+  nombra dos ejes juntos («Geometría y medida - Números y operaciones»). Si el saber coincide
+  con uno de la Resolución, se toma su eje (48 de 52). Si no, lo elige el script por palabras
+  clave (4) y queda marcado en `revision.md` para que el equipo lo confirme. Los contenidos se
+  parten donde el equipo separó la lista (saltos de línea, barras con espacio, puntos), y lo
+  que queda de menos de tres palabras se une al anterior para no repetir los recortes sueltos
+  de la transcripción original.
+- `contenidos_agregados.json`: contenidos para saberes que llegaron sin ninguno. Hoy, uno de
+  Matemática cuya celda estaba vacía.
+
+Los id nuevos llevan `--pr-` para no reusar nunca el de un saber viejo: si el primer saber
+priorizado heredara `lengua--e1--a1s1`, las respuestas de ese id se contarían para un saber que
+dice otra cosa. Los viejos salen del JSON y `cargar_catalogo()` los borra si nadie los usó o los
+archiva si tienen respuestas. De paso limpia lo que haya entrado duplicado por el importador.
+
+**Los id salen de la posición en la grilla.** Hasta que arranque la carga real el script se
+puede correr las veces que haga falta. Después no: reordenar la grilla movería los id y con
+ellos las respuestas.
 
 ### Regenerar el catálogo
 
@@ -573,6 +614,10 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
 - **Catálogo curricular terminado** (22/09/2026): las 16 materias transcritas a mano contra el
   PDF. 942 saberes con trimestre asignado y 45 ejes reales, en `datos/catalogo.json`. Todos
   `calidad: buena`, ninguna combinación materia/año vacía
+- **Lengua y Matemática con los saberes priorizados** (23/09/2026): 132 y 52 saberes, 830 y
+  117 contenidos, leídos de las grillas del equipo con `datos/priorizados/convertir.py`. El
+  catálogo queda en 848 saberes y 4.273 contenidos. Probado cargándolo en PostgreSQL local:
+  los viejos quedan archivados con sus respuestas y no queda ningún duplicado activo
 - El SQL se puede probar entero fuera de Supabase: alcanza con un PostgreSQL 16 y un
   andamiaje mínimo (roles `anon`/`authenticated`, `auth.users`, `auth.uid()` leyendo
   `request.jwt.claim.sub`, y los esqueletos de `storage.buckets` y `storage.objects`).
@@ -615,6 +660,13 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
   https://des-formosa.github.io/relevamiento-curricular/dashboard.html (panel)
 
 **Pendiente**
+- **Cargar Lengua y Matemática priorizadas en la base**: en el SQL Editor, `sql/07_cargar_catalogo.sql`
+  y después `sql/08_cargar_contenidos_1.sql` y `sql/08_cargar_contenidos_2.sql`. Sin eso el
+  formulario ya muestra lo nuevo (lee el JSON), pero el panel sigue con lo viejo
+- **Confirmar el eje de 4 saberes de Matemática** con el equipo (están en
+  `datos/priorizados/revision.md`, sección «Ejes que conviene confirmar»)
+- **Que el importador del panel pueda reemplazar una materia** entera desde un Excel simple,
+  sin que el equipo tenga que manejar ids. Hoy solo corrige por id o agrega
 - **Ejecutar `sql/11_importar_catalogo.sql`** en el SQL Editor, después del 09 y el 10:
   habilita «Exportar e importar» en el panel. Se puede repetir
 - Prueba real con 5 o 6 docentes cargando desde sus celulares antes del 26
