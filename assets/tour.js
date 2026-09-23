@@ -17,7 +17,9 @@ const Tour = (function () {
   'use strict';
 
   const CLAVE = 'relevamiento.tour.';
-  const VERSION = 'v1';
+  // Subir la versión hace que el recorrido vuelva a aparecer solo una vez a
+  // todos: se usa cuando cambia algo que el equipo ya había visto explicado.
+  const VERSION = 'v2';
 
   let capa = null;
   let pasos = [];
@@ -81,7 +83,7 @@ const Tour = (function () {
       {
         objetivo: '.t-modo',
         titulo: 'Y si hay algo mal en el catálogo',
-        texto: 'Desde «Editar catálogo» se corrige un saber, se agrega un contenido que falta o se saca uno que no va. Cuando entres, te muestro cómo.',
+        texto: 'Desde «Editar catálogo» se corrige un saber, se agrega un contenido que falta o se saca uno que no va. También se puede rehacer una materia entera con una planilla de Excel. Cuando entres, te muestro cómo.',
       },
     ],
 
@@ -126,13 +128,18 @@ const Tour = (function () {
       },
       {
         objetivo: '[data-accion="ar-abrir"]',
-        titulo: 'Corregir en Excel y volver',
-        texto: 'Baja la planilla de la materia: una fila por saber, con sus contenidos en columnas. Se corrige en Excel y se sube acá mismo. Antes de cambiar nada te mostramos cómo va a quedar, y lo que no cambió conserva sus respuestas.',
+        titulo: 'Muchos cambios juntos: la planilla',
+        texto: 'Si hay que cambiar muchas cosas o rehacer la materia, es más fácil en Excel. Acá bajás la planilla de la materia, ya completa: una fila por saber y los contenidos al lado. La corregís y la subís acá mismo.',
+      },
+      {
+        objetivo: '[data-accion="ar-abrir"]',
+        titulo: 'Antes de subirla',
+        texto: 'La planilla reemplaza la materia. Si en un año falta un saber, ese saber se saca. Así que si querés corregir solo algunos, dejá los demás como están. Antes de aplicar, el panel te muestra cómo va a quedar.',
       },
       {
         objetivo: '[data-accion="ed-publicar"]',
         titulo: 'Publicar, el último paso',
-        texto: 'Un toque y el catálogo corregido queda disponible para los docentes: los que entren de ahí en más lo ven así. Los que estaban cargando terminan con el anterior, y nada de lo que ya mandaron se pierde.',
+        texto: 'Lo que cambies acá, a mano o con la planilla, los docentes no lo ven hasta que tocás «Publicar». Los que entren después lo ven así; los que estaban cargando terminan con lo anterior, y no se pierde nada de lo que mandaron.',
       },
     ],
   };

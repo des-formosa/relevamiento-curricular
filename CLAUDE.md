@@ -478,11 +478,13 @@ formulario solo entra por `registrar_aporte`.
 
 Son veinte personas que entran cada tanto, no todos los días. En vez de un instructivo que
 nadie lee, el panel se explica solo: ilumina una parte de la pantalla y dice qué mira, con
-«Saltar», «Anterior» y «Siguiente». Diez pasos para leer los resultados y nueve para editar el
+«Saltar», «Anterior» y «Siguiente». Diez pasos para leer los resultados y diez para editar el
 catálogo.
 
 Arranca solo la primera vez que se entra a cada pantalla (queda anotado en `localStorage`,
-claves `relevamiento.tour.*`) y se vuelve a ver desde «¿Cómo se usa?» en la cabecera. Los
+claves `relevamiento.tour.<modo>.<versión>`) y se vuelve a ver desde «¿Cómo se usa?» en la
+cabecera. Cuando cambia algo que el equipo ya había visto explicado, se sube `VERSION` en
+`tour.js` y el recorrido le vuelve a aparecer solo una vez a todos. Los
 pasos marcados `opcional` se saltean si su elemento no está en pantalla, así el recorrido no
 señala un vacío cuando todavía no hay datos. Vive fuera de `#app` porque el panel se redibuja
 entero en cada acción.
@@ -625,7 +627,7 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
   de ejemplo, carga de catálogo y escuelas), probado en PostgreSQL local: `normalizar_texto`
   da idéntico a `normalizarTexto()` de JS en los 2.597 textos del catálogo y escuelas
 - Proyecto de Supabase "Relevamiento Curricular" (región sa-east-1, São Paulo) con el SQL del
-  `01` al `10` aplicado, escuelas y catálogo nuevo cargados, y datos de ejemplo
+  `01` al `12` aplicado (23/09/2026, con Lengua y Matemática priorizadas), escuelas y catálogo nuevo cargados, y datos de ejemplo
   (`es_ejemplo = true`). `assets/supabase.js` ya apunta al proyecto: lo que se envíe desde el
   formulario se guarda de verdad
 - **Catálogo curricular terminado** (22/09/2026): las 16 materias transcritas a mano contra el
@@ -669,7 +671,7 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
   archiva nada; un saber corregido en sus cinco filas genera una sola edición y una sola
   entrada de auditoría; corregido en una sola fila, se rechaza por contradictorio
 - **Recorrido guiado del panel** (`assets/tour.js`): diez pasos para leer los resultados y
-  nueve para editar el catálogo. Arranca solo la primera vez y se repite desde «¿Cómo se usa?»
+  diez para editar el catálogo. Arranca solo la primera vez y se repite desde «¿Cómo se usa?»
 - Dashboard completo (`dashboard.html` + `assets/dashboard.js` + `assets/tablero.css`):
   ingreso con Supabase Auth, chequeo de `equipo_planificacion`, Detalle, Mapa de calor,
   datos de ejemplo, exportar a Excel y PDF
@@ -689,19 +691,11 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
   https://des-formosa.github.io/relevamiento-curricular/dashboard.html (panel)
 
 **Pendiente**
-- **Cargar Lengua y Matemática priorizadas en la base**: en el SQL Editor, `sql/07_cargar_catalogo.sql`
-  y después `sql/08_cargar_contenidos_1.sql` y `sql/08_cargar_contenidos_2.sql`. Sin eso el
-  formulario ya muestra lo nuevo (lee el JSON), pero el panel sigue con lo viejo
-- **Confirmar el eje de 4 saberes de Matemática** con el equipo (están en
-  `datos/priorizados/revision.md`, sección «Ejes que conviene confirmar»)
-- **Ejecutar `sql/11_importar_catalogo.sql` y `sql/12_reemplazar_materia.sql`** en el SQL
-  Editor, en ese orden y después de los `07`/`08`. Sin el `12` la planilla no se puede subir.
-  Se pueden repetir
-- Las planillas de Lengua y Matemática traen los códigos nuevos (`--pr-`): **hay que cargar los
-  `07`/`08` antes** de que el equipo suba una, o el panel va a decir que esos códigos no son de
-  la materia
+- **Preguntas al equipo sobre Matemática**: el eje de 4 saberes que la grilla no aclara (están
+  en `datos/priorizados/revision.md`, «Ejes que conviene confirmar»), y si el saber «Resolución
+  de problemas de varios pasos…» de 3° va de verdad en el 1er y en el 2do trimestre
 - Prueba real con 5 o 6 docentes cargando desde sus celulares antes del 26
 
-**Orden sugerido**: correr el `11`, probar el formulario en celulares reales y seguir juntando
-el feedback del equipo. El sitio está publicado, los usuarios del panel están creados y el
-equipo técnico ya lo está usando.
+**Orden sugerido**: la base está al día (SQL del `01` al `12` aplicado). Falta que el equipo
+responda las preguntas de Matemática, probar el formulario en celulares reales y seguir
+juntando lo que devuelvan los docentes.
