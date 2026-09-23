@@ -1,17 +1,19 @@
 /* ============================================================================
    Exportar e importar el catálogo — para el equipo de Planificación.
 
-   El catálogo se revisa en Excel, no en la pantalla: es más cómodo leer 942
-   saberes de corrido y repartir el trabajo entre varias personas. Este módulo
-   baja ese Excel y lo vuelve a subir corregido.
+   El equipo trabaja en Excel y no maneja ids. Lo que funciona para ellos es
+   una PLANILLA por materia: una fila por saber, con año, trimestre, eje, el
+   texto del saber y sus contenidos en columnas. Se baja desde acá ya
+   completa, se corrige en Excel y se vuelve a subir.
 
-   La misma forma en las dos direcciones: una fila por contenido, con los ids
-   en columnas. El archivo que baja se puede volver a subir tal cual y no pasa
-   nada, que es la prueba de que el ida y vuelta cierra.
+   Subirla REEMPLAZA la materia (sql/12_reemplazar_materia.sql), pero con
+   cuidado: solo los años que vienen en el archivo, y lo que no cambió
+   —o cambió apenas, que es una corrección— conserva su identidad y sus
+   respuestas. Antes de tocar nada se muestra cómo va a quedar.
 
-   Regla que hay que tener presente al leer esto: lo que no está en el archivo
-   no se toca. Ausencia no es baja. Para archivar algo hay que escribirlo en la
-   columna «estado» (ver sql/11_importar_catalogo.sql).
+   Si el archivo trae la columna saber_id completa, es el Excel de
+   correcciones de antes (sql/11): se corrige saber por saber y lo que no
+   está en el archivo no se toca. Se sigue aceptando, pero ya no se ofrece.
    ============================================================================ */
 
 const Archivo = (function () {
@@ -19,25 +21,13 @@ const Archivo = (function () {
 
   const URL_SHEETJS = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
 
-  // Las columnas del Excel, en orden. La clave es la que entiende el SQL.
-  const COLUMNAS = [
-    { clave: 'materia',          titulo: 'Materia',              ancho: 26 },
-    { clave: 'eje_id',           titulo: 'eje_id',               ancho: 22 },
-    { clave: 'eje',              titulo: 'Eje',                  ancho: 40 },
-    { clave: 'saber_id',         titulo: 'saber_id',             ancho: 26 },
-    { clave: 'anio',             titulo: 'Año',                  ancho: 6 },
-    { clave: 'trimestre',        titulo: 'Trimestre',            ancho: 10 },
-    { clave: 'saber',            titulo: 'Saber',                ancho: 80 },
-    { clave: 'saber_estado',     titulo: 'Estado del saber',     ancho: 16 },
-    { clave: 'contenido_id',     titulo: 'contenido_id',         ancho: 30 },
-    { clave: 'contenido',        titulo: 'Contenido',            ancho: 55 },
-    { clave: 'contenido_estado', titulo: 'Estado del contenido', ancho: 18 },
-  ];
-
-  // Los títulos se reconocen normalizados, así no importa si Excel los devuelve
-  // con otra capitalización o con acentos comidos
-  const PorTitulo = {};
-  for (const c of COLUMNAS) PorTitulo[normalizarTexto(c.titulo)] = c.clave;
+  // El Excel de correcciones por id (sql/11). Se reconoce por sus títulos.
+  const COLUMNAS_ID = {
+    'materia': 'materia', 'eje id': 'eje_id', 'eje': 'eje', 'saber id': 'saber_id',
+    'ano': 'anio', 'anio': 'anio', 'trimestre': 'trimestre', 'saber': 'saber',
+    'estado del saber': 'saber_estado', 'contenido id': 'contenido_id',
+    'contenido': 'contenido', 'estado del contenido': 'contenido_estado',
+  };
 
   let sb = null;
   let pintar = () => {};
@@ -45,11 +35,10 @@ const Archivo = (function () {
 
   const estado = {
     abierto: false,
-    que: 'vista',        // 'vista' | 'todo'
     trabajando: null,    // texto de lo que está pasando
     error: null,
     aviso: null,
-    importe: null,       // { archivo, filas, resumen } después de mirar
+    importe: null,       // { modo, archivo, datos, resumen } después de mirar
     aplicando: false,
   };
 
@@ -61,7 +50,7 @@ const Archivo = (function () {
       .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
 
-  function plural(n, uno, varios) { return n === 1 ? uno : varios; }
+  function plural(n, uno, varios) { return Number(n) === 1 ? uno : varios; }
 
   function cargarSheetJS() {
     if (window.XLSX) return Promise.resolve();
@@ -72,14 +61,6 @@ const Archivo = (function () {
       s.onerror = () => rechazar(new Error('No pudimos cargar la librería para leer el Excel. Revisá la conexión.'));
       document.head.appendChild(s);
     });
-  }
-
-  function nombreArchivo(extension) {
-    const c = contexto();
-    const limpio = (t) => normalizarTexto(t || '').replace(/\s+/g, '-');
-    const hoy = new Date().toISOString().slice(0, 10);
-    const que = estado.que === 'todo' ? 'completo' : `${limpio(c.nombreMateria)}-${c.anio}-anio`;
-    return `catalogo-${que}-${hoy}.${extension}`;
   }
 
   function bajar(contenido, nombre, tipo) {
@@ -93,44 +74,116 @@ const Archivo = (function () {
     setTimeout(() => URL.revokeObjectURL(url), 2000);
   }
 
-  /* ---------- Exportar ---------- */
-
-  async function traerFilas() {
+  function materia() {
     const c = contexto();
-    const params = estado.que === 'todo'
-      ? {}
-      : { p_espacio_id: c.espacio_id, p_anio: c.anio };
-    const { data, error } = await sb.rpc('catalogo_filas', params);
-    if (error) throw new Error(error.message);
-    if (data && data.error) throw new Error(data.error);
-    return data || [];
+    const esp = (typeof Catalogo !== 'undefined' && Catalogo.espacio(c.espacio_id)) || {};
+    return {
+      id: c.espacio_id,
+      nombre: c.nombreMateria || esp.nombre || '',
+      completo: esp.nombre || c.nombreMateria || '',
+      porCiclo: Boolean(esp.saberes_por_ciclo),
+      anios: esp.anios_dictados || [1, 2, 3],
+    };
   }
 
-  async function exportarExcel() {
+  const textoAnios = (lista) => {
+    const t = lista.map((a) => `${a}°`);
+    return t.length > 1 ? `${t.slice(0, -1).join(', ')} y ${t[t.length - 1]}` : t[0] || '';
+  };
+
+  /* ---------- Bajar la planilla ---------- */
+
+  async function bajarPlanilla() {
+    const m = materia();
     estado.error = null;
-    estado.trabajando = 'Armando el Excel…';
+    estado.aviso = null;
+    estado.trabajando = `Armando la planilla de ${m.nombre}…`;
     pintar();
     try {
-      const [filas] = await Promise.all([traerFilas(), cargarSheetJS()]);
-      const X = window.XLSX;
-      const hoja = X.utils.aoa_to_sheet([
-        COLUMNAS.map((c) => c.titulo),
-        ...filas.map((f) => COLUMNAS.map((c) => (f[c.clave] == null ? '' : f[c.clave]))),
+      const [{ data, error }] = await Promise.all([
+        sb.rpc('catalogo_filas', { p_espacio_id: m.id, p_anio: null }),
+        cargarSheetJS(),
       ]);
-      hoja['!cols'] = COLUMNAS.map((c) => ({ wch: c.ancho }));
-      hoja['!freeze'] = { xSplit: 0, ySplit: 1 };
+      if (error) throw new Error(error.message);
+      if (data && data.error) throw new Error(data.error);
+
+      // Una fila por saber activo, con sus contenidos activos. El orden de los
+      // ejes es el de la primera aparición: catalogo_filas ya viene ordenado.
+      const ejes = [];
+      const saberes = new Map();
+      for (const f of data || []) {
+        if (!ejes.some((e) => e.id === f.eje_id)) ejes.push({ id: f.eje_id, nombre: f.eje });
+        if (f.saber_estado !== 'activo') continue;
+        if (!saberes.has(f.saber_id)) {
+          saberes.set(f.saber_id, { codigo: f.saber_id, anio: f.anio, trimestre: f.trimestre,
+            eje: f.eje, ejeOrden: ejes.findIndex((e) => e.id === f.eje_id), texto: f.saber, contenidos: [] });
+        }
+        if (f.contenido && f.contenido_estado === 'activo') saberes.get(f.saber_id).contenidos.push(f.contenido);
+      }
+      const lista = [...saberes.values()].sort((a, b) =>
+        (a.anio || 0) - (b.anio || 0) || a.trimestre - b.trimestre || a.ejeOrden - b.ejeOrden);
+
+      const nCont = Math.max(6, ...lista.map((s) => s.contenidos.length));
+      const titulos = ['Año', 'Trimestre', 'Eje', 'Saber',
+        ...Array.from({ length: nCont }, (_, i) => `Contenido ${i + 1}`), 'Código (no tocar)'];
+      const filas = lista.map((s) => [
+        m.porCiclo ? '' : s.anio, s.trimestre, s.eje, s.texto,
+        ...Array.from({ length: nCont }, (_, i) => s.contenidos[i] || ''), s.codigo,
+      ]);
+
+      const X = window.XLSX;
+      const hoja = X.utils.aoa_to_sheet([titulos, ...filas]);
+      hoja['!cols'] = [{ wch: 6 }, { wch: 10 }, { wch: 34 }, { wch: 70 },
+        ...Array.from({ length: nCont }, () => ({ wch: 40 })), { wch: 30 }];
+      hoja['!autofilter'] = { ref: X.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: filas.length, c: titulos.length - 1 } }) };
+
       const libro = X.utils.book_new();
-      X.utils.book_append_sheet(libro, hoja, 'Catálogo');
-      X.writeFile(libro, nombreArchivo('xlsx'));
+      X.utils.book_append_sheet(libro, hoja, 'Saberes');
+      X.utils.book_append_sheet(libro, hojaInstrucciones(m, ejes), 'Cómo se completa');
+      const limpio = normalizarTexto(m.nombre).replace(/\s+/g, '-');
+      X.writeFile(libro, `planilla-${limpio}-${new Date().toISOString().slice(0, 10)}.xlsx`);
+
       estado.trabajando = null;
-      estado.aviso = `Se descargaron ${filas.length} ${plural(filas.length, 'fila', 'filas')}. `
-        + 'Corregilo y volvé a subirlo acá mismo: los ids son los que hacen que cada corrección '
-        + 'caiga en su lugar, así que conviene no tocarlos.';
+      estado.aviso = `Se bajó la planilla de ${m.nombre}: ${lista.length} ${plural(lista.length, 'saber', 'saberes')}. `
+        + 'Corregila en Excel y subila acá mismo. La segunda hoja explica cómo completarla.';
     } catch (e) {
       estado.trabajando = null;
-      estado.error = (e && e.message) || 'No pudimos armar el Excel.';
+      estado.error = (e && e.message) || 'No pudimos armar la planilla.';
     }
     pintar();
+  }
+
+  // La hoja de instrucciones, para quien la abre sin haber visto nunca el panel
+  function hojaInstrucciones(m, ejes) {
+    const numeros = m.anios.map(String);
+    const anio = m.porCiclo
+      ? 'Dejala vacía: en esta materia los saberes son para todo el Ciclo Básico.'
+      : `Escribí solo el número: ${numeros.length > 1 ? `${numeros.slice(0, -1).join(', ')} o ${numeros[numeros.length - 1]}` : numeros[0]}.`;
+    const filas = [
+      [`Planilla de ${m.completo}`, ''],
+      ['', ''],
+      ['Cómo está armada', 'Una fila por saber. Los contenidos de cada saber van en las columnas «Contenido 1», «Contenido 2», etcétera, uno por columna.'],
+      ['Año', anio],
+      ['Trimestre', '1, 2 o 3.'],
+      ['Eje', 'Copiá uno de los ejes de abajo tal cual, o escribí solo el número del eje en romano (I, II, III…).'],
+      ['Saber', 'El texto completo del saber.'],
+      ['Contenidos', 'Los que hagan falta, uno por columna. Si necesitás más, agregá columnas con el mismo título: «Contenido 11», «Contenido 12»…'],
+      ['Código (no tocar)', 'Lo usa el sistema para reconocer cada saber. No lo cambies. En un saber nuevo, dejalo vacío. Si copiás una fila para hacer un saber nuevo, borrale el código.'],
+      ['', ''],
+      ['Para agregar un saber', 'Agregá una fila con el código vacío.'],
+      ['Para sacar un saber', 'Borrá la fila entera. No se pierde nada: queda archivado con sus respuestas.'],
+      ['Para corregir', 'Cambiá el texto directamente. El saber conserva sus respuestas.'],
+      ['IMPORTANTE', 'La planilla reemplaza la materia. Dentro de cada año que venga en la planilla, los saberes que no estén se sacan. Si querés corregir solo algunos, dejá los demás en la planilla tal como están.'],
+      ['Si mandás un solo año', 'Los otros años de la materia no se tocan.'],
+      ['', ''],
+      ['Cómo se sube', 'Panel → Editar catálogo → elegir la materia arriba → Exportar e importar → Elegir el archivo. Antes de cambiar nada, el panel muestra cómo va a quedar. Si está bien: Aplicar, y después Publicar.'],
+      ['', ''],
+      [`Ejes de ${m.completo}`, ''],
+      ...ejes.map((e) => ['', e.nombre]),
+    ];
+    const hoja = window.XLSX.utils.aoa_to_sheet(filas);
+    hoja['!cols'] = [{ wch: 24 }, { wch: 110 }];
+    return hoja;
   }
 
   async function exportarJSON() {
@@ -142,8 +195,7 @@ const Archivo = (function () {
       if (error || (data && data.error)) throw new Error((data && data.error) || error.message);
       bajar(JSON.stringify(data, null, 1), 'catalogo.json', 'application/json');
       estado.trabajando = null;
-      estado.aviso = 'Se descargó catalogo.json con el catálogo activo, en la forma que lee el '
-        + 'formulario. Sirve de respaldo: es el archivo que va en datos/catalogo.json del repositorio.';
+      estado.aviso = 'Se descargó catalogo.json con el catálogo activo. Es el respaldo del repositorio (datos/catalogo.json).';
     } catch (e) {
       estado.trabajando = null;
       estado.error = (e && e.message) || 'No pudimos armar el archivo.';
@@ -151,32 +203,103 @@ const Archivo = (function () {
     pintar();
   }
 
-  /* ---------- Leer el archivo que suben ---------- */
+  /* ---------- Leer lo que suben ---------- */
 
-  // Excel → filas. La primera hoja, la primera fila son los títulos.
-  async function filasDeExcel(buffer) {
+  async function hojaDeExcel(buffer) {
     await cargarSheetJS();
     const libro = window.XLSX.read(buffer, { type: 'array' });
     const hoja = libro.Sheets[libro.SheetNames[0]];
     if (!hoja) throw new Error('El Excel no tiene ninguna hoja con datos.');
     const crudas = window.XLSX.utils.sheet_to_json(hoja, { header: 1, blankrows: false, defval: '' });
-    if (!crudas.length) throw new Error('El Excel está vacío.');
+    if (crudas.length < 2) throw new Error('El Excel no tiene filas debajo de los títulos.');
+    return crudas;
+  }
 
-    const titulos = crudas[0].map((t) => PorTitulo[normalizarTexto(String(t))] || null);
-    if (!titulos.includes('saber_id') && !titulos.includes('saber')) {
-      throw new Error('No reconocemos las columnas de este Excel. Bajá el archivo con «Exportar» '
-        + 'y corregí sobre ese, sin cambiarle los títulos de la primera fila.');
+  const celda = (v) => (v == null ? '' : String(v).trim());
+
+  // ¿Qué es cada columna? Devuelve también si es el Excel de correcciones por id
+  function leerTitulos(titulos) {
+    const col = { contenidos: [] };
+    titulos.forEach((t, i) => {
+      const n = normalizarTexto(celda(t));
+      if (/^contenido( \d+)?$/.test(n)) col.contenidos.push(i);
+      else if (n === 'ano' || n === 'anio') col.anio = i;
+      else if (n === 'trimestre') col.trimestre = i;
+      else if (n === 'eje') col.eje = i;
+      else if (n === 'eje id') col.eje_id = i;
+      else if (n === 'saber') col.saber = i;
+      else if (n === 'saber id') col.saber_id = i;
+      else if (n.startsWith('codigo')) col.codigo = i;
+      else if (n === 'materia') col.materia = i;
+    });
+    return col;
+  }
+
+  // La planilla —o cualquier Excel con año, trimestre, eje, saber y contenidos—
+  // en saberes. Sirve igual si viene una fila por saber (la planilla) que una
+  // fila por contenido (el Excel que armó el equipo para Lengua).
+  function saberesDePlanilla(crudas, m) {
+    const col = leerTitulos(crudas[0]);
+    const faltan = ['saber', 'trimestre'].filter((k) => col[k] == null);
+    if (col.eje == null && col.eje_id == null) faltan.push('eje');
+    if (!m.porCiclo && col.anio == null) faltan.push('año');
+    if (faltan.length) {
+      throw new Error(`Al Excel le faltan columnas: ${faltan.join(', ')}. `
+        + 'Bajá la planilla de la materia desde acá y completá esa.');
     }
+
+    const errores = [];
+    const materias = new Set();
+    const porClave = new Map();
+    crudas.slice(1).forEach((fila, i) => {
+      const n = i + 2;          // +2: la 1 son los títulos y Excel cuenta desde 1
+      const texto = celda(fila[col.saber]);
+      const contenidos = col.contenidos.map((c) => celda(fila[c])).filter(Boolean);
+      if (!texto && !contenidos.length) return;       // fila en blanco
+      if (col.materia != null && celda(fila[col.materia])) materias.add(celda(fila[col.materia]));
+
+      const anio = m.porCiclo ? '' : celda(fila[col.anio]);
+      const trimestre = celda(fila[col.trimestre]);
+      const clave = `${normalizarTexto(texto)}|${anio}|${trimestre}`;
+      const eje = celda(fila[col.eje_id != null ? col.eje_id : col.eje]) || celda(fila[col.eje]);
+      const codigo = col.codigo != null ? celda(fila[col.codigo]) : '';
+
+      const previo = porClave.get(clave);
+      if (previo) {
+        // Otra fila del mismo saber (una fila por contenido): se suman
+        if (normalizarTexto(previo.eje) !== normalizarTexto(eje)) {
+          errores.push({ fila: n, mensaje: `Este saber dice otro eje que en la fila ${previo.fila}.` });
+        }
+        for (const c of contenidos) {
+          if (!previo.contenidos.some((x) => normalizarTexto(x) === normalizarTexto(c))) previo.contenidos.push(c);
+        }
+        if (!previo.codigo && codigo) previo.codigo = codigo;
+        return;
+      }
+      porClave.set(clave, { fila: n, codigo, anio, trimestre, eje, texto, contenidos });
+    });
+
+    // El archivo dice de qué materia es: tiene que ser la elegida en el panel
+    const nombres = [m.nombre, m.completo].map((x) => normalizarTexto(x));
+    const otra = [...materias].find((x) => !nombres.includes(normalizarTexto(x)));
+    if (otra) {
+      throw new Error(`Este archivo es de «${otra}» y en el panel está elegida «${m.nombre}». `
+        + 'Elegí la materia correcta arriba y volvé a subirlo.');
+    }
+    return { saberes: [...porClave.values()], errores };
+  }
+
+  // El Excel de correcciones por id, en las filas que espera sql/11
+  function filasPorId(crudas) {
+    const claves = crudas[0].map((t) => COLUMNAS_ID[normalizarTexto(celda(t))] || null);
     return crudas.slice(1).map((fila, i) => {
-      const o = { fila: i + 2 };      // +2: la 1 son los títulos y Excel cuenta desde 1
-      titulos.forEach((clave, col) => {
-        if (clave) o[clave] = fila[col] == null ? '' : String(fila[col]).trim();
-      });
+      const o = { fila: i + 2 };
+      claves.forEach((clave, c) => { if (clave) o[clave] = celda(fila[c]); });
       return o;
     });
   }
 
-  // catalogo.json → las mismas filas, para que el SQL reciba siempre lo mismo
+  // catalogo.json → filas por id: es el respaldo, trae todos los ids
   function filasDeJSON(texto) {
     let c;
     try { c = JSON.parse(texto); } catch (e) { throw new Error('El archivo no es un JSON válido.'); }
@@ -191,21 +314,12 @@ const Archivo = (function () {
     const filas = [];
     let n = 1;
     for (const s of c.saberes) {
+      const base = { eje_id: s.eje_id || '', saber_id: s.id || '', anio: s.anio == null ? '' : String(s.anio),
+        trimestre: s.trimestre == null ? '' : String(s.trimestre), saber: s.texto || '' };
       const suyos = porSaber.get(s.id) || [];
-      const base = {
-        eje_id: s.eje_id || '', saber_id: s.id || '',
-        anio: s.anio == null ? '' : String(s.anio),
-        trimestre: s.trimestre == null ? '' : String(s.trimestre),
-        saber: s.texto || '',
-      };
-      if (!suyos.length) {
-        filas.push(Object.assign({ fila: ++n }, base));
-        continue;
-      }
+      if (!suyos.length) { filas.push(Object.assign({ fila: ++n }, base)); continue; }
       for (const co of suyos) {
-        filas.push(Object.assign({ fila: ++n }, base, {
-          contenido_id: co.id || '', contenido: co.texto || '',
-        }));
+        filas.push(Object.assign({ fila: ++n }, base, { contenido_id: co.id || '', contenido: co.texto || '' }));
       }
     }
     return filas;
@@ -214,29 +328,45 @@ const Archivo = (function () {
   async function elegirArchivo(input) {
     const f = input && input.files && input.files[0];
     if (!f) return;
+    const m = materia();
     estado.error = null;
     estado.aviso = null;
     estado.importe = null;
     estado.trabajando = 'Leyendo el archivo…';
     pintar();
     try {
-      const esJSON = /\.json$/i.test(f.name);
-      const filas = esJSON
-        ? filasDeJSON(await f.text())
-        : await filasDeExcel(await f.arrayBuffer());
-      if (!filas.length) throw new Error('El archivo no trae ninguna fila.');
+      let modo, datos;
+      if (/\.json$/i.test(f.name)) {
+        modo = 'correccion';
+        datos = filasDeJSON(await f.text());
+      } else {
+        const crudas = await hojaDeExcel(await f.arrayBuffer());
+        const col = leerTitulos(crudas[0]);
+        const conIds = col.saber_id != null && crudas.slice(1).some((fila) => celda(fila[col.saber_id]));
+        if (conIds) {
+          modo = 'correccion';
+          datos = filasPorId(crudas);
+        } else {
+          modo = 'reemplazo';
+          datos = saberesDePlanilla(crudas, m);
+        }
+      }
 
-      estado.trabajando = `Revisando ${filas.length} ${plural(filas.length, 'fila', 'filas')}…`;
-      pintar();
-
-      // Primero se mira: p_aplicar en false no escribe nada
-      const { data, error } = await sb.rpc('importar_catalogo', {
-        p_filas: filas, p_aplicar: false, p_archivo: f.name,
-      });
-      if (error) throw new Error(error.message);
-
-      estado.trabajando = null;
-      estado.importe = { archivo: f.name, filas: filas, resumen: data };
+      if (modo === 'reemplazo' && datos.errores.length) {
+        estado.trabajando = null;
+        estado.importe = { modo, archivo: f.name, datos, resumen: { errores: datos.errores } };
+      } else {
+        estado.trabajando = modo === 'reemplazo'
+          ? `Comparando ${datos.saberes.length} saberes con lo que hay en ${m.nombre}…`
+          : 'Revisando el archivo…';
+        pintar();
+        const { data, error } = modo === 'reemplazo'
+          ? await sb.rpc('reemplazar_materia', { p_espacio_id: m.id, p_saberes: datos.saberes, p_aplicar: false, p_archivo: f.name })
+          : await sb.rpc('importar_catalogo', { p_filas: datos, p_aplicar: false, p_archivo: f.name });
+        if (error) throw new Error(error.message);
+        estado.trabajando = null;
+        estado.importe = { modo, archivo: f.name, datos, resumen: data, materia: m };
+      }
     } catch (e) {
       estado.trabajando = null;
       estado.error = (e && e.message) || 'No pudimos leer el archivo.';
@@ -247,21 +377,24 @@ const Archivo = (function () {
 
   async function aplicar(alRefrescar) {
     const im = estado.importe;
-    if (!im || estado.aplicando) return;
+    if (!im || estado.aplicando) return null;
     estado.aplicando = true;
     estado.error = null;
     pintar();
     try {
-      const { data, error } = await sb.rpc('importar_catalogo', {
-        p_filas: im.filas, p_aplicar: true, p_archivo: im.archivo,
-      });
+      const { data, error } = im.modo === 'reemplazo'
+        ? await sb.rpc('reemplazar_materia', { p_espacio_id: im.materia.id, p_saberes: im.datos.saberes, p_aplicar: true, p_archivo: im.archivo })
+        : await sb.rpc('importar_catalogo', { p_filas: im.datos, p_aplicar: true, p_archivo: im.archivo });
       if (error) throw new Error(error.message);
       estado.aplicando = false;
       estado.importe = null;
       estado.abierto = false;
       estado.aviso = null;
       if (alRefrescar) await alRefrescar();
-      return resumenCorto(data) + ' Queda todo en el historial. Acordate de publicar para que lo vean los docentes.';
+      const hecho = im.modo === 'reemplazo'
+        ? `${im.materia.nombre} actualizada: ${cambiosReemplazo(data).join(', ') || 'sin cambios'}.`
+        : resumenCorto(data);
+      return hecho + ' Queda todo en el historial. Acordate de publicar para que lo vean los docentes.';
     } catch (e) {
       estado.aplicando = false;
       estado.error = (e && e.message) || 'No pudimos aplicar los cambios.';
@@ -272,7 +405,26 @@ const Archivo = (function () {
 
   /* ---------- Cómo se cuenta lo que va a pasar ---------- */
 
-  const RENGLONES = [
+  const RENGLONES_REEMPLAZO = [
+    ['saberes_se_mantienen', 'saber queda igual', 'saberes quedan igual'],
+    ['saberes_corregidos', 'saber corregido', 'saberes corregidos'],
+    ['saberes_se_mueven', 'saber cambia de trimestre, año o eje', 'saberes cambian de trimestre, año o eje'],
+    ['saberes_vuelven', 'saber que estaba archivado vuelve', 'saberes que estaban archivados vuelven'],
+    ['saberes_nuevos', 'saber nuevo', 'saberes nuevos'],
+    ['saberes_salen', 'saber sale (queda archivado, con sus respuestas)', 'saberes salen (quedan archivados, con sus respuestas)'],
+    ['contenidos_nuevos', 'contenido nuevo', 'contenidos nuevos'],
+    ['contenidos_corregidos', 'contenido corregido', 'contenidos corregidos'],
+    ['contenidos_vuelven', 'contenido que vuelve', 'contenidos que vuelven'],
+    ['contenidos_salen', 'contenido sale', 'contenidos salen'],
+  ];
+
+  function cambiosReemplazo(r, conIguales) {
+    return RENGLONES_REEMPLAZO
+      .filter(([k]) => Number(r[k] || 0) > 0 && (conIguales || k !== 'saberes_se_mantienen'))
+      .map(([k, uno, varios]) => `${r[k]} ${plural(r[k], uno, varios)}`);
+  }
+
+  const RENGLONES_CORRECCION = [
     ['saberes_nuevos', 'saber nuevo', 'saberes nuevos'],
     ['saberes_editados', 'saber corregido', 'saberes corregidos'],
     ['saberes_archivados', 'saber que se archiva', 'saberes que se archivan'],
@@ -283,71 +435,104 @@ const Archivo = (function () {
     ['contenidos_restaurados', 'contenido que se restaura', 'contenidos que se restauran'],
   ];
 
-  function cambios(r) {
-    return RENGLONES.filter(([clave]) => Number(r[clave] || 0) > 0)
-      .map(([clave, uno, varios]) => `${r[clave]} ${plural(Number(r[clave]), uno, varios)}`);
+  function cambiosCorreccion(r) {
+    return RENGLONES_CORRECCION.filter(([k]) => Number(r[k] || 0) > 0)
+      .map(([k, uno, varios]) => `${r[k]} ${plural(r[k], uno, varios)}`);
   }
 
   function resumenCorto(r) {
-    const c = cambios(r);
-    if (!c.length) return 'El archivo no traía ningún cambio.';
-    return 'Importado: ' + c.join(', ') + '.';
+    const c = cambiosCorreccion(r);
+    return c.length ? 'Importado: ' + c.join(', ') + '.' : 'El archivo no traía ningún cambio.';
   }
 
   /* ---------- Pantalla ---------- */
 
-  function bloqueImporte() {
-    const im = estado.importe;
+  function bloqueErrores(errores) {
+    return `
+      <div class="ar-resumen ar-resumen--error">
+        <div class="ar-resumen__titulo">${errores.length} ${plural(errores.length, 'fila tiene un problema', 'filas tienen problemas')}</div>
+        <p class="bajada">No se cambió nada. Corregí esas filas en el Excel y volvé a subirlo.</p>
+        <ul class="ar-errores">
+          ${errores.slice(0, 10).map((e) => `<li><strong>Fila ${esc(e.fila)}</strong> · ${esc(e.mensaje)}</li>`).join('')}
+        </ul>
+        ${errores.length > 10 ? `<p class="bajada">Y ${errores.length - 10} más.</p>` : ''}
+      </div>
+      <div class="t-panel__acciones">
+        <button type="button" class="t-cancelar" data-accion="ar-cancelar-importe">Entendido</button>
+      </div>`;
+  }
+
+  function bloqueEjemplos(ejemplos) {
+    if (!ejemplos || !ejemplos.length) return '';
+    return `
+      <div class="ar-ejemplos__titulo">Algunos de los cambios</div>
+      <ul class="ar-ejemplos">
+        ${ejemplos.map((e) => `
+          <li>
+            <span class="ar-ejemplo__que">${esc(e.que)}</span>
+            ${e.antes ? `<span class="ar-ejemplo__antes">${esc(e.antes)}</span>` : ''}
+            ${e.despues ? `<span class="ar-ejemplo__despues">${esc(e.despues)}</span>` : ''}
+          </li>`).join('')}
+      </ul>`;
+  }
+
+  function bloqueReemplazo(im) {
     const r = im.resumen || {};
-    const errores = r.errores || [];
-    const lista = cambios(r);
+    const m = im.materia || materia();
+    const lista = cambiosReemplazo(r, true);
+    const anios = (r.anios || []).filter((a) => a > 0);
+    const quedan = m.anios.filter((a) => !anios.includes(a));
+    const alcance = r.por_ciclo
+      ? 'Se reemplaza toda la materia.'
+      : quedan.length
+        ? `Se reemplaza solo ${textoAnios(anios)} año. ${textoAnios(quedan)} no se ${plural(quedan.length, 'toca', 'tocan')}.`
+        : `Se reemplazan ${textoAnios(anios)} año.`;
 
-    if (errores.length) {
-      return `
-        <div class="ar-resumen ar-resumen--error">
-          <div class="ar-resumen__titulo">${errores.length} ${plural(errores.length, 'fila tiene un problema', 'filas tienen problemas')}</div>
-          <p class="bajada">No se puede importar hasta que estén resueltas. Corregilas en el archivo y volvé a subirlo: no se aplicó ningún cambio.</p>
-          <ul class="ar-errores">
-            ${errores.slice(0, 8).map((e) => `<li><strong>Fila ${esc(e.fila)}</strong> · ${esc(e.mensaje)}</li>`).join('')}
-          </ul>
-          ${errores.length > 8 ? `<p class="bajada">Y ${errores.length - 8} más.</p>` : ''}
-        </div>
-        <div class="t-panel__acciones">
-          <button type="button" class="t-cancelar" data-accion="ar-cancelar-importe">Entendido</button>
-        </div>`;
-    }
-
-    if (!lista.length) {
+    if (!cambiosReemplazo(r, false).length) {
       return `
         <div class="ar-resumen">
-          <div class="ar-resumen__titulo">El archivo no trae cambios</div>
-          <p class="bajada">Revisamos las ${r.filas} ${plural(r.filas, 'fila', 'filas')} de
-            «${esc(im.archivo)}» y dicen lo mismo que el catálogo. No hay nada que aplicar.</p>
+          <div class="ar-resumen__titulo">La planilla dice lo mismo que el catálogo</div>
+          <p class="bajada">Revisamos los ${r.filas} saberes de «${esc(im.archivo)}» y ${m.nombre} ya está así. No hay nada que aplicar.</p>
         </div>
         <div class="t-panel__acciones">
           <button type="button" class="t-cancelar" data-accion="ar-cancelar-importe">Cerrar</button>
         </div>`;
     }
 
-    const ejemplos = r.ejemplos || [];
+    return `
+      <div class="ar-resumen">
+        <div class="ar-resumen__titulo">Así va a quedar ${esc(m.nombre)}</div>
+        <p class="bajada"><strong>${esc(alcance)}</strong></p>
+        <ul class="ar-cuenta">${lista.map((t) => `<li>${esc(t)}</li>`).join('')}</ul>
+        ${bloqueEjemplos(r.ejemplos)}
+        <p class="bajada">Nada se borra: lo que sale queda archivado con sus respuestas y se puede recuperar
+          volviendo a subir una planilla que lo tenga.</p>
+      </div>
+      <div class="t-panel__acciones">
+        <button type="button" class="t-descargar" data-accion="ar-aplicar" ${estado.aplicando ? 'disabled' : ''}>${estado.aplicando ? 'Aplicando…' : `Aplicar a ${esc(m.nombre)}`}</button>
+        <button type="button" class="t-cancelar" data-accion="ar-cancelar-importe">Cancelar</button>
+      </div>`;
+  }
+
+  function bloqueCorreccion(im) {
+    const r = im.resumen || {};
+    const lista = cambiosCorreccion(r);
+    if (!lista.length) {
+      return `
+        <div class="ar-resumen">
+          <div class="ar-resumen__titulo">El archivo no trae cambios</div>
+          <p class="bajada">Revisamos las ${r.filas} ${plural(r.filas, 'fila', 'filas')} de «${esc(im.archivo)}» y dicen lo mismo que el catálogo.</p>
+        </div>
+        <div class="t-panel__acciones">
+          <button type="button" class="t-cancelar" data-accion="ar-cancelar-importe">Cerrar</button>
+        </div>`;
+    }
     return `
       <div class="ar-resumen">
         <div class="ar-resumen__titulo">Esto es lo que haría</div>
         <ul class="ar-cuenta">${lista.map((t) => `<li>${esc(t)}</li>`).join('')}</ul>
-        <p class="bajada">De las ${r.filas} ${plural(r.filas, 'fila', 'filas')} de «${esc(im.archivo)}»,
-          ${r.sin_cambios} ${plural(r.sin_cambios, 'ya decía', 'ya decían')} lo mismo.
-          <strong>Los saberes que el archivo no menciona quedan como están</strong>: no se archiva nada por no figurar.</p>
-        ${ejemplos.length ? `
-          <div class="ar-ejemplos__titulo">Algunos de los cambios</div>
-          <ul class="ar-ejemplos">
-            ${ejemplos.map((e) => `
-              <li>
-                <span class="ar-ejemplo__que">${esc(e.que)}</span>
-                ${e.antes ? `<span class="ar-ejemplo__antes">${esc(e.antes)}</span>` : ''}
-                ${e.despues ? `<span class="ar-ejemplo__despues">${esc(e.despues)}</span>` : ''}
-              </li>`).join('')}
-          </ul>` : ''}
-        <p class="bajada">Nada se borra: lo que se archiva conserva sus respuestas y se puede restaurar.</p>
+        <p class="bajada">Este archivo corrige saber por saber: <strong>lo que no menciona queda como está</strong>.</p>
+        ${bloqueEjemplos(r.ejemplos)}
       </div>
       <div class="t-panel__acciones">
         <button type="button" class="t-descargar" data-accion="ar-aplicar" ${estado.aplicando ? 'disabled' : ''}>${estado.aplicando ? 'Aplicando…' : 'Aplicar los cambios'}</button>
@@ -355,9 +540,16 @@ const Archivo = (function () {
       </div>`;
   }
 
+  function bloqueImporte() {
+    const im = estado.importe;
+    const errores = (im.resumen && im.resumen.errores) || [];
+    if (errores.length) return bloqueErrores(errores);
+    return im.modo === 'reemplazo' ? bloqueReemplazo(im) : bloqueCorreccion(im);
+  }
+
   function panel() {
     if (!estado.abierto) return '';
-    const c = contexto();
+    const m = materia();
     return `<div class="t-velo" data-accion="ar-cerrar"></div>
     <div class="t-panel ed-panel ar-panel" role="dialog" aria-modal="true">
       <div class="t-panel__cabecera">
@@ -371,34 +563,25 @@ const Archivo = (function () {
 
       ${estado.importe ? bloqueImporte() : `
         <section class="ar-seccion">
-          <div class="ar-seccion__titulo">Exportar</div>
-          <p class="bajada">El Excel trae una fila por contenido, con los ids en columnas. Es el
-            archivo para repartir entre el equipo y corregir fuera del panel.</p>
-          <div class="ar-opciones" role="radiogroup" aria-label="Qué exportar">
-            <button type="button" class="ar-opcion ${estado.que === 'vista' ? 'ar-opcion--elegida' : ''}" data-accion="ar-que" data-que="vista" role="radio" aria-checked="${estado.que === 'vista'}">
-              ${esc(c.nombreMateria || 'Esta materia')} · ${esc(c.textoAnio || '')}
-            </button>
-            <button type="button" class="ar-opcion ${estado.que === 'todo' ? 'ar-opcion--elegida' : ''}" data-accion="ar-que" data-que="todo" role="radio" aria-checked="${estado.que === 'todo'}">
-              Todo el catálogo
-            </button>
-          </div>
+          <div class="ar-seccion__titulo">Bajar</div>
+          <p class="bajada">La planilla de ${esc(m.nombre)}, con todos sus años: una fila por saber y sus
+            contenidos en columnas. Es para corregir en Excel y volver a subir.</p>
           <div class="ar-botones">
-            <button type="button" class="t-descargar" data-accion="ar-excel" ${estado.trabajando ? 'disabled' : ''}>Bajar el Excel</button>
+            <button type="button" class="t-descargar" data-accion="ar-planilla" ${estado.trabajando ? 'disabled' : ''}>Bajar la planilla de ${esc(m.nombre)}</button>
             <button type="button" class="t-cancelar" data-accion="ar-json" ${estado.trabajando ? 'disabled' : ''}>Bajar el JSON</button>
           </div>
           <p class="ar-ayuda">El JSON es el respaldo del repositorio (<code>datos/catalogo.json</code>), no se corrige a mano.</p>
         </section>
 
         <section class="ar-seccion ar-seccion--importar">
-          <div class="ar-seccion__titulo">Importar</div>
-          <p class="bajada">Subí el Excel corregido, o un <code>catalogo.json</code>. Primero te
-            mostramos qué cambiaría; no se toca nada hasta que confirmes.</p>
+          <div class="ar-seccion__titulo">Subir</div>
+          <p class="bajada">Subí la planilla corregida de ${esc(m.nombre)}. Antes de cambiar nada te mostramos
+            cómo va a quedar.</p>
           <label class="ar-subir">
             <input type="file" accept=".xlsx,.xls,.json" data-accion="ar-elegir" ${estado.trabajando ? 'disabled' : ''}>
             <span>Elegir el archivo</span>
           </label>
-          <p class="ar-ayuda">Las correcciones se cruzan por id. Lo que el archivo no menciona
-            queda como está: ausencia no es baja.</p>
+          <p class="ar-ayuda">Solo cambian los años que vengan en la planilla. Lo que no cambió conserva sus respuestas.</p>
         </section>`}
     </div>`;
   }
@@ -438,8 +621,7 @@ const Archivo = (function () {
     switch (nombre) {
       case 'ar-abrir': abrir(); return null;
       case 'ar-cerrar': cerrar(); return null;
-      case 'ar-que': estado.que = el.dataset.que; estado.aviso = null; pintar(); return null;
-      case 'ar-excel': await exportarExcel(); return null;
+      case 'ar-planilla': await bajarPlanilla(); return null;
       case 'ar-json': await exportarJSON(); return null;
       case 'ar-elegir': await elegirArchivo(el); return null;
       case 'ar-cancelar-importe': estado.importe = null; estado.error = null; pintar(); return null;

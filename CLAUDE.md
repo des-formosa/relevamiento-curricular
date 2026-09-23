@@ -57,6 +57,7 @@ fijada, nunca por bundler.
 ├── CLAUDE.md
 ├── index.html              formulario del docente (con «?demo» no escribe en la base)
 ├── dashboard.html          panel del equipo (requiere login)
+├── planillas/              las planillas base por materia (no se versionan: se generan del panel)
 ├── assets/
 │   ├── estilos.css         sistema visual (tokens, componentes, móvil y escritorio)
 │   ├── normalizar.js       normalizarTexto(), espejo exacto de normalizar_texto() en SQL
@@ -89,7 +90,8 @@ fijada, nunca por bundler.
     ├── 08_cargar_contenidos_N.sql  generado: los contenidos, en lotes
     ├── 09_edicion_catalogo.sql  editar el catálogo desde el panel, con auditoría
     ├── 10_publicar_catalogo.sql  bucket `catalogo`, registro de publicaciones
-    ├── 11_importar_catalogo.sql  exportar a filas e importar correcciones
+    ├── 11_importar_catalogo.sql  exportar a filas e importar correcciones por id
+    ├── 12_reemplazar_materia.sql  subir la planilla de una materia y reemplazarla
     └── generar_cargas.py   regenera 06, 07 y 08 cuando cambian los JSON
 ```
 
@@ -419,38 +421,53 @@ La barra del editor dice en qué estado está —«hay 4 cambios sin publicar»,
 desde hace 2 horas, lo publicó fulano»— usando `estado_publicacion()`, que compara la última
 publicación contra la auditoría.
 
-### Exportar e importar (assets/archivo.js + sql/11_importar_catalogo.sql)
+### La planilla de la materia (assets/archivo.js + sql/12_reemplazar_materia.sql)
 
-Corregir de a un saber en la pantalla sirve para un arreglo suelto. Una revisión completa se
-hace en Excel: se lee de corrido y se reparte entre varias personas. El botón «Exportar e
-importar» de la barra del editor cubre las dos direcciones del mismo archivo.
+El equipo técnico no maneja ids ni formatos: trabaja en Excel y apenas. La primera versión del
+importador pedía el Excel con una fila por contenido y los ids en columnas; cuando el equipo
+rehízo Lengua en un Excel sin ids, el importador **sumó** los 132 saberes nuevos al lado de los
+106 viejos, porque para él una fila sin id es un alta. El botón existía pero no servía.
 
-**Exportar** baja el catálogo como Excel (`catalogo_filas()`), de esta materia y año o
-completo: una fila por contenido, con `eje_id`, `saber_id` y `contenido_id` en columnas y el
-estado de cada uno. También baja el JSON (`exportar_catalogo()`), que es el respaldo para
-`datos/catalogo.json` y no se corrige a mano.
+Ahora el botón «Exportar e importar» de la barra del editor da **la planilla de la materia**:
+una fila por saber, con las columnas *Año · Trimestre · Eje · Saber · Contenido 1, 2, 3… ·
+Código (no tocar)*, ya completa con lo que hay hoy, y una segunda hoja que explica cómo
+completarla en palabras del equipo. Se corrige en Excel y se sube acá mismo. Subirla
+**reemplaza la materia** con `reemplazar_materia()`, con estas reglas:
 
-**Importar** acepta ese mismo Excel corregido o un `catalogo.json`; el navegador deja las dos
-cosas en la misma forma de filas y `importar_catalogo()` hace el resto. Cuatro reglas:
+1. **Solo los años que vienen en el archivo.** Si la planilla trae solo 1° año, 2° y 3° no se
+   tocan. Un archivo parcial no puede vaciar la materia. Pero **dentro de un año que viene, lo
+   que no está se archiva**: la hoja de instrucciones y la vista previa lo dicen en negrita.
+2. **Lo que no cambió conserva su identidad**, y con ella sus respuestas. Un saber se reconoce
+   por su código; si no lo tiene, por el mismo texto en el mismo año (primero el del mismo
+   trimestre, porque el mismo texto puede estar en dos: pasa en Matemática 3°); y si no, por un
+   texto casi igual (parecido ≥ 0,8 en el mismo eje y año), que es una corrección. Los
+   contenidos igual: mismo texto, o parecido ≥ 0,6 dentro del mismo saber. Sin esto, corregir un
+   tipeo después del 26 dejaría las respuestas colgadas de un saber archivado y el panel
+   mostraría cero.
+3. **Lo que sale se archiva** con sus respuestas, y vuelve con su mismo id si una planilla
+   posterior lo trae de nuevo.
+4. **Primero se mira, y todo o nada.** La vista previa dice «Así va a quedar Lengua: se
+   reemplazan 1°, 2° y 3° año · 50 saberes quedan igual · 1 corregido · 1 nuevo · 1 sale», con
+   ejemplos del antes y el después. Una fila con problemas —año que la materia no dicta,
+   trimestre fuera de 1 a 3, eje que no es de la materia, código de otra materia— cancela todo,
+   y la pantalla dice cuál es y por qué.
 
-1. **Ausencia no es baja.** Lo que el archivo no menciona no se toca. El Excel que revisa el
-   equipo tiene menos saberes que el catálogo, así que un importador que archivara lo que
-   falta borraría media Resolución sin que nadie se entere. Para archivar hay que escribirlo
-   en la columna «estado».
-2. **Un saber se resuelve una sola vez**, aunque venga en muchas filas. Como el archivo trae
-   una fila por contenido, un saber con cinco contenidos aparece cinco veces con su texto
-   repetido. Si se tomara fila por fila, corregirlo en una sola dejaría el texto yendo y
-   viniendo. Primero se junta lo que el archivo dice de cada saber; si dos filas se
-   contradicen, se avisa y no se aplica nada.
-3. **Primero se mira.** Con `p_aplicar` en false devuelve el resumen sin escribir: «1 saber
-   corregido, 1 contenido nuevo». La pantalla lo muestra con ejemplos del antes y el después,
-   y recién ahí ofrece confirmar.
-4. **Todo o nada.** Una fila con problemas cancela la importación entera, y el panel dice
-   cuáles son y por qué.
+El eje se acepta como lo escriba el equipo: su id, «EJE II», «Eje II: Lectura…», «2» o el
+nombre sin el número («Literatura») — `eje_desde_texto()`. El importador también entiende un
+Excel con **una fila por contenido** (como el que armó el equipo para Lengua): junta las filas
+del mismo saber. Si el archivo trae una columna «Materia» y no coincide con la materia elegida
+en el panel, avisa antes de tocar nada.
 
-Escribe llamando a `guardar_saber`, `guardar_contenido` y `archivar_catalogo`, las mismas del
-panel: valen sus validaciones y cada cambio queda en la auditoría con la nota «Importado de
-\<archivo\>». Importar tampoco publica: después hay que tocar «Publicar».
+Si el archivo trae la columna `saber_id` completa, es el Excel de correcciones de antes
+(`importar_catalogo()`, sql/11): corrige por id y lo que no menciona no se toca. Se sigue
+aceptando, pero ya no se ofrece. El JSON se sigue pudiendo bajar como respaldo del repositorio.
+
+Escribe con `guardar_saber`, `guardar_contenido` y `archivar_catalogo`: valen sus validaciones
+y cada cambio queda en la auditoría con la nota «Planilla «archivo»». Subir no publica: después
+hay que tocar «Publicar».
+
+`planillas/` tiene las 16 planillas generadas con el mismo código del panel, para repartir.
+No se versionan: se desactualizan en cuanto alguien edita, y el panel las genera al día.
 
 Las funciones del panel (`catalogo_editar`, `guardar_saber`, `guardar_contenido`,
 `archivar_catalogo`, `historial_catalogo`, `exportar_catalogo`) son `security definer` y
@@ -461,7 +478,7 @@ formulario solo entra por `registrar_aporte`.
 
 Son veinte personas que entran cada tanto, no todos los días. En vez de un instructivo que
 nadie lee, el panel se explica solo: ilumina una parte de la pantalla y dice qué mira, con
-«Saltar», «Anterior» y «Siguiente». Diez pasos para leer los resultados y ocho para editar el
+«Saltar», «Anterior» y «Siguiente». Diez pasos para leer los resultados y nueve para editar el
 catálogo.
 
 Arranca solo la primera vez que se entra a cada pantalla (queda anotado en `localStorage`,
@@ -614,6 +631,18 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
 - **Catálogo curricular terminado** (22/09/2026): las 16 materias transcritas a mano contra el
   PDF. 942 saberes con trimestre asignado y 45 ejes reales, en `datos/catalogo.json`. Todos
   `calidad: buena`, ninguna combinación materia/año vacía
+- **La planilla de la materia** (23/09/2026): `sql/12_reemplazar_materia.sql` y
+  `assets/archivo.js`. El equipo baja la planilla de una materia, la corrige en Excel y la sube;
+  el panel muestra cómo va a quedar y reemplaza. Probado contra PostgreSQL 16 con el catálogo
+  real: bajar y subir sin tocar no cambia nada; medio 1° año archiva esa mitad y deja 2° y 3°
+  intactos; volver a subir la completa restaura los mismos ids; un tipeo en un saber con
+  respuestas conserva id y respuestas; reescribirlo entero entra como nuevo y archiva el viejo
+  con su respuesta. Probado en el navegador de punta a punta, incluido el Excel del equipo para
+  Lengua (una fila por contenido), que ahora entra sin duplicar
+- **Los SQL se instalan desde cero en orden** (23/09/2026): corriendo del `01` al `12` en una
+  base vacía, el `07` fallaba porque `cargar_catalogo()` usa la columna `estado` que creaba el
+  `09`. Ahora la crea el `01`. Verificado: los trece archivos pasan en orden y se pueden
+  repetir encima
 - **Lengua y Matemática con los saberes priorizados** (23/09/2026): 132 y 52 saberes, 830 y
   117 contenidos, leídos de las grillas del equipo con `datos/priorizados/convertir.py`. El
   catálogo queda en 848 saberes y 4.273 contenidos. Probado cargándolo en PostgreSQL local:
@@ -640,7 +669,7 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
   archiva nada; un saber corregido en sus cinco filas genera una sola edición y una sola
   entrada de auditoría; corregido en una sola fila, se rechaza por contradictorio
 - **Recorrido guiado del panel** (`assets/tour.js`): diez pasos para leer los resultados y
-  ocho para editar el catálogo. Arranca solo la primera vez y se repite desde «¿Cómo se usa?»
+  nueve para editar el catálogo. Arranca solo la primera vez y se repite desde «¿Cómo se usa?»
 - Dashboard completo (`dashboard.html` + `assets/dashboard.js` + `assets/tablero.css`):
   ingreso con Supabase Auth, chequeo de `equipo_planificacion`, Detalle, Mapa de calor,
   datos de ejemplo, exportar a Excel y PDF
@@ -665,10 +694,12 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
   formulario ya muestra lo nuevo (lee el JSON), pero el panel sigue con lo viejo
 - **Confirmar el eje de 4 saberes de Matemática** con el equipo (están en
   `datos/priorizados/revision.md`, sección «Ejes que conviene confirmar»)
-- **Que el importador del panel pueda reemplazar una materia** entera desde un Excel simple,
-  sin que el equipo tenga que manejar ids. Hoy solo corrige por id o agrega
-- **Ejecutar `sql/11_importar_catalogo.sql`** en el SQL Editor, después del 09 y el 10:
-  habilita «Exportar e importar» en el panel. Se puede repetir
+- **Ejecutar `sql/11_importar_catalogo.sql` y `sql/12_reemplazar_materia.sql`** en el SQL
+  Editor, en ese orden y después de los `07`/`08`. Sin el `12` la planilla no se puede subir.
+  Se pueden repetir
+- Las planillas de Lengua y Matemática traen los códigos nuevos (`--pr-`): **hay que cargar los
+  `07`/`08` antes** de que el equipo suba una, o el panel va a decir que esos códigos no son de
+  la materia
 - Prueba real con 5 o 6 docentes cargando desde sus celulares antes del 26
 
 **Orden sugerido**: correr el `11`, probar el formulario en celulares reales y seguir juntando

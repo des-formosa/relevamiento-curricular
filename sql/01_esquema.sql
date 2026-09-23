@@ -65,6 +65,29 @@ create table if not exists public.contenidos_sugeridos (
   unique (id, saber_id)
 );
 
+-- Activo o archivado. Nada del catálogo se borra: lo que sale se archiva y
+-- conserva sus respuestas (ver 09_edicion_catalogo.sql).
+--
+-- Va acá y no solo en el 09 porque cargar_catalogo(), en el 03, ya lo usa: en
+-- una instalación nueva, corriendo los archivos en orden, el 07 fallaba por no
+-- encontrar la columna. El 09 lo repite y no pasa nada: todo es «si no existe».
+alter table public.saberes
+  add column if not exists estado text not null default 'activo';
+alter table public.contenidos_sugeridos
+  add column if not exists estado text not null default 'activo';
+
+do $$
+begin
+  if not exists (select 1 from pg_constraint where conname = 'saberes_estado_check') then
+    alter table public.saberes
+      add constraint saberes_estado_check check (estado in ('activo', 'archivado'));
+  end if;
+  if not exists (select 1 from pg_constraint where conname = 'contenidos_estado_check') then
+    alter table public.contenidos_sugeridos
+      add constraint contenidos_estado_check check (estado in ('activo', 'archivado'));
+  end if;
+end $$;
+
 
 -- ----------------------------------------------------------------------------
 -- 2. Institucional

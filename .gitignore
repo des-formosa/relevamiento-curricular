@@ -9,3 +9,6 @@ Thumbs.db
 # (los logos ya están en assets/img y las fuentes en assets/fuentes)
 fonts/
 logos/
+
+# Planillas base que se generan desde el panel: se reparten, no se versionan
+planillas/

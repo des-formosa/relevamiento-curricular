@@ -127,7 +127,7 @@ const Tour = (function () {
       {
         objetivo: '[data-accion="ar-abrir"]',
         titulo: 'Corregir en Excel y volver',
-        texto: 'Baja el catálogo como Excel, una fila por contenido, para repartir entre el equipo y corregir con más comodidad. Cuando lo subís de vuelta te mostramos qué cambiaría antes de tocar nada, y lo que el archivo no menciona queda como está.',
+        texto: 'Baja la planilla de la materia: una fila por saber, con sus contenidos en columnas. Se corrige en Excel y se sube acá mismo. Antes de cambiar nada te mostramos cómo va a quedar, y lo que no cambió conserva sus respuestas.',
       },
       {
         objetivo: '[data-accion="ed-publicar"]',
