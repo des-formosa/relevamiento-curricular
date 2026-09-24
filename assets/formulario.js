@@ -1465,7 +1465,6 @@
             <p class="bajada bajada--16">${bajada}</p>
           </div>
           <div class="resumen__acciones">
-            ${botonPrincipal}
             <div class="conteo">${total} ${plural(total, 'saber', 'saberes')} · ${totalContenidos} contenidos</div>
           </div>
         </div>
