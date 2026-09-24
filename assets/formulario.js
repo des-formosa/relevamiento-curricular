@@ -1453,7 +1453,7 @@
     const titulo = parcial ? 'Lo que cargaste hasta acá' : (estado.reenvio ? 'Lo que enviaste' : 'Revisá antes de enviar');
     const bajada = parcial
       ? `<span class="solo-movil">Está ordenado por trimestre. Podés corregir lo que quieras y después seguir cargando.</span><span class="solo-escritorio">Los tres trimestres lado a lado. Podés corregir lo que quieras y después seguir cargando.</span>`
-      : `<span class="solo-movil">Está ordenado por trimestre, como lo fuiste cargando. Es la última pantalla para corregir.</span><span class="solo-escritorio">Los tres trimestres lado a lado. Cada columna se recorre por separado.</span>`;
+      : `<span class="solo-movil">Está ordenado por trimestre, como lo fuiste cargando. Es la última pantalla para corregir.</span><span class="solo-escritorio">Los tres trimestres lado a lado. Es la última pantalla para corregir.</span>`;
 
     return pantalla('pantalla--resumen pantalla--centrada-ancha', `
       ${cabecera()}

@@ -317,7 +317,7 @@ Se usa desde el celular tanto como desde la computadora: diseñar mobile-first.
 | 5 | Área | seis opciones |
 | 6 | Espacio curricular | filtrado por área |
 | 7 | Carga de contenidos | **la pantalla crítica**, ver abajo; antes de cada trimestre, la lista de sus saberes para destildar |
-| 8 | Resumen y chequeo | todo lo cargado, agrupado por trimestre, editable; si quedan saberes sin revisar no deja enviar |
+| 8 | Resumen y chequeo | todo lo cargado, agrupado por trimestre, editable; si quedan saberes sin revisar no deja enviar. En escritorio, los tres trimestres lado a lado bajan con la página (una sola barra de desplazamiento, como el panel) y el botón de enviar está arriba y al final |
 | 9 | Confirmación | "¿cargás otra materia?" → [misma escuela] [otra escuela] [terminé] |
 
 Cuando un área tiene un solo espacio (Matemática) la pantalla 6 se salta; Educación Artística
