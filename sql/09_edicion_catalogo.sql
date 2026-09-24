@@ -189,19 +189,23 @@ as $$
        and (p_anio is null or s.anio is null or s.anio = p_anio)
        and (select ok from permiso)
   ),
+  -- Solo respuestas reales: los datos de ejemplo (es_ejemplo) son inventados
+  -- y en el editor confundían («66 respuestas» antes de que cargue nadie)
   respuestas_saber as (
     select x.saber_id, count(*)::integer as n
       from (
-        select saber_id from public.selecciones
+        select se.saber_id, se.aporte_id from public.selecciones se
         union all
-        select saber_id from public.saberes_no_trabajados
+        select n.saber_id, n.aporte_id from public.saberes_no_trabajados n
       ) x
+      join public.aportes ap on ap.id = x.aporte_id and not ap.es_ejemplo
      where x.saber_id in (select id from sab)
      group by x.saber_id
   ),
   respuestas_contenido as (
     select se.contenido_sugerido_id as id, count(*)::integer as n
       from public.selecciones se
+      join public.aportes ap on ap.id = se.aporte_id and not ap.es_ejemplo
      where se.contenido_sugerido_id is not null
      group by se.contenido_sugerido_id
   ),

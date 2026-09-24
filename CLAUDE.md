@@ -794,7 +794,8 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
 
 **Pendiente**
 - **Correr `sql/09_edicion_catalogo.sql`** otra vez (24/09/2026): trae el historial con materia,
-  año y trimestre, y sus filtros. Sin eso, «Ver historial» del panel da error
+  año y trimestre, y sus filtros (sin eso, «Ver historial» da error), y el conteo de respuestas
+  del editor sin los datos de ejemplo: antes mostraba «66 respuestas» inventadas y confundía
 - **El orden de los saberes en la base**, en el SQL Editor y en este orden (el `09` redefine
   `panel_resultados()` del `04`, así que va después): `sql/04_vistas.sql`,
   `sql/09_edicion_catalogo.sql`, `sql/11_importar_catalogo.sql`, `sql/12_reemplazar_materia.sql` y
