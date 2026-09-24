@@ -441,14 +441,16 @@ as $$
     jsonb_build_object('error', 'Tu usuario no está en el equipo de Planificación.')
   else
     coalesce((
-      select jsonb_agg(fila order by espacio_orden, eje_orden, saber_orden, contenido_id)
+      select jsonb_agg(fila order by espacio_orden, anio_orden, trimestre, saber_orden, saber_id_orden, contenido_id)
         from (
-          select ec.orden as espacio_orden, e.orden as eje_orden, s.orden as saber_orden,
+          select ec.orden as espacio_orden, coalesce(s.anio, 0) as anio_orden, s.trimestre,
+                 s.orden as saber_orden, s.id as saber_id_orden,
                  c.id as contenido_id,
                  jsonb_build_object(
                    'materia',            ec.nombre,
                    'eje_id',             e.id,
                    'eje',                e.nombre,
+                   'eje_orden',          e.orden,
                    'saber_id',           s.id,
                    'anio',               s.anio,
                    'trimestre',          s.trimestre,

@@ -32,6 +32,7 @@ const Editor = (function () {
     confirmar: null,      // { tipo, id, texto, respuestas, archivar }
     historial: null,      // [] cuando está abierto
     verArchivados: false, // lo archivado se muestra solo si se pide
+    movido: null,         // { id, hacia }: el saber recién movido, para resaltarlo y no perderlo de vista
     aviso: null,
     publicacion: null,    // { publicado_en, publicado_por, cambios_sin_publicar }
     publicando: false,
@@ -55,6 +56,8 @@ const Editor = (function () {
     restaurar: svg('<path d="M4 12a8 8 0 1 0 2.3-5.6"/><path d="M4 4v5h5"/>', { color: '#0B4F4A' }),
     mas: svg('<path d="M12 5v14"/><path d="M5 12h14"/>'),
     reloj: svg('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>', { color: '#55605A' }),
+    arriba: svg('<path d="M6 15l6-6 6 6"/>', { tam: 20, grosor: 2.4 }),
+    abajo: svg('<path d="M6 9l6 6 6-6"/>', { tam: 20, grosor: 2.4 }),
     bajar: svg('<path d="M12 4v11"/><path d="M7 11l5 5 5-5"/><path d="M4 20h16"/>', { color: '#55605A' }),
     subir: svg('<path d="M12 20V9"/><path d="M7 13l5-5 5 5"/><path d="M4 4h16"/>', { tam: 19, color: '#FFFFFF', grosor: 2.4 }),
   };
@@ -131,7 +134,9 @@ const Editor = (function () {
     </div>`;
   }
 
-  function tarjetaSaber(s) {
+  // lugar/total: la posición del saber en su trimestre, que es el orden en que
+  // lo ve el docente. Solo los activos tienen lugar.
+  function tarjetaSaber(s, lugar, total) {
     const editando = estado.editando === 's:' + s.id;
     const archivado = s.estado === 'archivado';
     const activos = (s.contenidos || []).filter((c) => c.estado === 'activo');
@@ -149,14 +154,23 @@ const Editor = (function () {
          </div>`
       : `<div class="ed-saber__texto">${esc(s.texto)}</div>`;
 
-    return `<article class="ed-saber ${archivado ? 'ed-saber--archivado' : ''}">
+    const movido = estado.movido && estado.movido.id === s.id;
+    const flechas = !archivado && !editando && total > 1
+      ? `<span class="ed-saber__flechas">
+          ${lugar > 1 ? `<button type="button" class="ed-icono" title="Subir un lugar" aria-label="Subir un lugar" data-accion="ed-mover" data-id="${esc(s.id)}" data-hacia="-1"${estado.guardando ? ' disabled' : ''}>${Icono.arriba}</button>` : '<span class="ed-icono ed-icono--vacio"></span>'}
+          ${lugar < total ? `<button type="button" class="ed-icono" title="Bajar un lugar" aria-label="Bajar un lugar" data-accion="ed-mover" data-id="${esc(s.id)}" data-hacia="1"${estado.guardando ? ' disabled' : ''}>${Icono.abajo}</button>` : '<span class="ed-icono ed-icono--vacio"></span>'}
+        </span>`
+      : '';
+    return `<article class="ed-saber ${archivado ? 'ed-saber--archivado' : ''} ${movido ? 'ed-saber--movido' : ''}" data-saber="${esc(s.id)}">
       <header class="ed-saber__cabecera">
         <div class="ed-saber__datos">
+          ${archivado ? '' : `<span class="ed-saber__lugar" title="Lugar en el que lo ve el docente">${lugar} de ${total}</span>`}
           <span class="ed-saber__eje">${esc(s.eje)}</span>
-          <span class="ed-saber__meta">${ORDINAL[s.trimestre]} trimestre${s.anio ? ` · ${s.anio}° año` : ' · todo el ciclo'}${s.respuestas ? ` · ${s.respuestas} ${plural(s.respuestas, 'respuesta', 'respuestas')}` : ''}</span>
+          <span class="ed-saber__meta">${[s.anio ? '' : 'todo el ciclo', s.respuestas ? `${s.respuestas} ${plural(s.respuestas, 'respuesta', 'respuestas')}` : ''].filter(Boolean).join(' · ')}</span>
           ${archivado ? '<span class="ed-chip">archivado</span>' : ''}
         </div>
         <div class="ed-saber__botones">
+          ${flechas}
           <button type="button" class="ed-icono" title="Ver los cambios de este saber" data-accion="ed-historial" data-id="${esc(s.id)}">${Icono.reloj}</button>
           ${archivado
             ? `<button type="button" class="ed-icono" title="Volver a ofrecerlo" data-accion="ed-archivar-saber" data-id="${esc(s.id)}" data-archivar="0">${Icono.restaurar}</button>`
@@ -215,6 +229,8 @@ const Editor = (function () {
             <span class="ed-historial__fecha">${new Date(h.momento).toLocaleString('es-AR')}</span>
             <span class="ed-historial__usuario">${esc(h.usuario)}</span>
           </div>
+          ${h.accion === 'orden' && h.orden_antes && h.orden_despues
+            ? `<div class="ed-historial__lugar">Pasó del lugar ${esc(h.orden_antes)} al ${esc(h.orden_despues)}${h.trimestre ? ` del ${ORDINAL[h.trimestre] || ''} trimestre` : ''}.</div>` : ''}
           ${h.texto_antes && h.texto_antes !== h.texto_despues ? `<div class="ed-historial__antes">${esc(h.texto_antes)}</div>` : ''}
           ${h.texto_despues ? `<div class="ed-historial__despues">${esc(h.texto_despues)}</div>` : ''}
           ${h.nota ? `<div class="ed-historial__nota">${esc(h.nota)}</div>` : ''}
@@ -327,7 +343,16 @@ const Editor = (function () {
           : `Ver lo archivado (${nArchivados})`}</button>
       </div>` : ''}
       ${visibles.length
-        ? `<div class="ed-lista">${visibles.map(tarjetaSaber).join('')}</div>`
+        ? `<p class="ed-ayuda-orden">Los saberes de cada trimestre están en el orden en que los ve el docente. Con las flechas <span aria-hidden="true">˄ ˅</span> los cambiás de lugar.</p>
+           ${[1, 2, 3].map((t) => {
+             const delTrimestre = visibles.filter((s) => s.trimestre === t);
+             if (!delTrimestre.length) return '';
+             const activosT = delTrimestre.filter((s) => s.estado === 'activo');
+             return `<section class="ed-trimestre">
+               <h3 class="ed-trimestre__titulo">${ORDINAL[t]} trimestre <span>· ${activosT.length} ${plural(activosT.length, 'saber', 'saberes')}</span></h3>
+               <div class="ed-lista">${delTrimestre.map((s) => tarjetaSaber(s, activosT.indexOf(s) + 1, activosT.length)).join('')}</div>
+             </section>`;
+           }).join('')}`
         : '<div class="ed-vacio">No hay saberes activos en este año. Podés agregar uno o subir la planilla de la materia.</div>'}
       ${panelConfirmar()}
       ${panelHistorial()}
@@ -411,10 +436,34 @@ const Editor = (function () {
       }
       case 'ed-cerrar-historial': estado.historial = null; pintar(); break;
       case 'ed-ver-archivados': estado.verArchivados = !estado.verArchivados; pintar(); break;
+      case 'ed-mover': await mover(d.id, Number(d.hacia)); break;
       case 'ed-publicar': await publicar(); break;
       default: return false;
     }
     return true;
+  }
+
+  // Sube o baja un lugar. Después del redibujo, el foco vuelve a la misma
+  // flecha del mismo saber, así se puede tocar varias veces seguidas, y la
+  // tarjeta queda a la vista y resaltada un momento.
+  async function mover(id, hacia) {
+    if (estado.guardando) return;
+    estado.movido = { id, hacia };
+    const r = await llamar('mover_saber', { p_id: id, p_hacia: hacia }, null);
+    if (!r) { estado.movido = null; return; }
+    const tarjeta = document.querySelector(`[data-saber="${CSS.escape(id)}"]`);
+    if (tarjeta) {
+      tarjeta.scrollIntoView({ block: 'nearest' });
+      const flecha = tarjeta.querySelector(`[data-accion="ed-mover"][data-hacia="${hacia}"]`)
+        || tarjeta.querySelector('[data-accion="ed-mover"]');
+      if (flecha) flecha.focus({ preventScroll: true });
+    }
+    clearTimeout(mover.reloj);
+    mover.reloj = setTimeout(() => {
+      estado.movido = null;
+      const t = document.querySelector('.ed-saber--movido');
+      if (t) t.classList.remove('ed-saber--movido');
+    }, 1600);
   }
 
   function enfocar() {

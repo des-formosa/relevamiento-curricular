@@ -135,6 +135,8 @@
     volverA: null,          // 'resumen' | { tramo, indice } cuando se edita un saber puntual
     resumenDesde: null,     // { tramo } cuando se abrió «Ver lo que cargué hasta acá» a mitad de camino
     ultimoEnvio: null,      // lo que se muestra en la confirmación
+    enviado: null,          // copia de la materia recién enviada, para «Volver» desde la confirmación
+    reenvio: false,         // true mientras se revisa una materia ya enviada
     historial: [],          // aportes enviados en esta sesión
   });
 
@@ -323,7 +325,9 @@
         if (i >= 0) { estado.indice = i; ir('saber'); } else ir('tramo');
         break;
       }
+      case 'confirmacion': revisarEnviado(); break;
       case 'resumen': {
+        if (estado.reenvio && estado.volverA === null) { volverALaConfirmacion(); break; }
         if (estado.resumenDesde) {
           estado.tramo = estado.resumenDesde.tramo;
           estado.indice = 0;
@@ -651,8 +655,21 @@
       prueba: Boolean(resultado.prueba),
       demo: Boolean(resultado.demo),
     };
+    estado.historial = estado.historial.filter((h) => !(h.espacio_id === estado.espacio_id && h.anio === estado.anio));
     estado.historial.push({ espacio_id: estado.espacio_id, anio: estado.anio, enviado_en: new Date().toISOString() });
-    // Queda listo para otra materia: se conservan nombre, apellido y escuela
+    // Se guarda una copia por si toca «Volver» en la confirmación: puede
+    // revisar lo que mandó y reenviarlo, y el envío nuevo reemplaza al anterior
+    estado.enviado = JSON.parse(JSON.stringify({
+      escuela: estado.escuela, anio: estado.anio, area_id: estado.area_id, espacio_id: estado.espacio_id,
+      saberes: estado.saberes, saberesDe: estado.saberesDe,
+    }));
+    estado.reenvio = false;
+    limpiarMateria();
+    ir('confirmacion');
+  }
+
+  // Queda listo para otra materia: se conservan nombre, apellido y escuela
+  function limpiarMateria() {
     estado.anio = null;
     estado.area_id = null;
     estado.espacio_id = null;
@@ -661,11 +678,31 @@
     estado.saberes = {};
     estado.saberesDe = null;
     estado.volverA = null;
+    estado.resumenDesde = null;
+  }
+
+  // «Volver» desde la confirmación: el resumen de lo que acaba de mandar
+  function revisarEnviado() {
+    const e = estado.enviado;
+    if (!e) { ir('bienvenida'); return; }
+    const copia = JSON.parse(JSON.stringify(e));
+    Object.assign(estado, copia, { tramo: 1, indice: 0, volverA: null, resumenDesde: null });
+    estado.reenvio = true;
+    ui.errorEnvio = null;
+    ir('resumen');
+  }
+
+  // «Volver» desde ese resumen sin reenviar: a la confirmación, como estaba.
+  // Lo que haya tocado y no reenvió no cuenta: vale lo que ya se mandó.
+  function volverALaConfirmacion() {
+    estado.reenvio = false;
+    if (estado.enviado && estado.enviado.escuela) estado.escuela = estado.enviado.escuela;
+    limpiarMateria();
     ir('confirmacion');
   }
 
-  function otraMateriaMismaEscuela() { ir('anio'); }
-  function otraMateriaOtraEscuela() { estado.escuela = null; ir('escuela'); }
+  function otraMateriaMismaEscuela() { estado.enviado = null; estado.reenvio = false; ir('anio'); }
+  function otraMateriaOtraEscuela() { estado.enviado = null; estado.reenvio = false; estado.escuela = null; ir('escuela'); }
   function terminar() {
     borrarBorrador();
     estado = estadoInicial();
@@ -1025,7 +1062,7 @@
   }
 
   // Una casilla de la lista del trimestre
-  function casillaSaber(s, adentro) {
+  function casillaSaber(s, adentro, conEje = false) {
     const reg = registro(s.id);
     // Si tenía contenidos cargados y lo destilda, se avisa antes de «Seguir»
     const aviso = !adentro && reg.contenidos.length
@@ -1034,6 +1071,7 @@
     return `<button type="button" class="casilla ${adentro ? 'casilla--si' : 'casilla--no'}" role="checkbox" aria-checked="${adentro}" data-accion="marcar-saber" data-id="${esc(s.id)}">
       <span class="casilla__caja" aria-hidden="true">${adentro ? Icono.check({ tam: 17, color: '#FFFFFF', grosor: 3.4 }) : ''}</span>
       <span class="casilla__cuerpo">
+        ${conEje ? `<span class="casilla__eje">${esc((Catalogo.eje(s.eje_id) || {}).nombre || '')}</span>` : ''}
         <span class="casilla__texto casilla__texto--saber">${esc(s.texto)}</span>
         ${adentro ? '' : '<span class="casilla__no">No lo trabajo</span>'}
         ${aviso}
@@ -1041,7 +1079,10 @@
     </button>`;
   }
 
-  // Saberes seguidos del mismo eje, juntos: el eje se lee una vez y no en cada fila
+  // Saberes seguidos del mismo eje, juntos: el eje se lee una vez y no en cada fila.
+  // Van en el orden del equipo (el ciclado de la materia), no agrupados por eje:
+  // si los ejes se intercalan, como en Matemática, el eje va dentro de cada saber
+  // en vez de repetir el título a cada rato.
   function gruposPorEje(saberes) {
     const grupos = [];
     for (const s of saberes) {
@@ -1050,6 +1091,15 @@
       else grupos.push({ ejeId: s.eje_id, eje: Catalogo.eje(s.eje_id), saberes: [s] });
     }
     return grupos;
+  }
+
+  function listaDeSaberes(saberes, fuera) {
+    const grupos = gruposPorEje(saberes);
+    const intercalados = grupos.length > new Set(saberes.map((s) => s.eje_id)).size;
+    if (intercalados) return saberes.map((s) => casillaSaber(s, !fuera.has(s.id), true)).join('');
+    return grupos.map(({ eje, saberes: delEje }) => `
+      <div class="lista-casillas__eje">${esc(eje ? eje.nombre : '')}</div>
+      ${delEje.map((s) => casillaSaber(s, !fuera.has(s.id))).join('')}`).join('');
   }
 
   function pantallaTramo() {
@@ -1096,9 +1146,7 @@
             <span>${marcados} de ${cantidad} ${plural(cantidad, 'marcado', 'marcados')}</span>
             <button type="button" class="enlace" data-accion="marcar-todos">${fuera.size === 0 ? 'Destildar todos' : 'Marcar todos'}</button>
           </div>` : ''}
-          ${gruposPorEje(tr[t]).map(({ eje, saberes }) => `
-            <div class="lista-casillas__eje">${esc(eje ? eje.nombre : '')}</div>
-            ${saberes.map((s) => casillaSaber(s, !fuera.has(s.id))).join('')}`).join('')}
+          ${listaDeSaberes(tr[t], fuera)}
         </div>
         <div class="columna columna--14 tramo__acciones">
           <button type="button" class="boton boton--primario boton--21" data-accion="comenzar-tramo">${esc(botonTexto)} ${Icono.flecha()}</button>
@@ -1395,12 +1443,14 @@
       ? `<div class="aviso">Te ${pendientes.length === 1 ? 'queda 1 saber' : `quedan ${pendientes.length} saberes`} por revisar antes de enviar.</div>` : '';
     const botonPrincipal = pendientes.length
       ? `<button type="button" class="boton boton--primario boton--21" data-accion="seguir-cargando">Seguir cargando ${Icono.flecha()}</button>`
-      : `<button type="button" class="boton boton--primario boton--21" data-accion="confirmar-enviar" ${ui.enviando ? 'disabled' : ''}>${ui.enviando ? 'Enviando…' : 'Confirmar y enviar'}</button>`;
+      : `<button type="button" class="boton boton--primario boton--21" data-accion="confirmar-enviar" ${ui.enviando ? 'disabled' : ''}>${ui.enviando ? 'Enviando…' : (estado.reenvio ? 'Enviar de nuevo' : 'Confirmar y enviar')}</button>`;
+    const notaReenvio = estado.reenvio
+      ? '<div class="aviso">Esta materia ya la enviaste. Si corregís algo, tocá «Enviar de nuevo»: reemplaza a lo que mandaste antes. Si está bien, tocá «Volver».</div>' : '';
     const error = ui.errorEnvio ? `<div class="aviso aviso--error" role="alert">${esc(ui.errorEnvio)}</div>` : '';
 
     const parcial = pendientes.length > 0;
-    const paso = parcial ? `Tramo ${estado.resumenDesde ? estado.resumenDesde.tramo : estado.tramo} de 3` : 'Último paso';
-    const titulo = parcial ? 'Lo que cargaste hasta acá' : 'Revisá antes de enviar';
+    const paso = parcial ? `Tramo ${estado.resumenDesde ? estado.resumenDesde.tramo : estado.tramo} de 3` : (estado.reenvio ? 'Ya enviada' : 'Último paso');
+    const titulo = parcial ? 'Lo que cargaste hasta acá' : (estado.reenvio ? 'Lo que enviaste' : 'Revisá antes de enviar');
     const bajada = parcial
       ? `<span class="solo-movil">Está ordenado por trimestre. Podés corregir lo que quieras y después seguir cargando.</span><span class="solo-escritorio">Los tres trimestres lado a lado. Podés corregir lo que quieras y después seguir cargando.</span>`
       : `<span class="solo-movil">Está ordenado por trimestre, como lo fuiste cargando. Es la última pantalla para corregir.</span><span class="solo-escritorio">Los tres trimestres lado a lado. Cada columna se recorre por separado.</span>`;
@@ -1424,9 +1474,10 @@
             <div class="resumen-escuela__nombre">${esc(nombreEscuela())}</div>
             <div class="resumen-escuela__sub">${esc(nombreEspacioCorto())} · ${esc(textoAnio(estado.anio))} · ${total} ${plural(total, 'saber', 'saberes')}</div>
           </div>
-          <button type="button" class="enlace" data-accion="cambiar-escuela">Cambiar</button>
+          ${estado.reenvio ? '' : '<button type="button" class="enlace" data-accion="cambiar-escuela">Cambiar</button>'}
         </div>
         ${error}
+        ${notaReenvio}
         ${notaPendientes}
         <div class="resumen__columnas columna columna--18">${columnas}</div>
         <div class="espaciador"></div>
@@ -1449,7 +1500,8 @@
     else if (u.prueba) prueba = `<div class="banda-prueba">Modo prueba: la base de datos todavía no está conectada, así que esta carga no se envió.</div>`;
     return pantalla('pantalla--centrada', `
       ${cabecera()}
-      <div class="cuerpo" style="gap:22px;padding-top:34px">
+      ${estado.enviado ? subcabecera('Enviada') : ''}
+      <div class="cuerpo" style="gap:22px;padding-top:${estado.enviado ? 8 : 34}px">
         <div class="confirmacion__cabeza">
           <div class="confirmacion__icono">${Icono.check({ tam: 40, color: '#FFFFFF', grosor: 2.6 })}</div>
           <h1 class="titulo">¡Listo! Recibimos tu carga</h1>

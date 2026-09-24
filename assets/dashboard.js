@@ -390,14 +390,17 @@
   function vistaMapa() {
     const d = estado.datos;
     const docentes = d.contexto.docentes;
-    // Ejes en el orden del diseño
+    // Ejes en el orden del diseño. Los saberes llegan en el orden del equipo
+    // (trimestre y ciclado), que puede intercalar ejes: el orden de las filas
+    // sale del eje, no de cuál aparece primero.
     const ejes = [];
     const porEje = new Map();
     for (const s of d.saberes) {
       const clave = s.eje_orden + '|' + s.eje;
-      if (!porEje.has(clave)) { porEje.set(clave, { info: s.ejeInfo, saberes: [] }); ejes.push(clave); }
+      if (!porEje.has(clave)) { porEje.set(clave, { orden: Number(s.eje_orden) || 0, info: s.ejeInfo, saberes: [] }); ejes.push(clave); }
       porEje.get(clave).saberes.push(s);
     }
+    ejes.sort((a, b) => porEje.get(a).orden - porEje.get(b).orden);
     const contenidosPorTrimestre = { 1: 0, 2: 0, 3: 0 };
     for (const s of d.saberes) contenidosPorTrimestre[s.trimestre] += (s.contenidos || []).length;
 

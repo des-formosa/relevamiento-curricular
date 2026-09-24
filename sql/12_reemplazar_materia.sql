@@ -23,6 +23,11 @@
 --
 -- 4. PRIMERO SE MIRA, Y TODO O NADA, igual que el importador de 11.
 --
+-- 5. EL ORDEN DE LAS FILAS ES EL ORDEN DE LOS SABERES. Dentro de cada año y
+--    trimestre, el saber de más arriba es el primero que ve el docente: el
+--    equipo los ordena a propósito, porque es el ciclado de la materia. La
+--    vista previa avisa en qué trimestres cambia.
+--
 -- Escribe con guardar_saber, guardar_contenido y archivar_catalogo: valen sus
 -- validaciones y cada cambio queda en la auditoría.
 --
@@ -158,8 +163,16 @@ declare
   tomados     jsonb := '{}'::jsonb;
   -- Claves (texto normalizado + año + trimestre) ya vistas en el archivo
   vistas      jsonb := '{}'::jsonb;
-  -- Posición de cada saber dentro de su eje y año, para el orden
+  -- Posición de cada saber dentro de su año y trimestre, contada de arriba
+  -- abajo en el archivo: el orden de las filas es el orden de los saberes
   posiciones  jsonb := '{}'::jsonb;
+  v_grupo     text;
+  -- Trimestres donde el archivo cambia el orden, y los que hay que renumerar
+  -- (esos más los que reciben un saber nuevo o que viene de otro lado)
+  reordenan   jsonb := '{}'::jsonb;
+  renumerar   jsonb := '{}'::jsonb;
+  v_renumera  boolean;
+  n_reordena  integer := 0;
   anios       smallint[] := '{}';
 
   n_mantiene   integer := 0;
@@ -303,13 +316,16 @@ begin
       tomados := tomados || jsonb_build_object(v_id, true);
     end if;
 
-    -- Orden: la posición dentro del eje y el año, tal como viene en el archivo
-    v_orden := coalesce((posiciones ->> (v_eje || '|' || coalesce(v_anio::text, 'c')))::integer, 0) + 1;
-    posiciones := posiciones || jsonb_build_object(v_eje || '|' || coalesce(v_anio::text, 'c'), v_orden);
+    -- Orden: la posición dentro del año y el trimestre, tal como viene en el
+    -- archivo. El equipo ordena los saberes a propósito (es el ciclado de la
+    -- materia) y en Matemática intercala ejes: no se reordena por eje.
+    v_grupo := coalesce(v_anio::text, 'c') || '|' || v_trim;
+    v_orden := coalesce((posiciones ->> v_grupo)::integer, 0) + 1;
+    posiciones := posiciones || jsonb_build_object(v_grupo, v_orden);
 
     plan := plan || jsonb_build_object(
       'fila', v_fila, 'id', v_id, 'anio', v_anio, 'trimestre', v_trim, 'eje', v_eje,
-      'texto', v_texto, 'orden', coalesce(v_anio, 0) * 1000 + v_orden,
+      'texto', v_texto, 'orden', v_orden, 'grupo', v_grupo,
       'contenidos', coalesce(f -> 'contenidos', '[]'::jsonb));
   end loop;
 
@@ -324,11 +340,61 @@ begin
   end if;
 
   -- ==========================================================================
-  -- 2. Aplicar (o contar) saber por saber
+  -- 2. ¿Cambia el orden?
+  --
+  -- Se compara el orden relativo, no el número: entre los saberes que ya
+  -- estaban activos en ese trimestre, ¿el archivo los trae en otra secuencia?
+  -- Así bajar la planilla y subirla sin tocar no cambia nada, aunque haya
+  -- huecos en la numeración por algo que se archivó.
+  -- ==========================================================================
+  with p as (
+    select e ->> 'id' as id, e ->> 'grupo' as grupo, (e ->> 'orden')::integer as pos
+      from jsonb_array_elements(plan) e
+  ),
+  quietos as (
+    select p.grupo, p.id,
+           row_number() over (partition by p.grupo order by p.pos)            as r_archivo,
+           row_number() over (partition by p.grupo order by sa.orden, sa.id)  as r_base
+      from p join public.saberes sa on sa.id = p.id
+     where sa.estado = 'activo'
+       and coalesce(sa.anio::text, 'c') || '|' || sa.trimestre = p.grupo
+  )
+  select coalesce(jsonb_object_agg(grupo, true), '{}'::jsonb) into reordenan
+    from (select distinct grupo from quietos where r_archivo <> r_base) z;
+
+  with p as (
+    select e ->> 'id' as id, e ->> 'grupo' as grupo from jsonb_array_elements(plan) e
+  )
+  select reordenan || coalesce(jsonb_object_agg(grupo, true), '{}'::jsonb) into renumerar
+    from (
+      select distinct p.grupo
+        from p left join public.saberes sa on sa.id = p.id
+       where p.id is null                                                   -- saber nuevo
+          or sa.estado <> 'activo'                                          -- vuelve del archivo
+          or coalesce(sa.anio::text, 'c') || '|' || sa.trimestre <> p.grupo -- viene de otro trimestre
+    ) z;
+
+  for v_grupo in select k from jsonb_object_keys(reordenan) k order by k
+  loop
+    n_reordena := n_reordena + 1;
+    if jsonb_array_length(ejemplos) < 12 and n_reordena <= 3 then
+      ejemplos := ejemplos || jsonb_build_object('que', 'cambia el orden',
+        'antes', null,
+        'despues', format('%s%s trimestre: empieza con «%s»',
+          case when split_part(v_grupo, '|', 1) = 'c' then '' else split_part(v_grupo, '|', 1) || '° año, ' end,
+          case split_part(v_grupo, '|', 2) when '1' then '1er' when '2' then '2do' else '3er' end,
+          (select public.recortar(e ->> 'texto') from jsonb_array_elements(plan) e
+            where e ->> 'grupo' = v_grupo order by (e ->> 'orden')::integer limit 1)));
+    end if;
+  end loop;
+
+  -- ==========================================================================
+  -- 3. Aplicar (o contar) saber por saber
   -- ==========================================================================
   for f in select * from jsonb_array_elements(plan)
   loop
     v_id := f ->> 'id';
+    v_renumera := renumerar ? (f ->> 'grupo');
 
     if v_id is null then
       -- Saber nuevo
@@ -374,13 +440,16 @@ begin
         n_mantiene := n_mantiene + 1;
       end if;
 
+      -- El número de orden se toca solo si ese trimestre se renumera: si no,
+      -- queda el que tenía (puede tener huecos, pero la secuencia es la misma)
       if p_aplicar and (s.texto <> f ->> 'texto' or s.trimestre <> (f ->> 'trimestre')::smallint
                         or s.eje_id <> f ->> 'eje' or s.anio is distinct from (f ->> 'anio')::smallint
-                        or s.orden <> (f ->> 'orden')::integer) then
+                        or (v_renumera and s.orden <> (f ->> 'orden')::integer)) then
         perform public.guardar_saber(jsonb_build_object(
           'id', v_id, 'eje_id', f ->> 'eje', 'anio', (f ->> 'anio')::smallint,
           'trimestre', (f ->> 'trimestre')::smallint, 'texto', f ->> 'texto',
-          'orden', (f ->> 'orden')::integer, 'nota', v_nota));
+          'orden', case when v_renumera then (f ->> 'orden')::integer else s.orden end,
+          'nota', v_nota));
       end if;
     end if;
 
@@ -460,14 +529,14 @@ begin
   end loop;
 
   -- ==========================================================================
-  -- 3. Los saberes activos de los años del archivo que nadie reclamó
+  -- 4. Los saberes activos de los años del archivo que nadie reclamó
   -- ==========================================================================
   for x in select sa.id, sa.texto
              from public.saberes sa join public.ejes e on e.id = sa.eje_id
             where e.espacio_id = p_espacio_id and sa.estado = 'activo'
               and coalesce(sa.anio, 0::smallint) = any (anios)
               and not (tomados ? sa.id)
-            order by sa.anio, sa.trimestre, e.orden, sa.orden
+            order by sa.anio, sa.trimestre, sa.orden, sa.id
   loop
     n_archiva := n_archiva + 1;
     if jsonb_array_length(ejemplos) < 12 and n_archiva <= 4 then
@@ -487,6 +556,7 @@ begin
     'saberes_se_mantienen',  n_mantiene,
     'saberes_corregidos',    n_corrige,
     'saberes_se_mueven',     n_mueve,
+    'trimestres_reordenados', n_reordena,
     'saberes_vuelven',       n_restaura,
     'saberes_nuevos',        n_nuevo,
     'saberes_salen',         n_archiva,

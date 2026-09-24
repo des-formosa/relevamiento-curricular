@@ -657,7 +657,7 @@
    "trimestre": 1,
    "texto": "Lectura y comprensión de textos descriptivos, narrativos o instruccionales breves, relacionados con temáticas variadas, de extensión y complejidad acordes al momento de la escolaridad y a las condiciones de enseñanza.",
    "calidad": "buena",
-   "orden": 1
+   "orden": 6
   },
   {
    "id": "lenguas-extranjeras--e2--a1s2",
@@ -666,7 +666,7 @@
    "trimestre": 1,
    "texto": "Formulación de anticipaciones e hipótesis en relación con el sentido del texto y el paratexto, antes y durante el proceso de lectura, a partir de títulos, índices, gráficos y otras pistas temáticas y lingüístico-discursivas.",
    "calidad": "buena",
-   "orden": 2
+   "orden": 7
   },
   {
    "id": "lenguas-extranjeras--e2--a1s3",
@@ -675,7 +675,7 @@
    "trimestre": 1,
    "texto": "Resolución de dificultades de comprensión durante la lectura: la consulta al docente y a pares, y la consulta de diccionarios bilingües, monolingües y digitales.",
    "calidad": "buena",
-   "orden": 3
+   "orden": 8
   },
   {
    "id": "lenguas-extranjeras--e2--a1s4",
@@ -684,7 +684,7 @@
    "trimestre": 1,
    "texto": "Monitoreo de los propios procesos de comprensión: relectura, interacción con el docente y con pares, consulta a otras fuentes.",
    "calidad": "buena",
-   "orden": 4
+   "orden": 9
   },
   {
    "id": "lenguas-extranjeras--e2--a1s5",
@@ -693,7 +693,7 @@
    "trimestre": 1,
    "texto": "Lectura con fluidez en voz alta.",
    "calidad": "buena",
-   "orden": 5
+   "orden": 10
   },
   {
    "id": "lenguas-extranjeras--e2--a2s1",
@@ -702,7 +702,7 @@
    "trimestre": 1,
    "texto": "Lectura de textos descriptivos, narrativos o instruccionales breves de diferentes géneros discursivos: invitaciones, mensajes, instrucciones, correos electrónicos, folletos, historietas, epígrafes, carteles, publicidades, poesías y relatos.",
    "calidad": "buena",
-   "orden": 1
+   "orden": 6
   },
   {
    "id": "lenguas-extranjeras--e2--a2s2",
@@ -711,7 +711,7 @@
    "trimestre": 1,
    "texto": "Comprensión y construcción de sentidos del texto escrito apelando a diferentes estrategias: la identificación del género, el recurso a las pistas que brindan los textos y su paratexto, la identificación con ayuda del docente del tipo de lectura requerida, global o focalizada, acorde con la tarea comunicativa.",
    "calidad": "buena",
-   "orden": 2
+   "orden": 7
   },
   {
    "id": "lenguas-extranjeras--e2--a2s3",
@@ -720,7 +720,7 @@
    "trimestre": 1,
    "texto": "Confirmación o modificación de las anticipaciones e hipótesis formuladas.",
    "calidad": "buena",
-   "orden": 3
+   "orden": 8
   },
   {
    "id": "lenguas-extranjeras--e2--a2s4",
@@ -729,7 +729,7 @@
    "trimestre": 1,
    "texto": "Lectura con fluidez en voz alta.",
    "calidad": "buena",
-   "orden": 4
+   "orden": 9
   },
   {
    "id": "lenguas-extranjeras--e2--a3s1",
@@ -738,7 +738,7 @@
    "trimestre": 1,
    "texto": "Lectura de textos descriptivos, narrativos o instruccionales breves de diferentes géneros discursivos, relacionados con temáticas variadas, de extensión y complejidad acordes al momento de la escolaridad: historietas, epígrafes, carteles, publicidades, poesías y relatos.",
    "calidad": "buena",
-   "orden": 1
+   "orden": 6
   },
   {
    "id": "lenguas-extranjeras--e2--a3s2",
@@ -747,7 +747,7 @@
    "trimestre": 1,
    "texto": "Inicio en la reflexión sobre algunas características de los géneros discursivos abordados.",
    "calidad": "buena",
-   "orden": 2
+   "orden": 7
   },
   {
    "id": "lenguas-extranjeras--e2--a3s3",
@@ -756,7 +756,7 @@
    "trimestre": 1,
    "texto": "Resolución de dificultades de comprensión durante la lectura: la consulta a pares, la remisión a textos leídos anteriormente y la consulta de diccionarios bilingües o monolingües, enciclopedias y otros textos de consulta en soporte físico o digital.",
    "calidad": "buena",
-   "orden": 3
+   "orden": 8
   },
   {
    "id": "lenguas-extranjeras--e2--a3s4",
@@ -765,7 +765,7 @@
    "trimestre": 2,
    "texto": "Monitoreo de los propios procesos de comprensión: relectura, interacción con el docente y con pares, consulta a otras fuentes.",
    "calidad": "buena",
-   "orden": 4
+   "orden": 1
   },
   {
    "id": "lenguas-extranjeras--e2--a3s5",
@@ -774,7 +774,7 @@
    "trimestre": 2,
    "texto": "Lectura con fluidez en voz alta.",
    "calidad": "buena",
-   "orden": 5
+   "orden": 2
   },
   {
    "id": "lenguas-extranjeras--e3--a1s1",
@@ -837,7 +837,7 @@
    "trimestre": 1,
    "texto": "Producción de cartas breves, narraciones con descripciones de complejidad creciente, historias, mensajes y poesías.",
    "calidad": "buena",
-   "orden": 1
+   "orden": 10
   },
   {
    "id": "lenguas-extranjeras--e3--a2s2",
@@ -846,7 +846,7 @@
    "trimestre": 2,
    "texto": "Uso de recursos lingüístico-discursivos para la expresión de conceptos: cantidad, posesión, negación y afirmación, sustitución, tiempo, lugar, cualidad, causa, contraste y comparación.",
    "calidad": "buena",
-   "orden": 2
+   "orden": 1
   },
   {
    "id": "lenguas-extranjeras--e3--a2s3",
@@ -855,7 +855,7 @@
    "trimestre": 2,
    "texto": "Concretización de funciones comunicativas: pedir y dar información personal (nombre, edad, nacionalidad, profesión, lugar de residencia), describir objetos contextualizados a la institución, personas y actividades cotidianas, planificar y sugerir actividades, dar y seguir instrucciones, expresar gustos y preferencias.",
    "calidad": "buena",
-   "orden": 3
+   "orden": 2
   },
   {
    "id": "lenguas-extranjeras--e3--a2s4",
@@ -864,7 +864,7 @@
    "trimestre": 2,
    "texto": "Construcción de sentidos del texto escrito apelando a diferentes estrategias discursivas y acorde con la tarea comunicativa, mediante la selección y uso de vocabulario y expresiones idiomáticas pertinentes.",
    "calidad": "buena",
-   "orden": 4
+   "orden": 3
   },
   {
    "id": "lenguas-extranjeras--e3--a2s5",
@@ -873,7 +873,7 @@
    "trimestre": 2,
    "texto": "Uso de aplicaciones tecnológicas para la producción textual online, por ejemplo Glogster, Padlet o StoryJumper.",
    "calidad": "buena",
-   "orden": 5
+   "orden": 4
   },
   {
    "id": "lenguas-extranjeras--e3--a3s1",
@@ -882,7 +882,7 @@
    "trimestre": 2,
    "texto": "Producción de instructivos y diálogos breves de complejidad creciente, cartas informales, mensajes de correo electrónico y relatos simples de situaciones pasadas.",
    "calidad": "buena",
-   "orden": 1
+   "orden": 3
   },
   {
    "id": "lenguas-extranjeras--e3--a3s2",
@@ -891,7 +891,7 @@
    "trimestre": 2,
    "texto": "Uso de recursos lingüístico-discursivos para la expresión de conceptos: cantidad, posesión, negación y afirmación, sustitución, lugar, cualidad, causa, contraste, comparación, condición e hipótesis.",
    "calidad": "buena",
-   "orden": 2
+   "orden": 4
   },
   {
    "id": "lenguas-extranjeras--e3--a3s3",
@@ -900,7 +900,7 @@
    "trimestre": 2,
    "texto": "Concretización de funciones comunicativas: describir objetos, personas, lugares y actividades, planificar y sugerir actividades, dar y seguir instrucciones, pedir y dar consejo, expresar opiniones y sentimientos, expresar condición e hipótesis.",
    "calidad": "buena",
-   "orden": 3
+   "orden": 5
   },
   {
    "id": "lenguas-extranjeras--e3--a3s4",
@@ -909,7 +909,7 @@
    "trimestre": 2,
    "texto": "Iniciación en el reconocimiento y uso gradual de los aspectos lingüísticos, pragmáticos y sociolingüísticos para la producción de textos escritos de relativa complejidad.",
    "calidad": "buena",
-   "orden": 4
+   "orden": 6
   },
   {
    "id": "lenguas-extranjeras--e3--a3s5",
@@ -918,7 +918,7 @@
    "trimestre": 3,
    "texto": "Uso de herramientas de la web 2.0 para la producción textual, por ejemplo blogs, correos electrónicos y web-quests.",
    "calidad": "buena",
-   "orden": 5
+   "orden": 1
   },
   {
    "id": "lenguas-extranjeras--e4--a1s1",
@@ -927,7 +927,7 @@
    "trimestre": 2,
    "texto": "Reflexión sistemática sobre unidades gramaticales y textuales y relaciones distintivas de los textos ficcionales y no ficcionales trabajados en el año: uso de signos de puntuación, uso de conectores básicos temporales y de orden, diferenciación alfabética entre el español y la lengua extranjera, e identificación del orden de las palabras en las frases.",
    "calidad": "buena",
-   "orden": 1
+   "orden": 7
   },
   {
    "id": "lenguas-extranjeras--e4--a1s2",
@@ -936,7 +936,7 @@
    "trimestre": 2,
    "texto": "Recursos de cohesión textual: pronombres, conectores y sinonimia.",
    "calidad": "buena",
-   "orden": 2
+   "orden": 8
   },
   {
    "id": "lenguas-extranjeras--e4--a1s3",
@@ -945,7 +945,7 @@
    "trimestre": 3,
    "texto": "Reconocimiento de las características de distintos géneros discursivos.",
    "calidad": "buena",
-   "orden": 3
+   "orden": 1
   },
   {
    "id": "lenguas-extranjeras--e4--a2s1",
@@ -954,7 +954,7 @@
    "trimestre": 2,
    "texto": "Se retoman los saberes de 1° año y se propicia la reflexión a partir de la producción de los textos seleccionados en soportes digitales, haciendo uso de las posibilidades que brindan las TIC.",
    "calidad": "buena",
-   "orden": 1
+   "orden": 5
   },
   {
    "id": "lenguas-extranjeras--e4--a2s2",
@@ -963,7 +963,7 @@
    "trimestre": 2,
    "texto": "Tratamiento de diferentes temáticas que hacen a la realidad y contexto de los adolescentes: Educación Sexual Integral, prevención de adicciones, y aspectos sociales, culturales y económicos de la Provincia de Formosa.",
    "calidad": "buena",
-   "orden": 2
+   "orden": 6
   },
   {
    "id": "lenguas-extranjeras--e4--a3s1",
@@ -972,7 +972,7 @@
    "trimestre": 3,
    "texto": "Se retoman los saberes de los años anteriores con mayor nivel de complejidad, en términos de extensión de los textos y de las demandas de progresiva autonomía alcanzada por los estudiantes.",
    "calidad": "buena",
-   "orden": 1
+   "orden": 2
   },
   {
    "id": "lenguas-extranjeras--e5--a1s1",
@@ -981,7 +981,7 @@
    "trimestre": 3,
    "texto": "Percepción de particularidades culturales a partir del encuentro con otras culturas, observando sus manifestaciones en la vida cotidiana como el uso del tiempo libre, el entretenimiento, la música y la vestimenta.",
    "calidad": "buena",
-   "orden": 1
+   "orden": 2
   },
   {
    "id": "lenguas-extranjeras--e5--a1s2",
@@ -990,7 +990,7 @@
    "trimestre": 3,
    "texto": "Identificación, con ayuda del docente, de convenciones sociales de las culturas propias para compararlas y diferenciarlas de las de la cultura de la lengua extranjera, a través de sus formas de tratamiento, marcas de cortesía y modos de expresar sugerencias y emociones.",
    "calidad": "buena",
-   "orden": 2
+   "orden": 3
   },
   {
    "id": "lenguas-extranjeras--e5--a1s3",
@@ -999,7 +999,7 @@
    "trimestre": 3,
    "texto": "Inicio en la identificación de elementos socioculturales relevantes de la lengua extranjera en los materiales trabajados y con la ayuda del docente.",
    "calidad": "buena",
-   "orden": 3
+   "orden": 4
   },
   {
    "id": "lenguas-extranjeras--e5--a1s4",
@@ -1008,7 +1008,7 @@
    "trimestre": 3,
    "texto": "Utilización de los recursos tecnológicos para indagar aspectos relacionados con los usos lingüísticos interpersonales.",
    "calidad": "buena",
-   "orden": 4
+   "orden": 5
   },
   {
    "id": "lenguas-extranjeras--e5--a2s1",
@@ -1017,7 +1017,7 @@
    "trimestre": 2,
    "texto": "Reconocimiento de diferentes variedades en la lengua extranjera.",
    "calidad": "buena",
-   "orden": 1
+   "orden": 7
   },
   {
    "id": "lenguas-extranjeras--e5--a2s2",
@@ -1026,7 +1026,7 @@
    "trimestre": 3,
    "texto": "Búsqueda de información sobre características generales de los pueblos y países que hablan la lengua que se aprende: su ubicación geográfica y obras de su patrimonio cultural.",
    "calidad": "buena",
-   "orden": 2
+   "orden": 1
   },
   {
    "id": "lenguas-extranjeras--e5--a2s3",
@@ -1035,7 +1035,7 @@
    "trimestre": 3,
    "texto": "Comparación de la información recabada sobre las sociedades y culturas de la lengua extranjera con el español y con la lengua propia de la escuela, la comunidad y el barrio.",
    "calidad": "buena",
-   "orden": 3
+   "orden": 2
   },
   {
    "id": "lenguas-extranjeras--e5--a2s4",
@@ -1044,7 +1044,7 @@
    "trimestre": 3,
    "texto": "Establecimiento de relaciones entre la lengua de origen y la lengua extranjera, con reconocimiento de aspectos comunes y diversos.",
    "calidad": "buena",
-   "orden": 4
+   "orden": 3
   },
   {
    "id": "lenguas-extranjeras--e5--a2s5",
@@ -1053,7 +1053,7 @@
    "trimestre": 3,
    "texto": "Comparación de prácticas y manifestaciones culturales locales con las del país de la lengua extranjera: mitos, leyendas populares, música, celebraciones, comidas y tipos de vivienda.",
    "calidad": "buena",
-   "orden": 5
+   "orden": 4
   },
   {
    "id": "lenguas-extranjeras--e5--a2s6",
@@ -1062,7 +1062,7 @@
    "trimestre": 3,
    "texto": "Uso de las TIC para compartir o formar parte de una comunidad virtual como blogs y wikis.",
    "calidad": "buena",
-   "orden": 6
+   "orden": 5
   },
   {
    "id": "lenguas-extranjeras--e5--a3s1",
@@ -1071,7 +1071,7 @@
    "trimestre": 3,
    "texto": "Se abordan con mayor nivel de complejidad los saberes de los años anteriores, a través de características generales de procesos históricos relevantes, personalidades históricas, sistemas educativos, cine y el mundo del trabajo, relacionados con el contexto local, regional, nacional y mundial.",
    "calidad": "buena",
-   "orden": 1
+   "orden": 3
   },
   {
    "id": "lenguas-extranjeras--e5--a3s2",
@@ -1080,7 +1080,7 @@
    "trimestre": 3,
    "texto": "Uso de las TIC para el trabajo cooperativo por medio de web-quests y google drive.",
    "calidad": "buena",
-   "orden": 2
+   "orden": 4
   },
   {
    "id": "educacion-artistica-artes-visuales--e1--a1s1",
@@ -1188,7 +1188,7 @@
    "trimestre": 2,
    "texto": "Realización de producciones artísticas relacionadas con procesos de prueba y selección de materiales.",
    "calidad": "buena",
-   "orden": 12
+   "orden": 1
   },
   {
    "id": "educacion-artistica-artes-visuales--e1--a1s13",
@@ -1197,7 +1197,7 @@
    "trimestre": 2,
    "texto": "Realización de acciones de monitoreo, evaluación y coevaluación de las producciones.",
    "calidad": "buena",
-   "orden": 13
+   "orden": 2
   },
   {
    "id": "educacion-artistica-artes-visuales--e2--a1s1",
@@ -1206,7 +1206,7 @@
    "trimestre": 2,
    "texto": "Lectura de textos escritos analizando la vida y obras de artistas locales y las escuelas y movimientos artísticos que influyeron en la producción artística local y regional.",
    "calidad": "buena",
-   "orden": 1
+   "orden": 3
   },
   {
    "id": "educacion-artistica-artes-visuales--e2--a1s2",
@@ -1215,7 +1215,7 @@
    "trimestre": 2,
    "texto": "Indagación sobre las diferentes formas de producción, técnicas, soportes y estilos enmarcados en las diferentes épocas y contextos.",
    "calidad": "buena",
-   "orden": 2
+   "orden": 4
   },
   {
    "id": "educacion-artistica-artes-visuales--e2--a1s3",
@@ -1224,7 +1224,7 @@
    "trimestre": 2,
    "texto": "Representación del espacio y el tiempo a través de imágenes estáticas y en movimiento, en la bi y la tridimensión.",
    "calidad": "buena",
-   "orden": 3
+   "orden": 5
   },
   {
    "id": "educacion-artistica-artes-visuales--e2--a1s4",
@@ -1233,7 +1233,7 @@
    "trimestre": 2,
    "texto": "Indagación de los distintos modos de organizaciones espaciales, bidimensional y tridimensional, físico o virtual; indagación de las relaciones y transiciones entre los planos, volúmenes, formas, el espacio y los puntos de vista.",
    "calidad": "buena",
-   "orden": 4
+   "orden": 6
   },
   {
    "id": "educacion-artistica-artes-visuales--e2--a1s5",
@@ -1242,7 +1242,7 @@
    "trimestre": 2,
    "texto": "Tratamiento de la materia, selección de herramientas y procedimientos en función de la organización en el espacio bi y tridimensional.",
    "calidad": "buena",
-   "orden": 5
+   "orden": 7
   },
   {
    "id": "educacion-artistica-artes-visuales--e2--a1s6",
@@ -1251,7 +1251,7 @@
    "trimestre": 2,
    "texto": "Representación del espacio y el tiempo a través de imágenes fijas y en movimiento; la producción escultórica, objetual y multimedial y su vinculación con el espacio-tiempo a través de la interacción del espectador.",
    "calidad": "buena",
-   "orden": 6
+   "orden": 8
   },
   {
    "id": "educacion-artistica-artes-visuales--e2--a1s7",
@@ -1260,7 +1260,7 @@
    "trimestre": 2,
    "texto": "Construcción de conocimientos significativos que incorporen el uso del lenguaje simbólico, la creación, el análisis y la apreciación de obras propias y de otros.",
    "calidad": "buena",
-   "orden": 7
+   "orden": 9
   },
   {
    "id": "educacion-artistica-artes-visuales--e2--a1s8",
@@ -1269,7 +1269,7 @@
    "trimestre": 3,
    "texto": "Análisis y evaluación de alternativas de solución en la representación del espacio y el tiempo a través de imágenes fijas y en movimiento.",
    "calidad": "buena",
-   "orden": 8
+   "orden": 1
   },
   {
    "id": "educacion-artistica-artes-visuales--e2--a1s9",
@@ -1278,7 +1278,7 @@
    "trimestre": 3,
    "texto": "Análisis crítico respecto de las corrientes estéticas, movimientos y manifestaciones artísticas centradas en el tratamiento específico del tiempo como metáfora de lo efímero y de lo cambiante.",
    "calidad": "buena",
-   "orden": 9
+   "orden": 2
   },
   {
    "id": "educacion-artistica-artes-visuales--e2--a1s10",
@@ -1287,7 +1287,7 @@
    "trimestre": 3,
    "texto": "Valoración de los aportes de las nuevas tecnologías en el tratamiento de la dimensión temporal.",
    "calidad": "buena",
-   "orden": 10
+   "orden": 3
   },
   {
    "id": "educacion-artistica-artes-visuales--e2--a1s11",
@@ -1296,7 +1296,7 @@
    "trimestre": 3,
    "texto": "Reflexión acerca de las manifestaciones que toman el cuerpo como soporte de intervenciones y transformaciones en diferentes culturas y sus diferentes intencionalidades.",
    "calidad": "buena",
-   "orden": 11
+   "orden": 4
   },
   {
    "id": "educacion-artistica-artes-visuales--e2--a1s12",
@@ -1305,7 +1305,7 @@
    "trimestre": 3,
    "texto": "Construcción de una visión integradora de las prácticas artísticas, favoreciendo la realización de lecturas divergentes frente a un mismo hecho artístico.",
    "calidad": "buena",
-   "orden": 12
+   "orden": 5
   },
   {
    "id": "educacion-artistica-artes-visuales--e2--a1s13",
@@ -1314,7 +1314,7 @@
    "trimestre": 3,
    "texto": "Análisis de producciones visuales de diferentes épocas, espacios, géneros y estilos, valorando que la diversidad es producto de las variadas formas de percibir el mundo y de representarlo.",
    "calidad": "buena",
-   "orden": 13
+   "orden": 6
   },
   {
    "id": "educacion-artistica-danza--e1--a1s1",
@@ -1467,7 +1467,7 @@
    "trimestre": 2,
    "texto": "Interacción grupal propiciando la búsqueda de respuestas corporales diversas en situaciones individuales, grupales, en dúos, tríos, cuartetos y otras.",
    "calidad": "buena",
-   "orden": 17
+   "orden": 1
   },
   {
    "id": "educacion-artistica-danza--e1--a1s18",
@@ -1476,7 +1476,7 @@
    "trimestre": 2,
    "texto": "Experimentación sobre los sentidos comunicacionales en la resolución coreográfica de la danza popular: el encuentro con uno, con otro y con los otros.",
    "calidad": "buena",
-   "orden": 18
+   "orden": 2
   },
   {
    "id": "educacion-artistica-danza--e1--a1s19",
@@ -1485,7 +1485,7 @@
    "trimestre": 2,
    "texto": "Adaptaciones del material coreográfico a diferentes ámbitos.",
    "calidad": "buena",
-   "orden": 19
+   "orden": 3
   },
   {
    "id": "educacion-artistica-danza--e1--a1s20",
@@ -1494,7 +1494,7 @@
    "trimestre": 2,
    "texto": "Puesta en valor de la relación entre tradición y actualización en la danza.",
    "calidad": "buena",
-   "orden": 20
+   "orden": 4
   },
   {
    "id": "educacion-artistica-danza--e1--a1s21",
@@ -1503,7 +1503,7 @@
    "trimestre": 2,
    "texto": "Transposición de materiales utilizados en obras preexistentes a la propia producción, su recreación y análisis.",
    "calidad": "buena",
-   "orden": 21
+   "orden": 5
   },
   {
    "id": "educacion-artistica-danza--e1--a1s22",
@@ -1512,7 +1512,7 @@
    "trimestre": 2,
    "texto": "Análisis, interpretación y valoración de diferentes obras coreográficas y ejercitaciones áulicas, atendiendo al reconocimiento de los procedimientos coreográficos, los componentes del lenguaje y la intención discursiva.",
    "calidad": "buena",
-   "orden": 22
+   "orden": 6
   },
   {
    "id": "educacion-artistica-danza--e1--a1s23",
@@ -1521,7 +1521,7 @@
    "trimestre": 2,
    "texto": "Utilización de la improvisación como recurso en la búsqueda del material de movimiento para sus propias producciones.",
    "calidad": "buena",
-   "orden": 23
+   "orden": 7
   },
   {
    "id": "educacion-artistica-danza--e1--a1s24",
@@ -1530,7 +1530,7 @@
    "trimestre": 2,
    "texto": "Selección y síntesis del material en función de la intencionalidad de las producciones. Aspectos estructurales de una obra.",
    "calidad": "buena",
-   "orden": 24
+   "orden": 8
   },
   {
    "id": "educacion-artistica-danza--e1--a1s25",
@@ -1539,7 +1539,7 @@
    "trimestre": 2,
    "texto": "Análisis de los discursos corporales. Registro e identificación de los elementos del lenguaje corporal y sus vinculaciones, en producciones propias y de sus pares.",
    "calidad": "buena",
-   "orden": 25
+   "orden": 9
   },
   {
    "id": "educacion-artistica-danza--e1--a1s26",
@@ -1548,7 +1548,7 @@
    "trimestre": 2,
    "texto": "Experimentación y reflexión en torno al espacio como uno de los elementos que otorga sentido a una producción.",
    "calidad": "buena",
-   "orden": 26
+   "orden": 10
   },
   {
    "id": "educacion-artistica-danza--e2--a1s1",
@@ -1557,7 +1557,7 @@
    "trimestre": 2,
    "texto": "Observación y comprensión de producciones de danza locales, regionales, nacionales e internacionales, tanto en vivo como en otros soportes.",
    "calidad": "buena",
-   "orden": 1
+   "orden": 11
   },
   {
    "id": "educacion-artistica-danza--e2--a1s2",
@@ -1566,7 +1566,7 @@
    "trimestre": 2,
    "texto": "Reconocimiento del sentido ritual y comunicacional en la matriz original de la danza popular y folclórica, y sus posibles resignificaciones en el cruce con el mundo contemporáneo.",
    "calidad": "buena",
-   "orden": 2
+   "orden": 12
   },
   {
    "id": "educacion-artistica-danza--e2--a1s3",
@@ -1575,7 +1575,7 @@
    "trimestre": 2,
    "texto": "Análisis de los diferentes ámbitos de circulación de la danza.",
    "calidad": "buena",
-   "orden": 3
+   "orden": 13
   },
   {
    "id": "educacion-artistica-danza--e2--a1s4",
@@ -1584,7 +1584,7 @@
    "trimestre": 3,
    "texto": "Acercamiento a los modos de concebir y producir danza en diferentes contextos políticos, históricos, sociales y culturales. Herencia simbólica. La danza escénica en Occidente, rupturas y continuidades, su incidencia en Argentina. La danza como forma de identidad cultural.",
    "calidad": "buena",
-   "orden": 4
+   "orden": 1
   },
   {
    "id": "educacion-artistica-danza--e2--a1s5",
@@ -1593,7 +1593,7 @@
    "trimestre": 3,
    "texto": "Indagación sobre el espesor sociocultural e histórico-político como fuente de sentidos en la danza.",
    "calidad": "buena",
-   "orden": 5
+   "orden": 2
   },
   {
    "id": "educacion-artistica-danza--e2--a1s6",
@@ -1602,7 +1602,7 @@
    "trimestre": 3,
    "texto": "Análisis de adaptaciones de material coreográfico a diferentes ámbitos, observando la influencia del contexto en la definición de la obra.",
    "calidad": "buena",
-   "orden": 6
+   "orden": 3
   },
   {
    "id": "educacion-artistica-danza--e2--a1s7",
@@ -1611,7 +1611,7 @@
    "trimestre": 3,
    "texto": "Indagación de las diferentes manifestaciones de la danza en Formosa, en Argentina y en Latinoamérica: características, trayectorias individuales y grupales de sus exponentes, entrevistas a coreógrafos locales, regionales, nacionales e internacionales.",
    "calidad": "buena",
-   "orden": 7
+   "orden": 4
   },
   {
    "id": "educacion-artistica-danza--e2--a1s8",
@@ -1620,7 +1620,7 @@
    "trimestre": 3,
    "texto": "Asistencia a espectáculos de danza.",
    "calidad": "buena",
-   "orden": 8
+   "orden": 5
   },
   {
    "id": "educacion-artistica-danza--e2--a1s9",
@@ -1629,7 +1629,7 @@
    "trimestre": 3,
    "texto": "Elaboración de diferentes formatos textuales (informes, reseñas, artículos periodísticos, textos de opinión) en distintos soportes que recojan las indagaciones, observaciones y experiencias relacionadas con las prácticas de la danza y su contexto.",
    "calidad": "buena",
-   "orden": 9
+   "orden": 6
   },
   {
    "id": "educacion-artistica-danza--e2--a1s10",
@@ -1638,7 +1638,7 @@
    "trimestre": 3,
    "texto": "Reflexión sobre las manifestaciones de danzas cercanas a los estudiantes y su posible recreación a partir de la experimentación, abstracción y conceptualización de los elementos del lenguaje que se involucran en ellas.",
    "calidad": "buena",
-   "orden": 10
+   "orden": 7
   },
   {
    "id": "educacion-artistica-danza--e2--a1s11",
@@ -1647,7 +1647,7 @@
    "trimestre": 3,
    "texto": "Análisis crítico respecto de los modelos corporales y estéticos instalados en la danza. Características de género.",
    "calidad": "buena",
-   "orden": 11
+   "orden": 8
   },
   {
    "id": "educacion-artistica-danza--e2--a1s12",
@@ -1656,7 +1656,7 @@
    "trimestre": 3,
    "texto": "Valoración de la danza como manifestación de una cultura determinada.",
    "calidad": "buena",
-   "orden": 12
+   "orden": 9
   },
   {
    "id": "educacion-artistica-teatro--e1--a1s1",
@@ -1773,7 +1773,7 @@
    "trimestre": 2,
    "texto": "Aproximación al conocimiento, en un marco de respeto, sobre los orígenes de las prácticas artísticas y culturales originarias, para fortalecer la construcción de la identidad ante la escasez de información precisa y acabada.",
    "calidad": "buena",
-   "orden": 13
+   "orden": 1
   },
   {
    "id": "educacion-artistica-teatro--e1--a1s14",
@@ -1782,7 +1782,7 @@
    "trimestre": 2,
    "texto": "Reconocimiento y valoración de diferentes manifestaciones teatrales representativas del propio entorno mediante la identificación de sus rasgos distintivos: salas teatrales, ámbitos de circulación de espectáculos, referentes locales.",
    "calidad": "buena",
-   "orden": 14
+   "orden": 2
   },
   {
    "id": "educacion-artistica-teatro--e1--a1s15",
@@ -1791,7 +1791,7 @@
    "trimestre": 2,
    "texto": "Diálogo con referentes teatrales para facilitar la aproximación al patrimonio artístico cultural local.",
    "calidad": "buena",
-   "orden": 15
+   "orden": 3
   },
   {
    "id": "educacion-artistica-teatro--e2--a1s1",
@@ -1800,7 +1800,7 @@
    "trimestre": 2,
    "texto": "Construcción grupal e individual de criterios de apreciación para emitir opinión sobre producciones escénicas, teniendo en cuenta factores históricos y socioculturales.",
    "calidad": "buena",
-   "orden": 1
+   "orden": 4
   },
   {
    "id": "educacion-artistica-teatro--e2--a1s2",
@@ -1809,7 +1809,7 @@
    "trimestre": 2,
    "texto": "Vinculación de la producción teatral con los recursos materiales y simbólicos y las problemáticas del entorno, para su proyección comunitaria.",
    "calidad": "buena",
-   "orden": 2
+   "orden": 5
   },
   {
    "id": "educacion-artistica-teatro--e2--a1s3",
@@ -1818,7 +1818,7 @@
    "trimestre": 2,
    "texto": "Valoración de las diferentes producciones escénicas desde la igualdad de oportunidades expresivas y participativas, el respeto por la diversidad y la libertad de pensamiento.",
    "calidad": "buena",
-   "orden": 3
+   "orden": 6
   },
   {
    "id": "educacion-artistica-teatro--e2--a1s4",
@@ -1827,7 +1827,7 @@
    "trimestre": 2,
    "texto": "Exploración de los diferentes lenguajes artísticos como medios para la construcción de argumentos e historias dramáticas para representar.",
    "calidad": "buena",
-   "orden": 4
+   "orden": 7
   },
   {
    "id": "educacion-artistica-teatro--e2--a1s5",
@@ -1836,7 +1836,7 @@
    "trimestre": 2,
    "texto": "Identificación de la capacidad integradora del teatro con todas las artes.",
    "calidad": "buena",
-   "orden": 5
+   "orden": 8
   },
   {
    "id": "educacion-artistica-teatro--e2--a1s6",
@@ -1845,7 +1845,7 @@
    "trimestre": 2,
    "texto": "Selección de un argumento o historia dramática a partir de las propias necesidades e intereses, y redacción del texto teatral, ya sea en forma individual o colectiva.",
    "calidad": "buena",
-   "orden": 6
+   "orden": 9
   },
   {
    "id": "educacion-artistica-teatro--e2--a1s7",
@@ -1854,7 +1854,7 @@
    "trimestre": 3,
    "texto": "Reconocimiento y experimentación de los elementos de una puesta en escena: escenografía, vestuario, maquillaje, musicalización, utilería y objetos, recursos de grabación y reproducción de sonidos e imágenes, dispositivos e interfaces digitales.",
    "calidad": "buena",
-   "orden": 7
+   "orden": 1
   },
   {
    "id": "educacion-artistica-teatro--e2--a1s8",
@@ -1863,7 +1863,7 @@
    "trimestre": 3,
    "texto": "Valoración del trabajo de los técnicos especialistas cuyo trabajo conjunto posibilita la puesta en escena.",
    "calidad": "buena",
-   "orden": 8
+   "orden": 2
   },
   {
    "id": "educacion-artistica-teatro--e2--a1s9",
@@ -1872,7 +1872,7 @@
    "trimestre": 3,
    "texto": "Empleo de los recursos disponibles para la realización de la puesta en escena del texto teatral producido.",
    "calidad": "buena",
-   "orden": 9
+   "orden": 3
   },
   {
    "id": "educacion-artistica-teatro--e2--a1s10",
@@ -1881,7 +1881,7 @@
    "trimestre": 3,
    "texto": "Ensayo múltiple de la obra producida para propiciar la potenciación del trabajo grupal en torno a los elementos de la puesta en escena.",
    "calidad": "buena",
-   "orden": 10
+   "orden": 4
   },
   {
    "id": "educacion-artistica-teatro--e2--a1s11",
@@ -1890,7 +1890,7 @@
    "trimestre": 3,
    "texto": "Reconocimiento y aceptación de las dificultades y logros propios en el trabajo grupal en torno al ensayo, con el fin de favorecer su práctica.",
    "calidad": "buena",
-   "orden": 11
+   "orden": 5
   },
   {
    "id": "educacion-artistica-teatro--e2--a1s12",
@@ -1899,7 +1899,7 @@
    "trimestre": 3,
    "texto": "Presentación de la obra teatral producida a la comunidad educativa y en diversos eventos locales.",
    "calidad": "buena",
-   "orden": 12
+   "orden": 6
   },
   {
    "id": "educacion-artistica-musica--e1--a1s1",
@@ -2340,7 +2340,7 @@
    "trimestre": 3,
    "texto": "Identificación y reconocimiento de ritmos musicales latinoamericanos según particularidades tímbricas y claves rítmicas.",
    "calidad": "buena",
-   "orden": 23
+   "orden": 1
   },
   {
    "id": "educacion-artistica-musica--e2--a1s24",
@@ -2349,7 +2349,7 @@
    "trimestre": 3,
    "texto": "Exploración y experimentación sonoro-musical con la voz, el cuerpo y con instrumentos tradicionales, no convencionales y tecnológicos, en procesos de creación y arreglos musicales individuales y grupales.",
    "calidad": "buena",
-   "orden": 24
+   "orden": 2
   },
   {
    "id": "educacion-artistica-musica--e2--a1s25",
@@ -2358,7 +2358,7 @@
    "trimestre": 3,
    "texto": "Sonorización de cuentos, imágenes, escenas y repertorios, disponiendo intencionalmente de los atributos del sonido, su temporalidad y espacialidad.",
    "calidad": "buena",
-   "orden": 25
+   "orden": 3
   },
   {
    "id": "educacion-artistica-musica--e2--a1s26",
@@ -2367,7 +2367,7 @@
    "trimestre": 3,
    "texto": "Composición en tiempo real, con énfasis en la improvisación, usando como soporte la voz y otras fuentes sonoras en contexto definido y secciones acotadas.",
    "calidad": "buena",
-   "orden": 26
+   "orden": 4
   },
   {
    "id": "educacion-artistica-musica--e2--a1s27",
@@ -2376,7 +2376,7 @@
    "trimestre": 3,
    "texto": "Complejidad gradual de los arreglos, en forma grupal, de músicas seleccionadas por los estudiantes o por el docente.",
    "calidad": "buena",
-   "orden": 27
+   "orden": 5
   },
   {
    "id": "educacion-artistica-musica--e2--a1s28",
@@ -2385,7 +2385,7 @@
    "trimestre": 3,
    "texto": "Conocimiento de los modos de producción en realizaciones musicales grupales donde las estrategias compositivas impliquen el uso de la repetición, la reaparición, la variación y el cambio en torno a sus relaciones y búsquedas de sentido estético.",
    "calidad": "buena",
-   "orden": 28
+   "orden": 6
   },
   {
    "id": "educacion-artistica-musica--e2--a1s29",
@@ -2394,7 +2394,7 @@
    "trimestre": 3,
    "texto": "Elaboración y análisis musical promoviendo la inclusión de las formas asociativas, tanto individual como colectiva.",
    "calidad": "buena",
-   "orden": 29
+   "orden": 7
   },
   {
    "id": "educacion-artistica-musica--e2--a1s30",
@@ -2403,7 +2403,7 @@
    "trimestre": 3,
    "texto": "Realización colectiva de arreglos de músicas seleccionadas por los estudiantes o por el docente.",
    "calidad": "buena",
-   "orden": 30
+   "orden": 8
   },
   {
    "id": "educacion-artistica-musica--e2--a1s31",
@@ -2412,7 +2412,7 @@
    "trimestre": 3,
    "texto": "Realización de producciones musicales creativas mediante el uso intencional de recursos tecnológicos.",
    "calidad": "buena",
-   "orden": 31
+   "orden": 9
   },
   {
    "id": "educacion-artistica-musica--e2--a1s32",
@@ -2421,7 +2421,7 @@
    "trimestre": 3,
    "texto": "Empleo de estrategias en la ejecución musical de producciones propias y de otros, tales como la escucha atenta y silenciosa, la anticipación a la acción, la coordinación grupal e individual al cantar y acompañarse, y la interpretación de códigos escritos.",
    "calidad": "buena",
-   "orden": 32
+   "orden": 10
   },
   {
    "id": "educacion-artistica-musica--e2--a1s33",
@@ -2430,7 +2430,7 @@
    "trimestre": 3,
    "texto": "Canto y acompañamiento instrumental utilizando claves rítmicas, bases armónicas y arreglos de componentes formales o texturales, atendiendo a la continuidad y el ajuste puntual en la ejecución.",
    "calidad": "buena",
-   "orden": 33
+   "orden": 11
   },
   {
    "id": "educacion-artistica-musica--e2--a1s34",
@@ -2439,7 +2439,7 @@
    "trimestre": 3,
    "texto": "Ejecución de músicas cercanas a los consumos culturales juveniles, que incluyan en un nivel básico de coordinación grupal tanto relaciones tonales como desempeños vocales e instrumentales accesibles y claves rítmicas.",
    "calidad": "buena",
-   "orden": 34
+   "orden": 12
   },
   {
    "id": "educacion-artistica-musica--e2--a1s35",
@@ -2448,7 +2448,7 @@
    "trimestre": 3,
    "texto": "Ejecución de músicas cercanas a los consumos culturales juveniles y sus lugares de procedencia, atendiendo a la coordinación grupal y a la ampliación de técnicas de ejecución instrumental.",
    "calidad": "buena",
-   "orden": 35
+   "orden": 13
   },
   {
    "id": "educacion-artistica-musica--e2--a1s36",
@@ -2457,7 +2457,7 @@
    "trimestre": 3,
    "texto": "Combinación y coordinación de ejecución vocal, instrumental y corporal en producciones musicales individuales y grupales donde el nivel de dificultad no obstaculice la continuidad.",
    "calidad": "buena",
-   "orden": 36
+   "orden": 14
   },
   {
    "id": "educacion-artistica-musica--e2--a1s37",
@@ -2466,7 +2466,7 @@
    "trimestre": 3,
    "texto": "Perseverancia en las prácticas de habilidades con el fin de mejorar la interpretación individual y en grupo, como también la creación musical.",
    "calidad": "buena",
-   "orden": 37
+   "orden": 15
   },
   {
    "id": "educacion-artistica-musica--e2--a1s38",
@@ -2475,7 +2475,7 @@
    "trimestre": 3,
    "texto": "Precisión en el uso de un vocabulario apropiado para referirse a las producciones musicales.",
    "calidad": "buena",
-   "orden": 38
+   "orden": 16
   },
   {
    "id": "biologia--e1--a1s1",
@@ -2538,7 +2538,7 @@
    "trimestre": 2,
    "texto": "Reflexión y promoción de hábitos saludables relacionados con el cuidado de todos los sistemas vinculados a la función de nutrición. Posibilidades y ventajas de estas conductas.",
    "calidad": "buena",
-   "orden": 7
+   "orden": 1
   },
   {
    "id": "biologia--e1--a1s8",
@@ -2547,7 +2547,7 @@
    "trimestre": 2,
    "texto": "Reconocimiento y toma de conciencia de los efectos y consecuencias del tabaco, el alcohol y otras sustancias psicoactivas en todos los sistemas involucrados en la nutrición del organismo.",
    "calidad": "buena",
-   "orden": 8
+   "orden": 2
   },
   {
    "id": "biologia--e1--a1s9",
@@ -2556,7 +2556,7 @@
    "trimestre": 2,
    "texto": "Identificación de los intercambios de materiales y energía en los ecosistemas, estableciendo relaciones con la función de nutrición, por ejemplo los que ocurren en el ciclo del carbono.",
    "calidad": "buena",
-   "orden": 9
+   "orden": 3
   },
   {
    "id": "biologia--e1--a1s10",
@@ -2565,7 +2565,7 @@
    "trimestre": 3,
    "texto": "Interpretación de las relaciones tróficas, su representación en redes y cadenas alimentarias, y el reconocimiento del papel de productores, consumidores y descomponedores, vinculado con los distintos modelos de nutrición.",
    "calidad": "buena",
-   "orden": 10
+   "orden": 1
   },
   {
    "id": "biologia--e1--a1s11",
@@ -2574,7 +2574,7 @@
    "trimestre": 3,
    "texto": "Explicación de algunas modificaciones en la dinámica de los ecosistemas provocadas por la desaparición o introducción de especies en las tramas tróficas.",
    "calidad": "buena",
-   "orden": 11
+   "orden": 2
   },
   {
    "id": "biologia--e1--a2s1",
@@ -2619,7 +2619,7 @@
    "trimestre": 2,
    "texto": "Reflexión sobre los hábitos vinculados con la salud sexual y reproductiva que promueven el cuidado de sí mismo y entre pares, y su relación con las adicciones.",
    "calidad": "buena",
-   "orden": 5
+   "orden": 1
   },
   {
    "id": "biologia--e1--a2s6",
@@ -2628,7 +2628,7 @@
    "trimestre": 2,
    "texto": "Reconocimiento y toma de conciencia de los efectos del consumo de alcohol y otras sustancias psicoactivas en el sistema nervioso.",
    "calidad": "buena",
-   "orden": 6
+   "orden": 2
   },
   {
    "id": "biologia--e1--a2s7",
@@ -2637,7 +2637,7 @@
    "trimestre": 2,
    "texto": "Reconocimiento de las consecuencias que pueden ocasionar las alteraciones producidas por el consumo de sustancias psicoactivas en la seguridad vial y en situaciones de conflicto o violencia.",
    "calidad": "buena",
-   "orden": 7
+   "orden": 3
   },
   {
    "id": "biologia--e1--a2s8",
@@ -2646,7 +2646,7 @@
    "trimestre": 3,
    "texto": "Seminario o laboratorio de Biología: problematización sobre la clasificación de los seres vivos, identificación de algunos criterios para agruparlos desde la perspectiva de la división clásica en cinco reinos, y valoración de la importancia de la preservación de la biodiversidad desde los puntos de vista ecológico y evolutivo.",
    "calidad": "buena",
-   "orden": 8
+   "orden": 1
   },
   {
    "id": "biologia--e1--a2s9",
@@ -2655,7 +2655,7 @@
    "trimestre": 3,
    "texto": "Seminario o laboratorio de Biología: análisis de situaciones de riesgo o de violencia vinculadas con la sexualidad: distintas miradas sobre la problemática del aborto como problema ético, de salud pública, moral, social, cultural y jurídico, las enfermedades de transmisión sexual, el acoso sexual, la violencia sexual, el maltrato y la explotación sexual y trata, en articulación con ESI.",
    "calidad": "buena",
-   "orden": 9
+   "orden": 2
   },
   {
    "id": "biologia--e1--a3s1",
@@ -2700,7 +2700,7 @@
    "trimestre": 2,
    "texto": "Aproximación a la noción de reproducción a nivel celular: la mitosis como mecanismo de reproducción de organismos y de producción o renovación de tejidos, y la meiosis como mecanismo de producción de gametas.",
    "calidad": "buena",
-   "orden": 5
+   "orden": 1
   },
   {
    "id": "biologia--e1--a3s6",
@@ -2709,7 +2709,7 @@
    "trimestre": 2,
    "texto": "Interpretación de los mecanismos hereditarios propuestos por Mendel desde la teoría cromosómica de la herencia.",
    "calidad": "buena",
-   "orden": 6
+   "orden": 2
   },
   {
    "id": "biologia--e1--a3s7",
@@ -2718,7 +2718,7 @@
    "trimestre": 3,
    "texto": "Abordaje del desarrollo histórico de las teorías científicas que explican la evolución de los seres vivos, y la interpretación de la idea de selección natural propuesta por Darwin a partir de los aportes de la genética, para explicar la evolución de las especies.",
    "calidad": "buena",
-   "orden": 7
+   "orden": 1
   },
   {
    "id": "biologia--e1--a3s8",
@@ -2727,7 +2727,7 @@
    "trimestre": 3,
    "texto": "Identificación de relaciones entre los contenidos abordados y las temáticas científicas actuales que generan debates en la sociedad: clonación, alimentos transgénicos, huellas de ADN y otros.",
    "calidad": "buena",
-   "orden": 8
+   "orden": 2
   },
   {
    "id": "fisico-quimica--e1--a1s1",
@@ -2970,7 +2970,7 @@
    "trimestre": 3,
    "texto": "Análisis de experiencias donde aparecen interrelaciones eléctricas y magnéticas, por ejemplo, con un electroimán.",
    "calidad": "buena",
-   "orden": 6
+   "orden": 1
   },
   {
    "id": "fisico-quimica--e2--a2s7",
@@ -2979,7 +2979,7 @@
    "trimestre": 3,
    "texto": "Análisis de las demandas o necesidades de las personas, de las organizaciones y del medio ambiente en cuanto a la contaminación del ambiente de cualquier agente (físico, químico o biológico).",
    "calidad": "buena",
-   "orden": 7
+   "orden": 2
   },
   {
    "id": "fisico-quimica--e2--a3s1",
@@ -2988,7 +2988,7 @@
    "trimestre": 1,
    "texto": "Comprensión de que el movimiento de los cuerpos en un sistema mecánico se apoya en la observancia de las leyes de Newton como marco explicativo para algunos fenómenos físicos.",
    "calidad": "buena",
-   "orden": 1
+   "orden": 9
   },
   {
    "id": "fisico-quimica--e2--a3s2",
@@ -2997,7 +2997,7 @@
    "trimestre": 1,
    "texto": "Interpretación de que la radiación es otra forma de intercambio de energía.",
    "calidad": "buena",
-   "orden": 2
+   "orden": 10
   },
   {
    "id": "fisico-quimica--e2--a3s3",
@@ -3006,7 +3006,7 @@
    "trimestre": 2,
    "texto": "Comprensión de que el trabajo, sus usos y aplicaciones, se produce como otra forma de intercambio de energía en la materia.",
    "calidad": "buena",
-   "orden": 3
+   "orden": 1
   },
   {
    "id": "fisico-quimica--e2--a3s4",
@@ -3015,7 +3015,7 @@
    "trimestre": 2,
    "texto": "Abordaje acerca del calor, sus usos y aplicaciones, y comprensión sobre sus manifestaciones como intercambio de energía, enfatizando algunos procesos de transferencia y disipación.",
    "calidad": "buena",
-   "orden": 4
+   "orden": 2
   },
   {
    "id": "fisico-quimica--e2--a3s5",
@@ -3024,7 +3024,7 @@
    "trimestre": 2,
    "texto": "Contrastación histórica entre los modelos corpuscular y ondulatorio de la luz.",
    "calidad": "buena",
-   "orden": 5
+   "orden": 3
   },
   {
    "id": "fisico-quimica--e2--a3s6",
@@ -3033,7 +3033,7 @@
    "trimestre": 2,
    "texto": "Comprensión del fenómeno ondulatorio de la luz.",
    "calidad": "buena",
-   "orden": 6
+   "orden": 4
   },
   {
    "id": "fisico-quimica--e2--a3s7",
@@ -3042,7 +3042,7 @@
    "trimestre": 2,
    "texto": "Comprensión de que los fenómenos físicos pueden ser modelizados y descriptos a través de expresiones matemáticas, como por ejemplo el planteo de ecuaciones de movimiento en los sistemas mecánicos.",
    "calidad": "buena",
-   "orden": 7
+   "orden": 5
   },
   {
    "id": "fisico-quimica--e2--a3s8",
@@ -3051,7 +3051,7 @@
    "trimestre": 2,
    "texto": "Comprensión del espectro de radiación electromagnético a través del conocimiento de las longitudes de onda que conforman un rango.",
    "calidad": "buena",
-   "orden": 8
+   "orden": 6
   },
   {
    "id": "fisico-quimica--e2--a3s9",
@@ -3060,7 +3060,7 @@
    "trimestre": 2,
    "texto": "Reconocimiento acerca de que la contaminación acústica incide sobre el mecanismo de la audición, a través de la lectura de publicaciones e investigaciones sobre el tema.",
    "calidad": "buena",
-   "orden": 9
+   "orden": 7
   },
   {
    "id": "fisico-quimica--e2--a3s10",
@@ -3069,7 +3069,7 @@
    "trimestre": 2,
    "texto": "Conformación del clima de cooperación y de tolerancia en la realización de trabajos de investigación acerca del espectro visible, mezcla de colores, reflexión y refracción de la luz.",
    "calidad": "buena",
-   "orden": 10
+   "orden": 8
   },
   {
    "id": "fisico-quimica--e3--a1s1",
@@ -3087,7 +3087,7 @@
    "trimestre": 3,
    "texto": "Descripción de los principales efectos que experimenta la Tierra como integrante del Sistema Solar, a causa de las interacciones gravitatorias, por ejemplo, las mareas.",
    "calidad": "buena",
-   "orden": 1
+   "orden": 3
   },
   {
    "id": "fisico-quimica--e3--a2s2",
@@ -3096,7 +3096,7 @@
    "trimestre": 3,
    "texto": "Explicación del movimiento de diversos materiales entre la atmósfera, la geósfera y la hidrósfera, como efecto de la energía proveniente del Sol.",
    "calidad": "buena",
-   "orden": 2
+   "orden": 4
   },
   {
    "id": "fisico-quimica--e3--a3s1",
@@ -3321,7 +3321,7 @@
    "trimestre": 1,
    "texto": "Indagación acerca de las secuencias de actividades y tareas delegadas en los artefactos.",
    "calidad": "buena",
-   "orden": 1
+   "orden": 11
   },
   {
    "id": "educacion-tecnologica--e2--a1s2",
@@ -3330,7 +3330,7 @@
    "trimestre": 1,
    "texto": "Registro y análisis de la delegación del programa de acciones humanas, censado de variables, comparación con el valor de referencia, toma de decisiones y actuación en los sistemas y artefactos automatizados.",
    "calidad": "buena",
-   "orden": 2
+   "orden": 12
   },
   {
    "id": "educacion-tecnologica--e2--a1s3",
@@ -3339,7 +3339,7 @@
    "trimestre": 2,
    "texto": "Reconocimiento y análisis en los medios técnicos de los procesos automáticos con y sin sensores.",
    "calidad": "buena",
-   "orden": 3
+   "orden": 1
   },
   {
    "id": "educacion-tecnologica--e2--a1s4",
@@ -3348,7 +3348,7 @@
    "trimestre": 2,
    "texto": "Exploración y utilización de sistemas de comunicaciones a distancia mediante señales digitales, identificando operaciones de digitalización, transmisión, codificación y recepción.",
    "calidad": "buena",
-   "orden": 4
+   "orden": 2
   },
   {
    "id": "educacion-tecnologica--e2--a1s5",
@@ -3357,7 +3357,7 @@
    "trimestre": 2,
    "texto": "Análisis acerca de las características de funcionamiento: unidireccionalidad o bidireccionalidad.",
    "calidad": "buena",
-   "orden": 5
+   "orden": 3
   },
   {
    "id": "educacion-tecnologica--e2--a2s1",
@@ -3366,7 +3366,7 @@
    "trimestre": 1,
    "texto": "Indagación acerca de las secuencias de actividades y tareas delegadas en los artefactos.",
    "calidad": "buena",
-   "orden": 1
+   "orden": 10
   },
   {
    "id": "educacion-tecnologica--e2--a2s2",
@@ -3375,7 +3375,7 @@
    "trimestre": 1,
    "texto": "Exploración y utilización de dispositivos de control automático con programadores mecánicos y eléctricos.",
    "calidad": "buena",
-   "orden": 2
+   "orden": 11
   },
   {
    "id": "educacion-tecnologica--e2--a2s3",
@@ -3384,7 +3384,7 @@
    "trimestre": 2,
    "texto": "Representación de transmisiones de la información codificada en formato digital, a través de tablas de estado y diagramas temporales.",
    "calidad": "buena",
-   "orden": 3
+   "orden": 1
   },
   {
    "id": "educacion-tecnologica--e2--a2s4",
@@ -3393,7 +3393,7 @@
    "trimestre": 2,
    "texto": "Reconocimiento de las diferencias entre técnicas de control discreto y analógico, analizando y comparando los procedimientos delegados en los artefactos para medir y controlar variables (temperatura, nivel de líquidos, entre otros).",
    "calidad": "buena",
-   "orden": 4
+   "orden": 2
   },
   {
    "id": "educacion-tecnologica--e2--a2s5",
@@ -3402,7 +3402,7 @@
    "trimestre": 2,
    "texto": "Estudio de las secuencias de operaciones delegadas en los robots en los procesos industriales, identificando las formas de programación gestual (por posiciones y por trayectorias).",
    "calidad": "buena",
-   "orden": 5
+   "orden": 3
   },
   {
    "id": "educacion-tecnologica--e3--a1s1",
@@ -3411,7 +3411,7 @@
    "trimestre": 2,
    "texto": "Reconocimiento de los procesos y las tecnologías que forman redes y sistemas.",
    "calidad": "buena",
-   "orden": 1
+   "orden": 4
   },
   {
    "id": "educacion-tecnologica--e3--a1s2",
@@ -3420,7 +3420,7 @@
    "trimestre": 2,
    "texto": "Análisis y representación, mediante diagramas y esquemas, de las diversas interacciones entre procesos tecnológicos, actores y tecnologías que configuran un sistema socio técnico, por ejemplo el sistema de producción de la revolución industrial teniendo en cuenta la provisión y uso de la energía.",
    "calidad": "buena",
-   "orden": 2
+   "orden": 5
   },
   {
    "id": "educacion-tecnologica--e3--a1s3",
@@ -3429,7 +3429,7 @@
    "trimestre": 2,
    "texto": "Análisis y representación, mediante diagramas y esquemas, de los tipos de líneas de producción teniendo en cuenta la provisión y uso de la energía.",
    "calidad": "buena",
-   "orden": 3
+   "orden": 6
   },
   {
    "id": "educacion-tecnologica--e3--a1s4",
@@ -3438,7 +3438,7 @@
    "trimestre": 2,
    "texto": "Indagación sobre la continuidad y los cambios que experimentan las tecnologías a través del tiempo.",
    "calidad": "buena",
-   "orden": 4
+   "orden": 7
   },
   {
    "id": "educacion-tecnologica--e3--a1s5",
@@ -3447,7 +3447,7 @@
    "trimestre": 2,
    "texto": "Reconocimiento de los diferentes momentos del desarrollo tecnológico, procesos en los cuales se conservan las operaciones tecnológicas más allá de los medios técnicos utilizados.",
    "calidad": "buena",
-   "orden": 5
+   "orden": 8
   },
   {
    "id": "educacion-tecnologica--e3--a1s6",
@@ -3456,7 +3456,7 @@
    "trimestre": 2,
    "texto": "Contrastación de los tiempos involucrados para realizar una misma actividad con tecnologías y formas organizacionales de distintas épocas o culturas, e indagación sobre los modos en que la reducción de esos tiempos incide en la calidad de vida diaria y laboral de las personas.",
    "calidad": "buena",
-   "orden": 6
+   "orden": 9
   },
   {
    "id": "educacion-tecnologica--e3--a1s7",
@@ -3465,7 +3465,7 @@
    "trimestre": 3,
    "texto": "Análisis crítico de cómo la incorporación de sistemas automatizados, en los que se delegan programas de acciones, complementa, refuerza o sustituye el accionar humano en la vida cotidiana y en contextos de trabajo.",
    "calidad": "buena",
-   "orden": 7
+   "orden": 1
   },
   {
    "id": "educacion-tecnologica--e3--a1s8",
@@ -3474,7 +3474,7 @@
    "trimestre": 3,
    "texto": "Deconstrucción del proceso a través del cual se adopta el uso de una tecnología vigente, identificando el papel jugado por los actores involucrados, sus expectativas e intereses y las diferentes alternativas de soluciones propuestas.",
    "calidad": "buena",
-   "orden": 8
+   "orden": 2
   },
   {
    "id": "educacion-tecnologica--e3--a1s9",
@@ -3483,7 +3483,7 @@
    "trimestre": 3,
    "texto": "Análisis crítico de la conveniencia y oportunidad de reemplazar los combustibles fósiles por otros renovables, considerando las interrelaciones posibles con aspectos de la vida cotidiana y de la producción.",
    "calidad": "buena",
-   "orden": 9
+   "orden": 3
   },
   {
    "id": "educacion-tecnologica--e3--a1s10",
@@ -3492,7 +3492,7 @@
    "trimestre": 3,
    "texto": "Indagación de la coexistencia de tecnologías diferentes en una misma sociedad o en culturas específicas.",
    "calidad": "buena",
-   "orden": 10
+   "orden": 4
   },
   {
    "id": "educacion-tecnologica--e3--a1s11",
@@ -3501,7 +3501,7 @@
    "trimestre": 3,
    "texto": "Reconocimiento de las coexistencias del uso de energías renovables y no renovables, tanto en forma concentrada o centralizada como aislada o descentralizada, su adecuación, diversidad de escala de producción y disponibilidad de uso en distintos grupos sociales.",
    "calidad": "buena",
-   "orden": 11
+   "orden": 5
   },
   {
    "id": "educacion-tecnologica--e3--a1s12",
@@ -3510,7 +3510,7 @@
    "trimestre": 3,
    "texto": "Reflexión sobre la creciente potencialidad de las tecnologías disponibles y su contraste con las condiciones de vida.",
    "calidad": "buena",
-   "orden": 12
+   "orden": 6
   },
   {
    "id": "educacion-tecnologica--e3--a1s13",
@@ -3519,7 +3519,7 @@
    "trimestre": 3,
    "texto": "Reconocimiento de la importancia de seleccionar tecnologías por su valor social y sustentabilidad ambiental, analizando las consecuencias de su uso acrítico e identificando prácticas de consumo.",
    "calidad": "buena",
-   "orden": 13
+   "orden": 7
   },
   {
    "id": "educacion-tecnologica--e3--a2s1",
@@ -3528,7 +3528,7 @@
    "trimestre": 2,
    "texto": "Reconocimiento de los procesos y las tecnologías que forman redes y sistemas.",
    "calidad": "buena",
-   "orden": 1
+   "orden": 4
   },
   {
    "id": "educacion-tecnologica--e3--a2s2",
@@ -3537,7 +3537,7 @@
    "trimestre": 2,
    "texto": "Análisis y representación de las interacciones entre los procesos tecnológicos, actores y tecnologías que configuran el actual sistema socio técnico.",
    "calidad": "buena",
-   "orden": 2
+   "orden": 5
   },
   {
    "id": "educacion-tecnologica--e3--a2s3",
@@ -3546,7 +3546,7 @@
    "trimestre": 2,
    "texto": "Análisis crítico y descripción del fenómeno socio técnico conocido como convergencia de modos o de medios, por el cual los procesos tecnológicos que operaban sobre tecnologías de diferentes clases tienden a realizarse sobre un soporte común.",
    "calidad": "buena",
-   "orden": 3
+   "orden": 6
   },
   {
    "id": "educacion-tecnologica--e3--a2s4",
@@ -3555,7 +3555,7 @@
    "trimestre": 2,
    "texto": "Indagación sobre la continuidad y los cambios que experimentan las tecnologías a través del tiempo.",
    "calidad": "buena",
-   "orden": 4
+   "orden": 7
   },
   {
    "id": "educacion-tecnologica--e3--a2s5",
@@ -3564,7 +3564,7 @@
    "trimestre": 2,
    "texto": "Contrastación de las decisiones socio técnicas tomadas para la resolución de situaciones problemáticas complejas, desde diferentes enfoques teóricos, a partir del análisis de casos.",
    "calidad": "buena",
-   "orden": 5
+   "orden": 8
   },
   {
    "id": "educacion-tecnologica--e3--a2s6",
@@ -3573,7 +3573,7 @@
    "trimestre": 2,
    "texto": "Identificación de los cambios en la localización de la producción a partir del uso de los sistemas de transmisión de la información a distancia, y las consecuentes modificaciones en las representaciones del tiempo y del espacio.",
    "calidad": "buena",
-   "orden": 6
+   "orden": 9
   },
   {
    "id": "educacion-tecnologica--e3--a2s7",
@@ -3582,7 +3582,7 @@
    "trimestre": 3,
    "texto": "Comparación de las tecnologías de almacenamiento y recuperación presentes y pasadas, considerando las pérdidas y la calidad de la información al transferir imagen, sonidos y textos de unas a otras.",
    "calidad": "buena",
-   "orden": 7
+   "orden": 1
   },
   {
    "id": "educacion-tecnologica--e3--a2s8",
@@ -3591,7 +3591,7 @@
    "trimestre": 3,
    "texto": "Estudio de los propósitos y actividades de las principales instituciones del estado que participan del Sistema Nacional de Innovación (INTI, INVAP, CONAE, CNEA, INTA, ANMAT, INPI) y de otras a nivel jurisdiccional o local.",
    "calidad": "buena",
-   "orden": 8
+   "orden": 2
   },
   {
    "id": "educacion-tecnologica--e3--a2s9",
@@ -3600,7 +3600,7 @@
    "trimestre": 3,
    "texto": "Indagación de la coexistencia de tecnologías diferentes en una misma sociedad o en culturas específicas.",
    "calidad": "buena",
-   "orden": 9
+   "orden": 3
   },
   {
    "id": "educacion-tecnologica--e3--a2s10",
@@ -3609,7 +3609,7 @@
    "trimestre": 3,
    "texto": "Comparación de escalas de producción, características y costos de los productos terminados, los modos de gestión y distribución de excedentes económicos, la energía involucrada, el tipo de desechos producidos y su grado de reutilización y contaminación en tecnologías diversas que coexisten en la región.",
    "calidad": "buena",
-   "orden": 10
+   "orden": 4
   },
   {
    "id": "educacion-tecnologica--e3--a2s11",
@@ -3618,7 +3618,7 @@
    "trimestre": 3,
    "texto": "Reflexión sobre la creciente potencialidad de las tecnologías disponibles y su contraste con las condiciones de vida.",
    "calidad": "buena",
-   "orden": 11
+   "orden": 5
   },
   {
    "id": "educacion-tecnologica--e3--a2s12",
@@ -3627,7 +3627,7 @@
    "trimestre": 3,
    "texto": "Reflexión sobre problemáticas cotidianas complejas desde un punto de vista socio técnico, ensayando preguntas y respuestas como ciudadanos.",
    "calidad": "buena",
-   "orden": 12
+   "orden": 6
   },
   {
    "id": "historia--e1--a1s1",
@@ -3672,7 +3672,7 @@
    "trimestre": 2,
    "texto": "Conocimiento del proceso de surgimiento y desarrollo de las ciudades en el mundo feudal a partir del siglo XI, y reconocimiento de las principales características de la sociedad feudo-burguesa: actividades económicas, formas de pensar, vivir y sentir, grupos sociales y distribución del poder.",
    "calidad": "buena",
-   "orden": 5
+   "orden": 1
   },
   {
    "id": "historia--e1--a1s6",
@@ -3681,7 +3681,7 @@
    "trimestre": 2,
    "texto": "Seminario · Historia de Formosa: los primeros habitantes. La organización política y la organización social del trabajo de los pueblos cazadores-recolectores (paleolíticos) en el territorio del Gran Chaco y en la Patagonia.",
    "calidad": "buena",
-   "orden": 6
+   "orden": 2
   },
   {
    "id": "historia--e1--a1s7",
@@ -3690,7 +3690,7 @@
    "trimestre": 3,
    "texto": "Seminario · Comparación con los pueblos agricultores (neolíticos) en ambas regiones.",
    "calidad": "buena",
-   "orden": 7
+   "orden": 1
   },
   {
    "id": "historia--e1--a2s1",
@@ -3753,7 +3753,7 @@
    "trimestre": 2,
    "texto": "Seminario · Aproximación a los cambios que introduce la Revolución Industrial —formas de producir, conformación de la sociedad—, sus conflictos y su influencia en las colonias españolas en América.",
    "calidad": "buena",
-   "orden": 7
+   "orden": 1
   },
   {
    "id": "historia--e1--a2s8",
@@ -3762,7 +3762,7 @@
    "trimestre": 2,
    "texto": "Seminario · La disolución del poder colonial en el Virreinato del Río de la Plata, profundizando la mirada en los conflictos que impulsaron la independencia de las colonias españolas en América.",
    "calidad": "buena",
-   "orden": 8
+   "orden": 2
   },
   {
    "id": "historia--e1--a2s9",
@@ -3771,7 +3771,7 @@
    "trimestre": 2,
    "texto": "Seminario · Los diversos intereses sociales y regionales puestos en juego durante el proceso de construcción de Estados nacionales en América Latina durante la primera mitad del siglo XIX. La disputa sobre la forma de organización del Estado: unitarios y federales.",
    "calidad": "buena",
-   "orden": 9
+   "orden": 3
   },
   {
    "id": "historia--e1--a2s10",
@@ -3780,7 +3780,7 @@
    "trimestre": 2,
    "texto": "Seminario · Historia de Formosa: la incorporación del actual territorio de Formosa a la vida económica y política del país. Análisis de la ocupación y organización del Gran Chaco en el marco de las políticas liberales de fines del siglo XIX.",
    "calidad": "buena",
-   "orden": 10
+   "orden": 4
   },
   {
    "id": "historia--e1--a2s11",
@@ -3789,7 +3789,7 @@
    "trimestre": 3,
    "texto": "El problema de los límites con el Paraguay. El tratado secreto de la Guerra de la Triple Alianza.",
    "calidad": "buena",
-   "orden": 11
+   "orden": 1
   },
   {
    "id": "historia--e1--a2s12",
@@ -3798,7 +3798,7 @@
    "trimestre": 3,
    "texto": "La fundación de Formosa y su impacto en las relaciones políticas, sociales, económicas y culturales en la frontera y en la conformación de la identidad nacional.",
    "calidad": "buena",
-   "orden": 12
+   "orden": 2
   },
   {
    "id": "historia--e1--a2s13",
@@ -3807,7 +3807,7 @@
    "trimestre": 3,
    "texto": "Conocimiento de la situación de la Gobernación del Territorio Nacional de Formosa desde las perspectivas económica, política y social: extensión de la línea férrea y creación de los pueblos en el interior formoseño, la explotación forestal y la producción taninera, y sus consecuencias en el territorio.",
    "calidad": "buena",
-   "orden": 13
+   "orden": 3
   },
   {
    "id": "historia--e1--a3s1",
@@ -3852,7 +3852,7 @@
    "trimestre": 2,
    "texto": "Reconocimiento, desde múltiples interpretaciones, de los cambios y continuidades entre los gobiernos radicales (1916-1930) y los gobiernos conservadores anteriores, particularmente en torno al modelo económico agroexportador, la gran propiedad de la tierra, la educación, la política internacional y energética, y las relaciones con los trabajadores y los sectores medios.",
    "calidad": "buena",
-   "orden": 5
+   "orden": 1
   },
   {
    "id": "historia--e1--a3s6",
@@ -3861,7 +3861,7 @@
    "trimestre": 2,
    "texto": "Análisis de los conflictos sociales y políticos más relevantes del período radical, particularmente la denominada Semana Trágica y los conflictos rurales de la Patagonia, en el contexto del impacto mundial y local de la Primera Guerra Mundial y la Revolución Rusa.",
    "calidad": "buena",
-   "orden": 6
+   "orden": 2
   },
   {
    "id": "historia--e1--a3s7",
@@ -3870,7 +3870,7 @@
    "trimestre": 3,
    "texto": "Seminario · Historia de Formosa: desde la provincialización hasta nuestros días, el proyecto de desarrollo. La provincialización. Inestabilidad política. Proscripción y golpes de estado. La democracia y las políticas públicas. El Modelo Formoseño.",
    "calidad": "buena",
-   "orden": 7
+   "orden": 1
   },
   {
    "id": "historia--e1--a3s8",
@@ -3879,7 +3879,7 @@
    "trimestre": 3,
    "texto": "Una mirada geopolítica sobre las fronteras como zonas de intercambio e integración. La frontera tripartita que involucra a Argentina, Paraguay y Bolivia, sus desafíos y posibilidades para el desarrollo e integración económico y cultural.",
    "calidad": "buena",
-   "orden": 8
+   "orden": 2
   },
   {
    "id": "geografia--e1--a1s1",
@@ -3942,7 +3942,7 @@
    "trimestre": 2,
    "texto": "Sustitución de la imagen centro-periferia por una red sin centro ni periferia a nivel regional y mundial. Influencia de las TIC y de Internet en la configuración de las fronteras políticas, administrativas, regionales y nacionales.",
    "calidad": "buena",
-   "orden": 7
+   "orden": 1
   },
   {
    "id": "geografia--e1--a1s8",
@@ -3951,7 +3951,7 @@
    "trimestre": 2,
    "texto": "El volumen de relaciones y conexiones a escala local, regional y mundial. Nuevas relaciones de producción y organizaciones regionales creadas como consecuencia de la telemática y la comunicación.",
    "calidad": "buena",
-   "orden": 8
+   "orden": 2
   },
   {
    "id": "geografia--e1--a1s9",
@@ -3960,7 +3960,7 @@
    "trimestre": 2,
    "texto": "El espacio físico-social y cultural como soporte insustituible de la infraestructura virtual.",
    "calidad": "buena",
-   "orden": 9
+   "orden": 3
   },
   {
    "id": "geografia--e1--a1s10",
@@ -3969,7 +3969,7 @@
    "trimestre": 3,
    "texto": "Seminario de planificación estratégica del desarrollo local: desarrollo local y economía social. Incorporación de los municipios en este tipo de organización.",
    "calidad": "buena",
-   "orden": 10
+   "orden": 1
   },
   {
    "id": "geografia--e1--a1s11",
@@ -3978,7 +3978,7 @@
    "trimestre": 3,
    "texto": "Los planes de desarrollo local: estrategias para la gestión, impactos y desafíos.",
    "calidad": "buena",
-   "orden": 11
+   "orden": 2
   },
   {
    "id": "geografia--e1--a2s1",
@@ -4059,7 +4059,7 @@
    "trimestre": 2,
    "texto": "Caracterización de los problemas ambientales y desastres naturales locales: inundaciones, sequías, erosiones, desertificación, amenazas de contaminación e incendios de pastizales. Escalas. Investigación.",
    "calidad": "buena",
-   "orden": 9
+   "orden": 1
   },
   {
    "id": "geografia--e1--a2s10",
@@ -4068,7 +4068,7 @@
    "trimestre": 2,
    "texto": "Valoración y apropiación de los recursos. Ubicación y caracterización de los ambientes protegidos.",
    "calidad": "buena",
-   "orden": 10
+   "orden": 2
   },
   {
    "id": "geografia--e1--a2s11",
@@ -4077,7 +4077,7 @@
    "trimestre": 2,
    "texto": "Contrastación de la organización, composición, estructura y dinámica de la población, niveles educativos, pobreza y marginalidad. Vulnerabilidad social y redistribución de las riquezas.",
    "calidad": "buena",
-   "orden": 11
+   "orden": 3
   },
   {
    "id": "geografia--e1--a2s12",
@@ -4086,7 +4086,7 @@
    "trimestre": 2,
    "texto": "Identificación de las estrategias de superación y de las condiciones de vida. Investigación.",
    "calidad": "buena",
-   "orden": 12
+   "orden": 4
   },
   {
    "id": "geografia--e1--a2s13",
@@ -4095,7 +4095,7 @@
    "trimestre": 2,
    "texto": "Análisis de la disponibilidad de equipamientos comunitarios, hospitales y escuelas. Trabajo de campo.",
    "calidad": "buena",
-   "orden": 13
+   "orden": 5
   },
   {
    "id": "geografia--e1--a2s14",
@@ -4104,7 +4104,7 @@
    "trimestre": 2,
    "texto": "Comprensión de espacios urbanos y búsqueda de una buena calidad ambiental. Trabajo de campo.",
    "calidad": "buena",
-   "orden": 14
+   "orden": 6
   },
   {
    "id": "geografia--e1--a2s15",
@@ -4113,7 +4113,7 @@
    "trimestre": 3,
    "texto": "Análisis del desarrollo rural sustentable, reconstrucción de los territorios rurales y desarrollo de infraestructuras rurales desde una mirada social y comunitaria, arraigo de los jóvenes y consolidación de una cultura e identidad rural. Estudio de caso: el PAIPPA.",
    "calidad": "buena",
-   "orden": 15
+   "orden": 1
   },
   {
    "id": "geografia--e1--a2s16",
@@ -4122,7 +4122,7 @@
    "trimestre": 3,
    "texto": "Interpretación de las principales actividades económicas de generación de riqueza y empleo, los procesos productivos, cadenas de valor y articulación empresarial. Taller.",
    "calidad": "buena",
-   "orden": 16
+   "orden": 2
   },
   {
    "id": "geografia--e1--a2s17",
@@ -4131,7 +4131,7 @@
    "trimestre": 3,
    "texto": "Análisis de las dinámicas de inclusión e integración social. Modelo de gestión. Debate.",
    "calidad": "buena",
-   "orden": 17
+   "orden": 3
   },
   {
    "id": "geografia--e1--a2s18",
@@ -4140,7 +4140,7 @@
    "trimestre": 3,
    "texto": "Identificación de los niveles de organización y espacios de participación de la sociedad civil, y de los jóvenes en especial. Debate.",
    "calidad": "buena",
-   "orden": 18
+   "orden": 4
   },
   {
    "id": "geografia--e1--a3s1",
@@ -4212,7 +4212,7 @@
    "trimestre": 2,
    "texto": "Aprovechamientos, planificación territorial y del uso del suelo. Ambientes protegidos.",
    "calidad": "buena",
-   "orden": 8
+   "orden": 1
   },
   {
    "id": "geografia--e1--a3s9",
@@ -4221,7 +4221,7 @@
    "trimestre": 2,
    "texto": "Problemáticas urbanas y rurales. Análisis de las dinámicas migratorias. Contrastación de la composición, organización, estructura y dinámica de la población, vulnerabilidad social y redistribución de las riquezas.",
    "calidad": "buena",
-   "orden": 9
+   "orden": 2
   },
   {
    "id": "geografia--e1--a3s10",
@@ -4230,7 +4230,7 @@
    "trimestre": 2,
    "texto": "Identificación de los niveles educativos, pobreza y estrategias de superación. Debate.",
    "calidad": "buena",
-   "orden": 10
+   "orden": 3
   },
   {
    "id": "geografia--e1--a3s11",
@@ -4239,7 +4239,7 @@
    "trimestre": 2,
    "texto": "Contrastación de la disponibilidad de equipamientos sociales y comunitarios como hospitales y escuelas.",
    "calidad": "buena",
-   "orden": 11
+   "orden": 4
   },
   {
    "id": "geografia--e1--a3s12",
@@ -4248,7 +4248,7 @@
    "trimestre": 2,
    "texto": "Comprensión de los espacios urbanos y rurales, desarrollos urbanísticos y rurales, y desequilibrios socio territoriales.",
    "calidad": "buena",
-   "orden": 12
+   "orden": 5
   },
   {
    "id": "geografia--e1--a3s13",
@@ -4257,7 +4257,7 @@
    "trimestre": 3,
    "texto": "Estudio de caso: cambios en el agro latinoamericano, el caso del cultivo de la soja en Argentina.",
    "calidad": "buena",
-   "orden": 13
+   "orden": 1
   },
   {
    "id": "geografia--e1--a3s14",
@@ -4266,7 +4266,7 @@
    "trimestre": 3,
    "texto": "Interpretación de las principales actividades económicas, los procesos productivos y las cadenas de valor. Articulación empresarial y limitaciones al desarrollo productivo. Taller.",
    "calidad": "buena",
-   "orden": 14
+   "orden": 2
   },
   {
    "id": "geografia--e1--a3s15",
@@ -4275,7 +4275,7 @@
    "trimestre": 3,
    "texto": "Interpretación de las condiciones de vida y de las dinámicas de inclusión e integración social a partir de un modelo de gestión. Debate.",
    "calidad": "buena",
-   "orden": 15
+   "orden": 3
   },
   {
    "id": "geografia--e1--a3s16",
@@ -4284,7 +4284,7 @@
    "trimestre": 3,
    "texto": "Comprensión de los procesos de integración, bloques regionales, Mercosur y Unasur, ventajas y desventajas en el contexto de la globalización. Debate.",
    "calidad": "buena",
-   "orden": 16
+   "orden": 4
   },
   {
    "id": "formacion-etica-y-compromiso-comunitario--e1--a2s1",
@@ -4437,7 +4437,7 @@
    "trimestre": 1,
    "texto": "Conocimiento y comprensión de los Derechos Humanos y de los Derechos de las niñas, niños y adolescentes como construcción socio histórica, a partir de la reflexión acerca de la lucha de los pueblos por el reconocimiento de la dignidad de las personas, en particular en Formosa, Argentina y América Latina.",
    "calidad": "buena",
-   "orden": 1
+   "orden": 7
   },
   {
    "id": "formacion-etica-y-compromiso-comunitario--e2--a2s2",
@@ -4446,7 +4446,7 @@
    "trimestre": 1,
    "texto": "Conocimiento de normas y leyes que tienden a garantizar los Derechos Humanos: Declaración Universal de Derechos Humanos, Declaración Americana de los Derechos y Deberes del Hombre, Convención sobre los Derechos del Niño y Ley de Protección Integral de los Derechos de las Niñas, Niños y Adolescentes, entre otras.",
    "calidad": "buena",
-   "orden": 2
+   "orden": 8
   },
   {
    "id": "formacion-etica-y-compromiso-comunitario--e2--a2s3",
@@ -4455,7 +4455,7 @@
    "trimestre": 1,
    "texto": "Identificación y comprensión de las tensiones inherentes a la defensa de los Derechos Humanos en relación con prácticas sociales vinculadas al ambiente, el género y la orientación sexual, la salud, los medios masivos de comunicación, los pueblos originarios, el mundo del trabajo, la movilidad, el tránsito libre y seguro, y el consumo.",
    "calidad": "buena",
-   "orden": 3
+   "orden": 9
   },
   {
    "id": "formacion-etica-y-compromiso-comunitario--e2--a2s4",
@@ -4464,7 +4464,7 @@
    "trimestre": 1,
    "texto": "Conocimiento y análisis de las implicancias de los derechos y responsabilidades parentales.",
    "calidad": "buena",
-   "orden": 4
+   "orden": 10
   },
   {
    "id": "formacion-etica-y-compromiso-comunitario--e2--a2s5",
@@ -4473,7 +4473,7 @@
    "trimestre": 1,
    "texto": "Conocimiento de los fundamentos de la reivindicación de la soberanía argentina plena —territorial, política, cultural y alimentaria— en el marco de los Derechos Humanos y conforme a los principios del Derecho Internacional.",
    "calidad": "buena",
-   "orden": 5
+   "orden": 11
   },
   {
    "id": "formacion-etica-y-compromiso-comunitario--e2--a2s6",
@@ -4482,7 +4482,7 @@
    "trimestre": 1,
    "texto": "Conocimiento acerca del Estado de Derecho y las garantías constitucionales relacionadas con la minoría de edad y las conductas adictivas. Derecho a la salud. Responsabilidades del Estado y de los adultos.",
    "calidad": "buena",
-   "orden": 6
+   "orden": 12
   },
   {
    "id": "formacion-etica-y-compromiso-comunitario--e2--a2s7",
@@ -4491,7 +4491,7 @@
    "trimestre": 1,
    "texto": "Conocimiento de los derechos vinculados al trabajo, en particular las condiciones del trabajo de los jóvenes, y reflexión sobre su flexibilización y precarización.",
    "calidad": "buena",
-   "orden": 7
+   "orden": 13
   },
   {
    "id": "formacion-etica-y-compromiso-comunitario--e2--a2s8",
@@ -4500,7 +4500,7 @@
    "trimestre": 2,
    "texto": "Reconocimiento y reflexión sobre situaciones de violencia en las relaciones interpersonales y conductas de imposición sobre los derechos de los otros. Identificación de instituciones u organismos del estado que protegen los derechos vulnerados.",
    "calidad": "buena",
-   "orden": 8
+   "orden": 1
   },
   {
    "id": "formacion-etica-y-compromiso-comunitario--e2--a3s1",
@@ -4509,7 +4509,7 @@
    "trimestre": 1,
    "texto": "Comprensión de la construcción socio histórica y validación ética de los Derechos Humanos, generada a partir de acontecimientos como el Holocausto y el terrorismo de Estado en nuestro país.",
    "calidad": "buena",
-   "orden": 1
+   "orden": 11
   },
   {
    "id": "formacion-etica-y-compromiso-comunitario--e2--a3s2",
@@ -4518,7 +4518,7 @@
    "trimestre": 1,
    "texto": "Conocimiento de las diferentes formas de defensa de los Derechos Humanos, del funcionamiento de organismos internacionales, nacionales y locales, y del papel de las organizaciones de la sociedad civil y de los movimientos sociales.",
    "calidad": "buena",
-   "orden": 2
+   "orden": 12
   },
   {
    "id": "formacion-etica-y-compromiso-comunitario--e2--a3s3",
@@ -4527,7 +4527,7 @@
    "trimestre": 1,
    "texto": "Reflexión sobre la dignidad humana desde el concepto de Persona y desde los Derechos Humanos, frente a la tortura, la desaparición forzada, la usurpación o cambio de identidad, la censura cultural, la justicia social y la discriminación, en distintos contextos.",
    "calidad": "buena",
-   "orden": 3
+   "orden": 13
   },
   {
    "id": "formacion-etica-y-compromiso-comunitario--e2--a3s4",
@@ -4536,7 +4536,7 @@
    "trimestre": 1,
    "texto": "Comprensión de los alcances legales de las normativas específicas sobre los derechos de los niños, adolescentes y jóvenes, y sus implicancias en situaciones conflictivas de la vida cotidiana y en instancias de vulneración, tales como maltrato infantil, abuso sexual y trata de niños, niñas y adolescentes.",
    "calidad": "buena",
-   "orden": 4
+   "orden": 14
   },
   {
    "id": "formacion-etica-y-compromiso-comunitario--e2--a3s5",
@@ -4545,7 +4545,7 @@
    "trimestre": 1,
    "texto": "Reconocimiento de los derechos políticos, sociales, económicos y culturales de los pueblos originarios y otras minorías, a partir de la Ley Integral del Aborigen N° 426/84.",
    "calidad": "buena",
-   "orden": 5
+   "orden": 15
   },
   {
    "id": "formacion-etica-y-compromiso-comunitario--e2--a3s6",
@@ -4554,7 +4554,7 @@
    "trimestre": 2,
    "texto": "Reflexión sobre las distintas formas de reivindicación del derecho al trabajo, el gremialismo y las formas alternativas de organización laboral: empresas recuperadas, cooperativas y mutuales.",
    "calidad": "buena",
-   "orden": 6
+   "orden": 1
   },
   {
    "id": "formacion-etica-y-compromiso-comunitario--e2--a3s7",
@@ -4563,7 +4563,7 @@
    "trimestre": 2,
    "texto": "Reconocimiento de las acciones antijurídicas y accidentes producidos por negligencia o imprudencia relacionadas con el consumo de sustancias psicoactivas. Nociones jurídicas de dolo, dolo eventual, culpa y culpa con representación. Sanciones a adultos responsables de los menores. Responsabilidad civil y resarcimiento por daños.",
    "calidad": "buena",
-   "orden": 7
+   "orden": 2
   },
   {
    "id": "formacion-etica-y-compromiso-comunitario--e3--a2s1",
@@ -4572,7 +4572,7 @@
    "trimestre": 2,
    "texto": "Comprensión de la dimensión ética de las acciones humanas, con el fin de rescatar el valor social de las conductas ejemplares, a través del análisis y la discusión de situaciones reales y ficticias, privadas o públicas, que entrañan conflictos sociales.",
    "calidad": "buena",
-   "orden": 1
+   "orden": 2
   },
   {
    "id": "formacion-etica-y-compromiso-comunitario--e3--a2s2",
@@ -4581,7 +4581,7 @@
    "trimestre": 2,
    "texto": "Análisis crítico de las acciones de diferentes actores sociales a partir de situaciones conflictivas de la vida social, planteando posibles estrategias para su solución.",
    "calidad": "buena",
-   "orden": 2
+   "orden": 3
   },
   {
    "id": "formacion-etica-y-compromiso-comunitario--e3--a2s3",
@@ -4590,7 +4590,7 @@
    "trimestre": 2,
    "texto": "Abordaje desde una perspectiva filosófica de temas como la justicia, la libertad, la igualdad, el poder y la autoridad, a través de situaciones de la historia formoseña, argentina y latinoamericana.",
    "calidad": "buena",
-   "orden": 3
+   "orden": 4
   },
   {
    "id": "formacion-etica-y-compromiso-comunitario--e3--a2s4",
@@ -4599,7 +4599,7 @@
    "trimestre": 2,
    "texto": "Reflexión y valoración de la libertad y su relación con la responsabilidad. Conductas adictivas y pérdida de conciencia del contexto y de las consecuencias de las propias acciones.",
    "calidad": "buena",
-   "orden": 4
+   "orden": 5
   },
   {
    "id": "formacion-etica-y-compromiso-comunitario--e3--a3s1",
@@ -4608,7 +4608,7 @@
    "trimestre": 2,
    "texto": "Identificación de las representaciones sociales que subyacen en las acciones humanas y que posibilitan la formulación de un modelo formoseño basado en un conjunto de principios y valores de orden ético y moral vinculado al modelo nacional.",
    "calidad": "buena",
-   "orden": 1
+   "orden": 3
   },
   {
    "id": "formacion-etica-y-compromiso-comunitario--e3--a3s2",
@@ -4617,7 +4617,7 @@
    "trimestre": 2,
    "texto": "Reconocimiento y análisis de las decisiones y prácticas éticas de los diferentes actores sociales y de sus justificaciones basadas en principios, consecuencias, virtudes y valores compartidos y controvertidos.",
    "calidad": "buena",
-   "orden": 2
+   "orden": 4
   },
   {
    "id": "formacion-etica-y-compromiso-comunitario--e3--a3s3",
@@ -4626,7 +4626,7 @@
    "trimestre": 2,
    "texto": "Reflexión y valoración sobre los modelos de felicidad y de éxito enunciados por los medios de comunicación. Relación entre esos modelos y el consumo problemático. Lo público, lo privado, lo íntimo y lo personal.",
    "calidad": "buena",
-   "orden": 3
+   "orden": 5
   },
   {
    "id": "formacion-etica-y-compromiso-comunitario--e3--a3s4",
@@ -4635,7 +4635,7 @@
    "trimestre": 2,
    "texto": "Efectos del consumo problemático de sustancias psicoactivas en uno mismo y en la convivencia con los demás.",
    "calidad": "buena",
-   "orden": 4
+   "orden": 6
   },
   {
    "id": "formacion-etica-y-compromiso-comunitario--e3--a3s5",
@@ -4644,7 +4644,7 @@
    "trimestre": 2,
    "texto": "Construcción y justificación de una posición ética propia, sustentada en un análisis crítico sobre temas controvertidos de la sociedad actual.",
    "calidad": "buena",
-   "orden": 5
+   "orden": 7
   },
   {
    "id": "formacion-etica-y-compromiso-comunitario--e3--a3s6",
@@ -4653,7 +4653,7 @@
    "trimestre": 2,
    "texto": "Relaciones entre los distintos aspectos de las conductas adictivas: sujeto, objeto y situación. Contextos, motivos e intenciones que conducen a conductas adictivas.",
    "calidad": "buena",
-   "orden": 6
+   "orden": 8
   },
   {
    "id": "formacion-etica-y-compromiso-comunitario--e4--a2s1",
@@ -4662,7 +4662,7 @@
    "trimestre": 2,
    "texto": "Construcción y revisión de normas y códigos para la convivencia en la escuela, por medio de la participación deliberativa acorde con los principios de equidad y justicia social.",
    "calidad": "buena",
-   "orden": 1
+   "orden": 6
   },
   {
    "id": "formacion-etica-y-compromiso-comunitario--e4--a2s2",
@@ -4671,7 +4671,7 @@
    "trimestre": 2,
    "texto": "Conocimiento y comprensión de la Constitución Nacional y de la Constitución Provincial como fuentes organizadoras de participación ciudadana en el estado de derecho.",
    "calidad": "buena",
-   "orden": 2
+   "orden": 7
   },
   {
    "id": "formacion-etica-y-compromiso-comunitario--e4--a2s3",
@@ -4680,7 +4680,7 @@
    "trimestre": 2,
    "texto": "Conocimiento de los derechos civiles, políticos y sociales presentes en la Constitución Nacional y en la Constitución Provincial, y de los procedimientos que los garantizan.",
    "calidad": "buena",
-   "orden": 3
+   "orden": 8
   },
   {
    "id": "formacion-etica-y-compromiso-comunitario--e4--a2s4",
@@ -4689,7 +4689,7 @@
    "trimestre": 2,
    "texto": "Valoración de la solidaridad y la cooperación. Conocimiento de los pasos de elaboración de proyectos solidarios: escolares, cooperativos y mutuales.",
    "calidad": "buena",
-   "orden": 4
+   "orden": 9
   },
   {
    "id": "formacion-etica-y-compromiso-comunitario--e4--a2s5",
@@ -4698,7 +4698,7 @@
    "trimestre": 2,
    "texto": "Análisis crítico de los mensajes de los medios de comunicación y su rol como formadores de opinión.",
    "calidad": "buena",
-   "orden": 5
+   "orden": 10
   },
   {
    "id": "formacion-etica-y-compromiso-comunitario--e4--a2s6",
@@ -4707,7 +4707,7 @@
    "trimestre": 3,
    "texto": "Reflexión sobre la responsabilidad del Estado y la sociedad civil frente al consumo problemático de drogas.",
    "calidad": "buena",
-   "orden": 6
+   "orden": 1
   },
   {
    "id": "formacion-etica-y-compromiso-comunitario--e4--a3s1",
@@ -4716,7 +4716,7 @@
    "trimestre": 2,
    "texto": "Discusión y reelaboración de normas y códigos que incluyan mecanismos de validación y evaluación participativa para la convivencia en la escuela, basados en principios de equidad y justicia social.",
    "calidad": "buena",
-   "orden": 1
+   "orden": 9
   },
   {
    "id": "formacion-etica-y-compromiso-comunitario--e4--a3s2",
@@ -4725,7 +4725,7 @@
    "trimestre": 2,
    "texto": "Conocimiento y valoración de las diferentes manifestaciones de participación ciudadana que contribuyen a la consolidación del estado de derecho, en oposición a las experiencias autoritarias.",
    "calidad": "buena",
-   "orden": 2
+   "orden": 10
   },
   {
    "id": "formacion-etica-y-compromiso-comunitario--e4--a3s3",
@@ -4734,7 +4734,7 @@
    "trimestre": 2,
    "texto": "Conocimiento de las características del Estado argentino —representativo, republicano y federal— y de las formas de elección de las autoridades nacionales, provinciales y municipales.",
    "calidad": "buena",
-   "orden": 3
+   "orden": 11
   },
   {
    "id": "formacion-etica-y-compromiso-comunitario--e4--a3s4",
@@ -4743,7 +4743,7 @@
    "trimestre": 2,
    "texto": "Participación reflexiva en la elaboración de proyectos grupales, institucionales y comunitarios con fines cooperativos y solidarios.",
    "calidad": "buena",
-   "orden": 4
+   "orden": 12
   },
   {
    "id": "formacion-etica-y-compromiso-comunitario--e4--a3s5",
@@ -4752,7 +4752,7 @@
    "trimestre": 3,
    "texto": "Análisis y comprensión de la dimensión política de problemáticas actuales y del rol de los medios de comunicación como formadores de opinión.",
    "calidad": "buena",
-   "orden": 5
+   "orden": 1
   },
   {
    "id": "formacion-etica-y-compromiso-comunitario--e4--a3s6",
@@ -4761,7 +4761,7 @@
    "trimestre": 3,
    "texto": "Conocimiento de las redes, organismos e instituciones dedicadas a la prevención de las adicciones y al tratamiento de las personas adictas, de carácter público y privado. Elaboración de campañas de información sobre efectos del consumo de sustancias psicoactivas en adolescentes.",
    "calidad": "buena",
-   "orden": 6
+   "orden": 2
   },
   {
    "id": "formacion-etica-y-compromiso-comunitario--e5--a2s1",
@@ -4770,7 +4770,7 @@
    "trimestre": 3,
    "texto": "Construcción cooperativa de normas a partir del diálogo sobre situaciones cotidianas que ocurren en el aula y en la escuela, que manifiestan prejuicios contra varones o mujeres o deterioran las relaciones interpersonales, en lo que se refiere al respeto y al cuidado de sí mismo y de los otros.",
    "calidad": "buena",
-   "orden": 1
+   "orden": 2
   },
   {
    "id": "formacion-etica-y-compromiso-comunitario--e5--a2s2",
@@ -4779,7 +4779,7 @@
    "trimestre": 3,
    "texto": "Reconocimiento y expresión de los deseos y necesidades propios y el respeto de los deseos y necesidades de los otros, en el marco del respeto a los derechos humanos.",
    "calidad": "buena",
-   "orden": 2
+   "orden": 3
   },
   {
    "id": "formacion-etica-y-compromiso-comunitario--e5--a2s3",
@@ -4788,7 +4788,7 @@
    "trimestre": 3,
    "texto": "Conocimiento y aceptación de las normas que involucran la propia integridad física y psíquica en el ámbito de las relaciones afectivas y sexuales.",
    "calidad": "buena",
-   "orden": 3
+   "orden": 4
   },
   {
    "id": "formacion-etica-y-compromiso-comunitario--e5--a2s4",
@@ -4797,7 +4797,7 @@
    "trimestre": 3,
    "texto": "Reconocimiento y reflexión sobre situaciones de violencia en las relaciones interpersonales, específicamente afectivas y sexuales, o sobre conductas de imposición sobre los derechos de otros.",
    "calidad": "buena",
-   "orden": 4
+   "orden": 5
   },
   {
    "id": "formacion-etica-y-compromiso-comunitario--e5--a2s5",
@@ -4806,7 +4806,7 @@
    "trimestre": 3,
    "texto": "Conocimiento de leyes, tratados y convenios nacionales e internacionales relativos a los derechos humanos en general y de los niños, niñas y adolescentes, relacionados con la exigibilidad de estos derechos.",
    "calidad": "buena",
-   "orden": 5
+   "orden": 6
   },
   {
    "id": "formacion-etica-y-compromiso-comunitario--e5--a2s6",
@@ -4815,7 +4815,7 @@
    "trimestre": 3,
    "texto": "Conocimiento de los derechos de las diversidades sexuales y de la responsabilidad del Estado frente a situaciones de discriminación y violación de derechos.",
    "calidad": "buena",
-   "orden": 6
+   "orden": 7
   },
   {
    "id": "formacion-etica-y-compromiso-comunitario--e5--a3s1",
@@ -4824,7 +4824,7 @@
    "trimestre": 3,
    "texto": "Construcción cooperativa de normas a partir del diálogo sobre situaciones cotidianas que ocurren en el aula y en la escuela, que manifiestan prejuicios contra varones o mujeres o deterioran las relaciones interpersonales, en lo que se refiere al respeto y al cuidado de sí mismo y de los otros.",
    "calidad": "buena",
-   "orden": 1
+   "orden": 3
   },
   {
    "id": "formacion-etica-y-compromiso-comunitario--e5--a3s2",
@@ -4833,7 +4833,7 @@
    "trimestre": 3,
    "texto": "Reconocimiento y expresión de los deseos y necesidades propios y el respeto de los deseos y necesidades de los otros, en el marco del respeto a los derechos humanos.",
    "calidad": "buena",
-   "orden": 2
+   "orden": 4
   },
   {
    "id": "formacion-etica-y-compromiso-comunitario--e5--a3s3",
@@ -4842,7 +4842,7 @@
    "trimestre": 3,
    "texto": "Conocimiento y aceptación de las normas que involucran la propia integridad física y psíquica en el ámbito de las relaciones afectivas y sexuales.",
    "calidad": "buena",
-   "orden": 3
+   "orden": 5
   },
   {
    "id": "formacion-etica-y-compromiso-comunitario--e5--a3s4",
@@ -4851,7 +4851,7 @@
    "trimestre": 3,
    "texto": "Reconocimiento y reflexión sobre situaciones de violencia en las relaciones interpersonales, específicamente afectivas y sexuales, o sobre conductas de imposición sobre los derechos de otros.",
    "calidad": "buena",
-   "orden": 4
+   "orden": 6
   },
   {
    "id": "formacion-etica-y-compromiso-comunitario--e5--a3s5",
@@ -4860,7 +4860,7 @@
    "trimestre": 3,
    "texto": "Conocimiento de leyes, tratados y convenios nacionales e internacionales relativos a los derechos humanos en general y de los niños, niñas y adolescentes, relacionados con la exigibilidad de estos derechos.",
    "calidad": "buena",
-   "orden": 5
+   "orden": 7
   },
   {
    "id": "formacion-etica-y-compromiso-comunitario--e5--a3s6",
@@ -4869,7 +4869,7 @@
    "trimestre": 3,
    "texto": "Conocimiento de los derechos de las diversidades sexuales y de la responsabilidad del Estado frente a situaciones de discriminación y violación de derechos.",
    "calidad": "buena",
-   "orden": 6
+   "orden": 8
   },
   {
    "id": "educacion-fisica--e1--a1s1",
@@ -5148,7 +5148,7 @@
    "trimestre": 1,
    "texto": "Juegos motores y deportes escolares abiertos y cerrados, de cooperación, en espacios estables e inestables según su conformación.",
    "calidad": "buena",
-   "orden": 1
+   "orden": 11
   },
   {
    "id": "educacion-fisica--e2--a1s2",
@@ -5157,7 +5157,7 @@
    "trimestre": 1,
    "texto": "Exploración y valoración de las prácticas corporales ludomotrices y deportivas abiertas según sus estructuras —ataque, defensa, marcación y demarcación según la lógica de cada deporte—, y otras configuraciones de movimiento acordes a los diferentes contextos locales, regionales y culturales y a las posibilidades institucionales.",
    "calidad": "buena",
-   "orden": 2
+   "orden": 12
   },
   {
    "id": "educacion-fisica--e2--a1s3",
@@ -5166,7 +5166,7 @@
    "trimestre": 2,
    "texto": "Experimentación de roles y sub roles, de tácticas y estrategias de funciones básicas.",
    "calidad": "buena",
-   "orden": 3
+   "orden": 1
   },
   {
    "id": "educacion-fisica--e2--a1s4",
@@ -5175,7 +5175,7 @@
    "trimestre": 2,
    "texto": "Vivencia y participación de prácticas ludomotrices y deportivas cerradas.",
    "calidad": "buena",
-   "orden": 4
+   "orden": 2
   },
   {
    "id": "educacion-fisica--e2--a1s5",
@@ -5184,7 +5184,7 @@
    "trimestre": 2,
    "texto": "Conocimiento y experimentación de acciones motrices propias de los diferentes juegos individuales, de equipos y de espacios, y de deportes individuales como natación, gimnasia y atletismo, según la lógica que los define en cuanto a espacios, tácticas y estrategias, límites y habilidades básicas, con y sin elementos.",
    "calidad": "buena",
-   "orden": 5
+   "orden": 3
   },
   {
    "id": "educacion-fisica--e2--a1s6",
@@ -5193,7 +5193,7 @@
    "trimestre": 2,
    "texto": "Fortalecimiento de aptitudes para el juego y la práctica deportiva, recuperando actitudes lúdicas en la interacción con otros.",
    "calidad": "buena",
-   "orden": 6
+   "orden": 4
   },
   {
    "id": "educacion-fisica--e2--a1s7",
@@ -5202,7 +5202,7 @@
    "trimestre": 2,
    "texto": "Reconocimiento y respeto por la diversidad de identidades y de posibilidades motrices, lúdicas y deportivas, sin prejuicios derivados de las diferencias de origen social, cultural, étnico, religioso o de género.",
    "calidad": "buena",
-   "orden": 7
+   "orden": 5
   },
   {
    "id": "educacion-fisica--e2--a1s8",
@@ -5211,7 +5211,7 @@
    "trimestre": 2,
    "texto": "Manifestación de prácticas creativas y expresivas a partir de la biografía corporal y motriz en el encuentro con otro.",
    "calidad": "buena",
-   "orden": 8
+   "orden": 6
   },
   {
    "id": "educacion-fisica--e2--a1s9",
@@ -5220,7 +5220,7 @@
    "trimestre": 2,
    "texto": "El cuerpo como medio de expresión: lectura de representaciones de secuencias coreográficas, individuales y grupales, a partir de acciones, ideas, emociones, guiones, elementos y soportes musicales y tecnológicos, favoreciendo la libre expresión.",
    "calidad": "buena",
-   "orden": 9
+   "orden": 7
   },
   {
    "id": "educacion-fisica--e2--a1s10",
@@ -5229,7 +5229,7 @@
    "trimestre": 2,
    "texto": "Lectura de textos y gráficos de acciones motrices y deportivas.",
    "calidad": "buena",
-   "orden": 10
+   "orden": 8
   },
   {
    "id": "educacion-fisica--e2--a2s1",
@@ -5238,7 +5238,7 @@
    "trimestre": 1,
    "texto": "Juegos motores y deportes escolares de estructura diversa, según sus habilidades abiertas y cerradas.",
    "calidad": "buena",
-   "orden": 1
+   "orden": 11
   },
   {
    "id": "educacion-fisica--e2--a2s2",
@@ -5247,7 +5247,7 @@
    "trimestre": 1,
    "texto": "Afirmarse y apropiarse de las prácticas corporales ludomotrices y deportivas —habilidades y tácticas— oportunas de los diferentes juegos y deportes de cooperación y oposición, acorde a la lógica que definen los tipos de comunicación y las reglas: ataque, defensa, marcación y demarcación.",
    "calidad": "buena",
-   "orden": 2
+   "orden": 12
   },
   {
    "id": "educacion-fisica--e2--a2s3",
@@ -5256,7 +5256,7 @@
    "trimestre": 2,
    "texto": "Asumir roles y sub roles tácticos de acuerdo a conocimientos y estrategias de las funciones básicas.",
    "calidad": "buena",
-   "orden": 3
+   "orden": 1
   },
   {
    "id": "educacion-fisica--e2--a2s4",
@@ -5265,7 +5265,7 @@
    "trimestre": 2,
    "texto": "Participación y apropiación de las prácticas ludomotrices y deportivas cerradas.",
    "calidad": "buena",
-   "orden": 4
+   "orden": 2
   },
   {
    "id": "educacion-fisica--e2--a2s5",
@@ -5274,7 +5274,7 @@
    "trimestre": 2,
    "texto": "Reconocimiento y apropiación de acciones motrices propias de los diferentes juegos y deportes individuales según la lógica que los define, en cuanto a espacios, habilidades, tácticas y estrategias, objetos que intervienen, delimitaciones temporales, capacidad expresiva y de creatividad.",
    "calidad": "buena",
-   "orden": 5
+   "orden": 3
   },
   {
    "id": "educacion-fisica--e2--a2s6",
@@ -5283,7 +5283,7 @@
    "trimestre": 2,
    "texto": "Afirmación de las aptitudes para el juego y la práctica deportiva, con actitud lúdica y sentido solidario y cooperativo.",
    "calidad": "buena",
-   "orden": 6
+   "orden": 4
   },
   {
    "id": "educacion-fisica--e2--a2s7",
@@ -5292,7 +5292,7 @@
    "trimestre": 2,
    "texto": "Reconocimiento y respeto por la diversidad de identidades y de posibilidades motrices, lúdicas y deportivas, sin prejuicios derivados de las diferencias de origen social, cultural, étnico, religioso o de género.",
    "calidad": "buena",
-   "orden": 7
+   "orden": 5
   },
   {
    "id": "educacion-fisica--e2--a2s8",
@@ -5301,7 +5301,7 @@
    "trimestre": 2,
    "texto": "Exploración y conocimiento de elementos constitutivos de diferentes danzas y expresiones artísticas de origen social, con acople de grupo o de conjunto.",
    "calidad": "buena",
-   "orden": 8
+   "orden": 6
   },
   {
    "id": "educacion-fisica--e2--a2s9",
@@ -5310,7 +5310,7 @@
    "trimestre": 2,
    "texto": "El cuerpo como medio de expresión: lectura, práctica y creación de secuencias coreográficas, individuales y grupales, favoreciendo la libre expresión sin discriminación de géneros.",
    "calidad": "buena",
-   "orden": 9
+   "orden": 7
   },
   {
    "id": "educacion-fisica--e2--a2s10",
@@ -5319,7 +5319,7 @@
    "trimestre": 2,
    "texto": "Lectura de textos y gráficos de acciones motrices y deportivas.",
    "calidad": "buena",
-   "orden": 10
+   "orden": 8
   },
   {
    "id": "educacion-fisica--e2--a3s1",
@@ -5328,7 +5328,7 @@
    "trimestre": 1,
    "texto": "Participación, apropiación y análisis de juegos, juegos deportivos y deporte escolar según sus diversas estructuras abiertas y cerradas.",
    "calidad": "buena",
-   "orden": 1
+   "orden": 11
   },
   {
    "id": "educacion-fisica--e2--a3s2",
@@ -5337,7 +5337,7 @@
    "trimestre": 1,
    "texto": "Desarrollo, práctica y análisis de pensamientos tácticos y estratégicos en la práctica del deporte escolar: atletismo, gimnasia, natación, voleibol, hándbol, fútbol y básquetbol, y otras configuraciones acordes a los diferentes contextos locales, regionales, culturales y posibilidades institucionales.",
    "calidad": "buena",
-   "orden": 2
+   "orden": 12
   },
   {
    "id": "educacion-fisica--e2--a3s3",
@@ -5346,7 +5346,7 @@
    "trimestre": 2,
    "texto": "Asumir, experimentar y analizar roles y sub roles de tácticas y estrategias básicas y específicas.",
    "calidad": "buena",
-   "orden": 3
+   "orden": 1
   },
   {
    "id": "educacion-fisica--e2--a3s4",
@@ -5355,7 +5355,7 @@
    "trimestre": 2,
    "texto": "Apropiación y análisis de prácticas ludomotrices y deportivas cerradas.",
    "calidad": "buena",
-   "orden": 4
+   "orden": 2
   },
   {
    "id": "educacion-fisica--e2--a3s5",
@@ -5364,7 +5364,7 @@
    "trimestre": 2,
    "texto": "Uso y análisis de acciones motrices propias de los diferentes juegos y deportes individuales según la lógica del deporte que lo identifica: habilidades específicas, tácticas y estrategias, objetos que intervienen, delimitaciones temporales, capacidad expresiva y de creatividad.",
    "calidad": "buena",
-   "orden": 5
+   "orden": 3
   },
   {
    "id": "educacion-fisica--e2--a3s6",
@@ -5373,7 +5373,7 @@
    "trimestre": 2,
    "texto": "Consolidación del jugar el deporte escolar con actitud lúdica, solidaria y cooperativa en el marco de la competencia.",
    "calidad": "buena",
-   "orden": 6
+   "orden": 4
   },
   {
    "id": "educacion-fisica--e2--a3s7",
@@ -5382,7 +5382,7 @@
    "trimestre": 2,
    "texto": "La reflexión sobre la competencia en el juego, en el deporte y en la vida social, y la promoción de juegos cooperativos y no competitivos. La importancia de la autosuperación.",
    "calidad": "buena",
-   "orden": 7
+   "orden": 5
   },
   {
    "id": "educacion-fisica--e2--a3s8",
@@ -5391,7 +5391,7 @@
    "trimestre": 2,
    "texto": "Creación y apropiación de prácticas corporales y motrices expresivas en grupos o conjuntos.",
    "calidad": "buena",
-   "orden": 8
+   "orden": 6
   },
   {
    "id": "educacion-fisica--e2--a3s9",
@@ -5400,7 +5400,7 @@
    "trimestre": 2,
    "texto": "El cuerpo como medio de expresión: lectura y producción de secuencias coreográficas, individuales y grupales, favoreciendo la libre expresión sin discriminación de géneros.",
    "calidad": "buena",
-   "orden": 9
+   "orden": 7
   },
   {
    "id": "educacion-fisica--e2--a3s10",
@@ -5409,7 +5409,7 @@
    "trimestre": 2,
    "texto": "Lectura crítica de las realidades actuales referidas a acciones motrices, deportivas y de equipo.",
    "calidad": "buena",
-   "orden": 10
+   "orden": 8
   },
   {
    "id": "educacion-fisica--e3--a1s1",
@@ -5418,7 +5418,7 @@
    "trimestre": 2,
    "texto": "Prácticas de distintas acciones motrices en el ambiente natural, manipulación de objetos, cuidado del medio y aceptación de normas de interacción, higiene y seguridad para promover el disfrute de todos.",
    "calidad": "buena",
-   "orden": 1
+   "orden": 9
   },
   {
    "id": "educacion-fisica--e3--a1s2",
@@ -5427,7 +5427,7 @@
    "trimestre": 3,
    "texto": "Realización de acciones motrices que favorezcan el contacto con elementos no habituales en su hacer cotidiano y con equipos de apoyo para la realización de actividades en el ambiente natural.",
    "calidad": "buena",
-   "orden": 2
+   "orden": 1
   },
   {
    "id": "educacion-fisica--e3--a1s3",
@@ -5436,7 +5436,7 @@
    "trimestre": 3,
    "texto": "Participación en actividades ludomotrices en pequeños grupos, para el desempeño eficaz, placentero y equilibrado en el ambiente natural.",
    "calidad": "buena",
-   "orden": 3
+   "orden": 2
   },
   {
    "id": "educacion-fisica--e3--a1s4",
@@ -5445,7 +5445,7 @@
    "trimestre": 3,
    "texto": "Prevención, cuidado y seguridad del propio cuerpo, del otro y del ambiente natural en situaciones motrices.",
    "calidad": "buena",
-   "orden": 4
+   "orden": 3
   },
   {
    "id": "educacion-fisica--e3--a1s5",
@@ -5454,7 +5454,7 @@
    "trimestre": 3,
    "texto": "Consideración de acciones ludomotrices y desarrollo de una conciencia crítica acerca de la problemática del ambiente natural.",
    "calidad": "buena",
-   "orden": 5
+   "orden": 4
   },
   {
    "id": "educacion-fisica--e3--a1s6",
@@ -5463,7 +5463,7 @@
    "trimestre": 3,
    "texto": "Planificación de actividades campamentiles en pequeños grupos, con desplazamiento en diferentes terrenos aplicando habilidades y técnicas de orientación.",
    "calidad": "buena",
-   "orden": 6
+   "orden": 5
   },
   {
    "id": "educacion-fisica--e3--a1s7",
@@ -5472,7 +5472,7 @@
    "trimestre": 3,
    "texto": "Lectura de textos relacionados con la seguridad personal y del grupo y con la prevención, preservación y cuidado del medio ambiente.",
    "calidad": "buena",
-   "orden": 7
+   "orden": 6
   },
   {
    "id": "educacion-fisica--e3--a2s1",
@@ -5481,7 +5481,7 @@
    "trimestre": 2,
    "texto": "Desarrollo de prácticas de distintas acciones motrices en el ambiente natural que lo favorezcan, con adopción de normas de interacción, higiene y seguridad, y disfrute con sus pares.",
    "calidad": "buena",
-   "orden": 1
+   "orden": 9
   },
   {
    "id": "educacion-fisica--e3--a2s2",
@@ -5490,7 +5490,7 @@
    "trimestre": 3,
    "texto": "Ejecución de acciones motrices de forma eficaz. Manipulación de objetos y uso de materiales en los que se ponga de manifiesto el control de los mismos.",
    "calidad": "buena",
-   "orden": 2
+   "orden": 1
   },
   {
    "id": "educacion-fisica--e3--a2s3",
@@ -5499,7 +5499,7 @@
    "trimestre": 3,
    "texto": "Experimentación y modificación de actividades ludomotrices grupales, para el desempeño eficaz, placentero y equilibrado en el ambiente natural.",
    "calidad": "buena",
-   "orden": 3
+   "orden": 2
   },
   {
    "id": "educacion-fisica--e3--a2s4",
@@ -5508,7 +5508,7 @@
    "trimestre": 3,
    "texto": "Prevención y exploración de acciones motrices complejas de manipulación de objetos y uso de materiales.",
    "calidad": "buena",
-   "orden": 4
+   "orden": 3
   },
   {
    "id": "educacion-fisica--e3--a2s5",
@@ -5517,7 +5517,7 @@
    "trimestre": 3,
    "texto": "Reflexión acerca de problemáticas ambientales. Prevención y compromiso.",
    "calidad": "buena",
-   "orden": 5
+   "orden": 4
   },
   {
    "id": "educacion-fisica--e3--a2s6",
@@ -5526,7 +5526,7 @@
    "trimestre": 3,
    "texto": "Planificación de actividades campamentiles en pequeños grupos, con desplazamiento en diferentes terrenos aplicando habilidades y técnicas de orientación adecuadas a la diversidad y al objetivo del grupo.",
    "calidad": "buena",
-   "orden": 6
+   "orden": 5
   },
   {
    "id": "educacion-fisica--e3--a2s7",
@@ -5535,7 +5535,7 @@
    "trimestre": 3,
    "texto": "Lectura crítica de textos relacionados con la seguridad personal y del grupo y con la prevención, preservación y cuidado del medio ambiente.",
    "calidad": "buena",
-   "orden": 7
+   "orden": 6
   },
   {
    "id": "educacion-fisica--e3--a3s1",
@@ -5544,7 +5544,7 @@
    "trimestre": 2,
    "texto": "Planificación y participación con autonomía y responsabilidad en distintas actividades y formas de vida en la naturaleza, aplicando normas de seguridad y de preservación del medio natural.",
    "calidad": "buena",
-   "orden": 1
+   "orden": 9
   },
   {
    "id": "educacion-fisica--e3--a3s2",
@@ -5553,7 +5553,7 @@
    "trimestre": 3,
    "texto": "Programación y ejecución de forma eficaz de acciones motrices complejas, manipulación de objetos y uso de materiales en los que se ponga de manifiesto el control de los mismos.",
    "calidad": "buena",
-   "orden": 2
+   "orden": 1
   },
   {
    "id": "educacion-fisica--e3--a3s3",
@@ -5562,7 +5562,7 @@
    "trimestre": 3,
    "texto": "Creación y programación de actividades ludomotrices grupales, para el desempeño eficaz, placentero y equilibrado en el ambiente natural.",
    "calidad": "buena",
-   "orden": 3
+   "orden": 2
   },
   {
    "id": "educacion-fisica--e3--a3s4",
@@ -5571,7 +5571,7 @@
    "trimestre": 3,
    "texto": "Proyecto, prevención y exploración de acciones motrices complejas de manipulación de objetos y uso de materiales, con cuidado propio, del otro y del ambiente natural.",
    "calidad": "buena",
-   "orden": 4
+   "orden": 3
   },
   {
    "id": "educacion-fisica--e3--a3s5",
@@ -5580,7 +5580,7 @@
    "trimestre": 3,
    "texto": "Producción de proyectos y propuestas de intervención reparadora frente a problemáticas ambientales, con extensión a la comunidad.",
    "calidad": "buena",
-   "orden": 5
+   "orden": 4
   },
   {
    "id": "educacion-fisica--e3--a3s6",
@@ -5589,7 +5589,7 @@
    "trimestre": 3,
    "texto": "Planificación y ejecución de actividades campamentiles en grupos, con desplazamiento en diferentes terrenos aplicando habilidades y técnicas de orientación adecuadas al objetivo del grupo.",
    "calidad": "buena",
-   "orden": 6
+   "orden": 5
   },
   {
    "id": "educacion-fisica--e3--a3s7",
@@ -5598,7 +5598,7 @@
    "trimestre": 3,
    "texto": "Lectura crítica de textos relacionados con la seguridad personal y del grupo y con la prevención, preservación y cuidado del medio ambiente.",
    "calidad": "buena",
-   "orden": 7
+   "orden": 6
   },
   {
    "id": "tutoria-fortalecimiento-del-estudiante--e1--a1s1",
@@ -5769,7 +5769,7 @@
    "trimestre": 1,
    "texto": "Comprensión de los acuerdos escolares de convivencia: su sentido, su elaboración participativa y su cumplimiento.",
    "calidad": "buena",
-   "orden": 1
+   "orden": 8
   },
   {
    "id": "tutoria-fortalecimiento-del-estudiante--e2--a1s2",
@@ -5778,7 +5778,7 @@
    "trimestre": 2,
    "texto": "Reconocimiento de los derechos y deberes de los estudiantes en el marco de la Ley de Educación Nacional N° 26.206 y de la Ley de Protección Integral de los Derechos de Niñas, Niños y Adolescentes N° 26.061.",
    "calidad": "buena",
-   "orden": 2
+   "orden": 1
   },
   {
    "id": "tutoria-fortalecimiento-del-estudiante--e2--a1s3",
@@ -5787,7 +5787,7 @@
    "trimestre": 2,
    "texto": "Valoración de la participación estudiantil en la vida escolar como ejercicio de la ciudadanía.",
    "calidad": "buena",
-   "orden": 3
+   "orden": 2
   },
   {
    "id": "tutoria-fortalecimiento-del-estudiante--e2--a1s4",
@@ -5796,7 +5796,7 @@
    "trimestre": 2,
    "texto": "Caracterización de la figura del Delegado: su elección, sus funciones y su responsabilidad ante el grupo.",
    "calidad": "buena",
-   "orden": 4
+   "orden": 3
   },
   {
    "id": "tutoria-fortalecimiento-del-estudiante--e2--a1s5",
@@ -5805,7 +5805,7 @@
    "trimestre": 2,
    "texto": "Aproximación al Consejo escolar de convivencia: su integración y su función en la resolución de los conflictos escolares.",
    "calidad": "buena",
-   "orden": 5
+   "orden": 4
   },
   {
    "id": "tutoria-fortalecimiento-del-estudiante--e2--a2s1",
@@ -5814,7 +5814,7 @@
    "trimestre": 1,
    "texto": "Análisis del conflicto y su dinámica: causas, actores, escalada y posibles formas de resolución.",
    "calidad": "buena",
-   "orden": 1
+   "orden": 7
   },
   {
    "id": "tutoria-fortalecimiento-del-estudiante--e2--a2s2",
@@ -5823,7 +5823,7 @@
    "trimestre": 1,
    "texto": "Reconocimiento de la comunicación efectiva como herramienta para la convivencia: la escucha activa y la expresión clara de ideas y sentimientos.",
    "calidad": "buena",
-   "orden": 2
+   "orden": 8
   },
   {
    "id": "tutoria-fortalecimiento-del-estudiante--e2--a2s3",
@@ -5832,7 +5832,7 @@
    "trimestre": 2,
    "texto": "Desarrollo de la empatía como capacidad de reconocer y comprender las emociones y perspectivas de los otros.",
    "calidad": "buena",
-   "orden": 3
+   "orden": 1
   },
   {
    "id": "tutoria-fortalecimiento-del-estudiante--e2--a2s4",
@@ -5841,7 +5841,7 @@
    "trimestre": 2,
    "texto": "Problematización de los prejuicios y estereotipos y de su incidencia en los vínculos y en las situaciones de discriminación dentro de la escuela.",
    "calidad": "buena",
-   "orden": 4
+   "orden": 2
   },
   {
    "id": "tutoria-fortalecimiento-del-estudiante--e2--a2s5",
@@ -5850,7 +5850,7 @@
    "trimestre": 2,
    "texto": "Práctica de la comunicación asertiva en situaciones de desacuerdo, reclamo y defensa de los propios derechos.",
    "calidad": "buena",
-   "orden": 5
+   "orden": 3
   },
   {
    "id": "tutoria-fortalecimiento-del-estudiante--e2--a3s1",
@@ -5859,7 +5859,7 @@
    "trimestre": 1,
    "texto": "Reconocimiento de las situaciones de ciber acoso y de las responsabilidades que establece la Ley N° 26.904, y reflexión sobre el uso responsable de las redes sociales.",
    "calidad": "buena",
-   "orden": 1
+   "orden": 6
   },
   {
    "id": "tutoria-fortalecimiento-del-estudiante--e2--a3s2",
@@ -5868,7 +5868,7 @@
    "trimestre": 1,
    "texto": "Caracterización de los Centros de estudiantes: su conformación, su funcionamiento y su papel en la representación estudiantil.",
    "calidad": "buena",
-   "orden": 2
+   "orden": 7
   },
   {
    "id": "tutoria-fortalecimiento-del-estudiante--e2--a3s3",
@@ -5877,7 +5877,7 @@
    "trimestre": 2,
    "texto": "Aproximación a la mediación escolar como estrategia de resolución pacífica de conflictos entre pares.",
    "calidad": "buena",
-   "orden": 3
+   "orden": 1
   },
   {
    "id": "tutoria-fortalecimiento-del-estudiante--e2--a3s4",
@@ -5886,7 +5886,7 @@
    "trimestre": 2,
    "texto": "Participación en la revisión y actualización de los acuerdos escolares de convivencia.",
    "calidad": "buena",
-   "orden": 4
+   "orden": 2
   },
   {
    "id": "tutoria-fortalecimiento-del-estudiante--e2--a3s5",
@@ -5895,7 +5895,7 @@
    "trimestre": 2,
    "texto": "Valoración del diálogo, la negociación y el consenso como formas de construcción de la convivencia democrática.",
    "calidad": "buena",
-   "orden": 5
+   "orden": 3
   },
   {
    "id": "tutoria-fortalecimiento-del-estudiante--e3--a1s1",
@@ -5904,7 +5904,7 @@
    "trimestre": 2,
    "texto": "Identificación de los factores de riesgo y de los factores de protección presentes en la vida cotidiana de los adolescentes.",
    "calidad": "buena",
-   "orden": 1
+   "orden": 5
   },
   {
    "id": "tutoria-fortalecimiento-del-estudiante--e3--a1s2",
@@ -5913,7 +5913,7 @@
    "trimestre": 3,
    "texto": "Aproximación a la noción de resiliencia como capacidad de sobreponerse a situaciones adversas.",
    "calidad": "buena",
-   "orden": 2
+   "orden": 1
   },
   {
    "id": "tutoria-fortalecimiento-del-estudiante--e3--a1s3",
@@ -5922,7 +5922,7 @@
    "trimestre": 3,
    "texto": "Reconocimiento de las instituciones que protegen los derechos de niños, niñas y adolescentes y de las vías para acceder a ellas.",
    "calidad": "buena",
-   "orden": 3
+   "orden": 2
   },
   {
    "id": "tutoria-fortalecimiento-del-estudiante--e3--a1s4",
@@ -5931,7 +5931,7 @@
    "trimestre": 3,
    "texto": "Conocimiento de los derechos consagrados en la Ley de Protección Integral N° 26.061 y de su aplicación en la vida escolar y familiar.",
    "calidad": "buena",
-   "orden": 4
+   "orden": 3
   },
   {
    "id": "tutoria-fortalecimiento-del-estudiante--e3--a1s5",
@@ -5940,7 +5940,7 @@
    "trimestre": 3,
    "texto": "Reconocimiento de las situaciones de trabajo infantil y de la protección que establece la Ley N° 26.390.",
    "calidad": "buena",
-   "orden": 5
+   "orden": 4
   },
   {
    "id": "tutoria-fortalecimiento-del-estudiante--e3--a2s1",
@@ -5949,7 +5949,7 @@
    "trimestre": 2,
    "texto": "Análisis de las situaciones de acoso escolar y de las previsiones de la Ley N° 26.892 para la promoción de la convivencia y el abordaje de la conflictividad social en las instituciones educativas.",
    "calidad": "buena",
-   "orden": 1
+   "orden": 4
   },
   {
    "id": "tutoria-fortalecimiento-del-estudiante--e3--a2s2",
@@ -5958,7 +5958,7 @@
    "trimestre": 2,
    "texto": "Reconocimiento de las situaciones de ciber acoso alcanzadas por la Ley N° 26.904 y de las conductas de autoprotección en entornos digitales.",
    "calidad": "buena",
-   "orden": 2
+   "orden": 5
   },
   {
    "id": "tutoria-fortalecimiento-del-estudiante--e3--a2s3",
@@ -5967,7 +5967,7 @@
    "trimestre": 3,
    "texto": "Comprensión del derecho a la educación sexual integral establecido por la Ley N° 26.150 y de sus alcances en la escuela secundaria.",
    "calidad": "buena",
-   "orden": 3
+   "orden": 1
   },
   {
    "id": "tutoria-fortalecimiento-del-estudiante--e3--a2s4",
@@ -5976,7 +5976,7 @@
    "trimestre": 3,
    "texto": "Reflexión sobre la sexualidad saludable y responsable, y el cuidado de sí mismo y del otro.",
    "calidad": "buena",
-   "orden": 4
+   "orden": 2
   },
   {
    "id": "tutoria-fortalecimiento-del-estudiante--e3--a2s5",
@@ -5985,7 +5985,7 @@
    "trimestre": 3,
    "texto": "Reconocimiento de las medidas de prevención de las infecciones de transmisión sexual y del embarazo no deseado.",
    "calidad": "buena",
-   "orden": 5
+   "orden": 3
   },
   {
    "id": "tutoria-fortalecimiento-del-estudiante--e3--a2s6",
@@ -5994,7 +5994,7 @@
    "trimestre": 3,
    "texto": "Problematización de los actos discriminatorios alcanzados por la Ley N° 23.592 y valoración del respeto por la diversidad.",
    "calidad": "buena",
-   "orden": 6
+   "orden": 4
   },
   {
    "id": "tutoria-fortalecimiento-del-estudiante--e3--a3s1",
@@ -6003,7 +6003,7 @@
    "trimestre": 2,
    "texto": "Reconocimiento del derecho a la identidad de género establecido por la Ley N° 26.743 y reflexión sobre el respeto por las identidades diversas.",
    "calidad": "buena",
-   "orden": 1
+   "orden": 4
   },
   {
    "id": "tutoria-fortalecimiento-del-estudiante--e3--a3s2",
@@ -6012,7 +6012,7 @@
    "trimestre": 2,
    "texto": "Análisis de la problemática de la trata de personas en el marco de la Ley N° 26.364: modalidades, situaciones de riesgo y vías de denuncia.",
    "calidad": "buena",
-   "orden": 2
+   "orden": 5
   },
   {
    "id": "tutoria-fortalecimiento-del-estudiante--e3--a3s3",
@@ -6021,7 +6021,7 @@
    "trimestre": 3,
    "texto": "Caracterización de los distintos tipos de violencia —física, psicológica, sexual, económica y simbólica— y reconocimiento de sus manifestaciones en los vínculos cotidianos.",
    "calidad": "buena",
-   "orden": 3
+   "orden": 1
   },
   {
    "id": "tutoria-fortalecimiento-del-estudiante--e3--a3s4",
@@ -6030,7 +6030,7 @@
    "trimestre": 3,
    "texto": "Desarrollo de conductas de autoprotección frente a situaciones de riesgo, abuso o explotación.",
    "calidad": "buena",
-   "orden": 4
+   "orden": 2
   },
   {
    "id": "tutoria-fortalecimiento-del-estudiante--e3--a3s5",
@@ -6039,7 +6039,7 @@
    "trimestre": 3,
    "texto": "Práctica de la conducta asertiva y del Saber decir No como herramienta de cuidado personal.",
    "calidad": "buena",
-   "orden": 5
+   "orden": 3
   },
   {
    "id": "tutoria-fortalecimiento-del-estudiante--e3--a3s6",
@@ -6048,7 +6048,7 @@
    "trimestre": 3,
    "texto": "Reconocimiento de los recursos institucionales y comunitarios disponibles para solicitar ayuda ante situaciones de vulneración de derechos.",
    "calidad": "buena",
-   "orden": 6
+   "orden": 4
   },
   {
    "id": "lengua-y-cultura-originarias-wichi-qom-p--e1--a1s1",
@@ -6156,7 +6156,7 @@
    "trimestre": 1,
    "texto": "El reconocimiento de la organización social de la comunidad, instituciones, elementos constitutivos, actores sociales y espacios de participación democrática en la comunidad, los roles en la comunidad: caciques, dirigentes y líderes comunitarios.",
    "calidad": "buena",
-   "orden": 1
+   "orden": 4
   },
   {
    "id": "lengua-y-cultura-originarias-wichi-qom-p--e2--a1s2",
@@ -6165,7 +6165,7 @@
    "trimestre": 1,
    "texto": "El estudio de la historia de los pueblos originarios y sus comunidades. Los líderes indígenas, los clanes familiares, las relaciones interculturales y las nuevas situaciones.",
    "calidad": "buena",
-   "orden": 2
+   "orden": 5
   },
   {
    "id": "lengua-y-cultura-originarias-wichi-qom-p--e2--a1s3",
@@ -6174,7 +6174,7 @@
    "trimestre": 1,
    "texto": "La comprensión de los hábitos, costumbres y pautas culturales.",
    "calidad": "buena",
-   "orden": 3
+   "orden": 6
   },
   {
    "id": "lengua-y-cultura-originarias-wichi-qom-p--e2--a1s4",
@@ -6183,7 +6183,7 @@
    "trimestre": 1,
    "texto": "El análisis de los espacios y ámbitos de convivencia intercultural.",
    "calidad": "buena",
-   "orden": 4
+   "orden": 7
   },
   {
    "id": "lengua-y-cultura-originarias-wichi-qom-p--e2--a1s5",
@@ -6192,7 +6192,7 @@
    "trimestre": 2,
    "texto": "Prácticas de lectura y escritura en lengua originaria con diferentes propósitos y de creciente complejidad y extensión.",
    "calidad": "buena",
-   "orden": 5
+   "orden": 1
   },
   {
    "id": "lengua-y-cultura-originarias-wichi-qom-p--e2--a2s1",
@@ -6201,7 +6201,7 @@
    "trimestre": 1,
    "texto": "El conocimiento de la historia de la comunidad y su dinámica de crecimiento y desarrollo a través del tiempo.",
    "calidad": "buena",
-   "orden": 1
+   "orden": 5
   },
   {
    "id": "lengua-y-cultura-originarias-wichi-qom-p--e2--a2s2",
@@ -6210,7 +6210,7 @@
    "trimestre": 1,
    "texto": "Las instituciones sociales y su rol en la comunidad: hospitales y salas de primeros auxilios, estaciones de policía, las iglesias.",
    "calidad": "buena",
-   "orden": 2
+   "orden": 6
   },
   {
    "id": "lengua-y-cultura-originarias-wichi-qom-p--e2--a2s3",
@@ -6219,7 +6219,7 @@
    "trimestre": 1,
    "texto": "Las problemáticas sociales actuales y su impacto en las comunidades. La comprensión de los principales avances en materia de la cuestión de género, educación sexual y etnicidad.",
    "calidad": "buena",
-   "orden": 3
+   "orden": 7
   },
   {
    "id": "lengua-y-cultura-originarias-wichi-qom-p--e2--a2s4",
@@ -6228,7 +6228,7 @@
    "trimestre": 1,
    "texto": "El reconocimiento de las potencialidades de trabajo, empleo y producción en la zona.",
    "calidad": "buena",
-   "orden": 4
+   "orden": 8
   },
   {
    "id": "lengua-y-cultura-originarias-wichi-qom-p--e2--a2s5",
@@ -6237,7 +6237,7 @@
    "trimestre": 2,
    "texto": "Prácticas de lectura y escritura en lengua originaria con diferentes propósitos y de creciente complejidad y extensión.",
    "calidad": "buena",
-   "orden": 5
+   "orden": 1
   },
   {
    "id": "lengua-y-cultura-originarias-wichi-qom-p--e2--a3s1",
@@ -6246,7 +6246,7 @@
    "trimestre": 1,
    "texto": "El análisis para la discusión y el debate colectivo en relación a los conceptos de comunidad, el territorio, los derechos de la mujer, los niños, los jóvenes y los ancianos.",
    "calidad": "buena",
-   "orden": 1
+   "orden": 5
   },
   {
    "id": "lengua-y-cultura-originarias-wichi-qom-p--e2--a3s2",
@@ -6255,7 +6255,7 @@
    "trimestre": 1,
    "texto": "Los derechos de los pueblos originarios: las leyes nacionales, internacionales y provinciales, la cuestión de género, la educación sexual y la etnicidad.",
    "calidad": "buena",
-   "orden": 2
+   "orden": 6
   },
   {
    "id": "lengua-y-cultura-originarias-wichi-qom-p--e2--a3s3",
@@ -6264,7 +6264,7 @@
    "trimestre": 1,
    "texto": "El conocimiento de las actividades económicas de cada uno de los pueblos a través de la reflexión crítica sobre las dinámicas sociales y culturales a través del tiempo.",
    "calidad": "buena",
-   "orden": 3
+   "orden": 7
   },
   {
    "id": "lengua-y-cultura-originarias-wichi-qom-p--e2--a3s4",
@@ -6273,7 +6273,7 @@
    "trimestre": 1,
    "texto": "El análisis de las actividades económicas, las economías de subsistencia y alternativas económicas para el desarrollo comunitario. Las economías tradicionales y los nuevos emprendimientos.",
    "calidad": "buena",
-   "orden": 4
+   "orden": 8
   },
   {
    "id": "lengua-y-cultura-originarias-wichi-qom-p--e2--a3s5",
@@ -6282,7 +6282,7 @@
    "trimestre": 2,
    "texto": "Prácticas de lectura y escritura en lengua originaria con diferentes propósitos y de creciente complejidad y extensión.",
    "calidad": "buena",
-   "orden": 5
+   "orden": 1
   },
   {
    "id": "lengua-y-cultura-originarias-wichi-qom-p--e3--a1s1",
@@ -6291,7 +6291,7 @@
    "trimestre": 2,
    "texto": "La comprensión de los valores vigentes en la comunidad.",
    "calidad": "buena",
-   "orden": 1
+   "orden": 2
   },
   {
    "id": "lengua-y-cultura-originarias-wichi-qom-p--e3--a1s2",
@@ -6300,7 +6300,7 @@
    "trimestre": 2,
    "texto": "El estudio de las historias orales vigentes en la memoria de la comunidad y que circulan en la narrativa oral de la cultura, y su relación con los modos de contar.",
    "calidad": "buena",
-   "orden": 2
+   "orden": 3
   },
   {
    "id": "lengua-y-cultura-originarias-wichi-qom-p--e3--a1s3",
@@ -6309,7 +6309,7 @@
    "trimestre": 2,
    "texto": "La comprensión del valor de la narración para la transmisión de las culturas indígenas.",
    "calidad": "buena",
-   "orden": 3
+   "orden": 4
   },
   {
    "id": "lengua-y-cultura-originarias-wichi-qom-p--e3--a1s4",
@@ -6318,7 +6318,7 @@
    "trimestre": 2,
    "texto": "Prácticas de lectura y escritura en lengua originaria con diferentes propósitos y de creciente complejidad y extensión.",
    "calidad": "buena",
-   "orden": 4
+   "orden": 5
   },
   {
    "id": "lengua-y-cultura-originarias-wichi-qom-p--e3--a2s1",
@@ -6327,7 +6327,7 @@
    "trimestre": 2,
    "texto": "El reconocimiento de la espiritualidad y los valores propios que se manifiestan en la tradición oral que hace a la dinámica cultural e identitaria de los Pueblos Originarios de Formosa.",
    "calidad": "buena",
-   "orden": 1
+   "orden": 2
   },
   {
    "id": "lengua-y-cultura-originarias-wichi-qom-p--e3--a2s2",
@@ -6336,7 +6336,7 @@
    "trimestre": 2,
    "texto": "Conocimiento de los modos contemporáneos en que se transmiten las culturas.",
    "calidad": "buena",
-   "orden": 2
+   "orden": 3
   },
   {
    "id": "lengua-y-cultura-originarias-wichi-qom-p--e3--a2s3",
@@ -6345,7 +6345,7 @@
    "trimestre": 2,
    "texto": "El conocimiento de la simbología indígena y su importancia. Los nuevos símbolos.",
    "calidad": "buena",
-   "orden": 3
+   "orden": 4
   },
   {
    "id": "lengua-y-cultura-originarias-wichi-qom-p--e3--a2s4",
@@ -6354,7 +6354,7 @@
    "trimestre": 2,
    "texto": "El análisis de la relación del arte con la naturaleza.",
    "calidad": "buena",
-   "orden": 4
+   "orden": 5
   },
   {
    "id": "lengua-y-cultura-originarias-wichi-qom-p--e3--a2s5",
@@ -6363,7 +6363,7 @@
    "trimestre": 3,
    "texto": "Prácticas de lectura y escritura en lengua originaria con diferentes propósitos y de creciente complejidad y extensión.",
    "calidad": "buena",
-   "orden": 5
+   "orden": 1
   },
   {
    "id": "lengua-y-cultura-originarias-wichi-qom-p--e3--a3s1",
@@ -6372,7 +6372,7 @@
    "trimestre": 2,
    "texto": "El reconocimiento de la espiritualidad y los valores propios que se manifiestan en las expresiones artísticas que refieren a la dinámica cultural e identitaria de los Pueblos Originarios de Formosa.",
    "calidad": "buena",
-   "orden": 1
+   "orden": 2
   },
   {
    "id": "lengua-y-cultura-originarias-wichi-qom-p--e3--a3s2",
@@ -6381,7 +6381,7 @@
    "trimestre": 2,
    "texto": "El análisis de las dinámicas culturales e identitarias vigentes en las comunidades en relación con la cosmovisión indígena.",
    "calidad": "buena",
-   "orden": 2
+   "orden": 3
   },
   {
    "id": "lengua-y-cultura-originarias-wichi-qom-p--e3--a3s3",
@@ -6390,7 +6390,7 @@
    "trimestre": 2,
    "texto": "El análisis de la relación de las historias tradicionales con la construcción de la identidad colectiva.",
    "calidad": "buena",
-   "orden": 3
+   "orden": 4
   },
   {
    "id": "lengua-y-cultura-originarias-wichi-qom-p--e3--a3s4",
@@ -6399,7 +6399,7 @@
    "trimestre": 2,
    "texto": "La interpretación y el acercamiento a las manifestaciones y representaciones artísticas y artesanales propias de la comunidad: la música, la danza, artes plásticas, artesanías, tejidos y los ritos tradicionales. Los deportes. El canto individual y colectivo.",
    "calidad": "buena",
-   "orden": 4
+   "orden": 5
   },
   {
    "id": "lengua-y-cultura-originarias-wichi-qom-p--e3--a3s5",
@@ -6408,7 +6408,7 @@
    "trimestre": 3,
    "texto": "Prácticas de lectura y escritura en lengua originaria con diferentes propósitos y de creciente complejidad y extensión.",
    "calidad": "buena",
-   "orden": 5
+   "orden": 1
   },
   {
    "id": "lengua-y-cultura-originarias-wichi-qom-p--e4--a1s1",
@@ -6444,7 +6444,7 @@
    "trimestre": 3,
    "texto": "Prácticas lingüísticas y metalingüísticas que permitan entender y explicar a la lengua, cómo funciona, cómo se organizan las ideas, cómo y con qué intenciones la utilizan los hablantes.",
    "calidad": "buena",
-   "orden": 1
+   "orden": 2
   },
   {
    "id": "lengua-y-cultura-originarias-wichi-qom-p--e4--a2s2",
@@ -6453,7 +6453,7 @@
    "trimestre": 3,
    "texto": "La investigación sociolingüística para analizar los usos y funciones de la lengua materna en contextos de bilingüismo e interculturalidad, como herramienta efectiva para la construcción de conocimientos sobre la lengua, la evolución histórica y la incorporación de neologismos.",
    "calidad": "buena",
-   "orden": 2
+   "orden": 3
   },
   {
    "id": "lengua-y-cultura-originarias-wichi-qom-p--e4--a2s3",
@@ -6462,7 +6462,7 @@
    "trimestre": 3,
    "texto": "Prácticas de lectura y escritura en lengua originaria con diferentes propósitos y de creciente complejidad y extensión.",
    "calidad": "buena",
-   "orden": 3
+   "orden": 4
   },
   {
    "id": "lengua-y-cultura-originarias-wichi-qom-p--e4--a3s1",
@@ -6471,7 +6471,7 @@
    "trimestre": 3,
    "texto": "Prácticas lingüísticas y metalingüísticas que permitan entender y explicar a la lengua, cómo funciona, cómo se organizan las ideas, cómo y con qué intenciones la utilizan los hablantes.",
    "calidad": "buena",
-   "orden": 1
+   "orden": 2
   },
   {
    "id": "lengua-y-cultura-originarias-wichi-qom-p--e4--a3s2",
@@ -6480,7 +6480,7 @@
    "trimestre": 3,
    "texto": "La investigación sociolingüística para analizar los usos y funciones de la lengua materna en contextos de bilingüismo e interculturalidad, como herramienta efectiva para la construcción de conocimientos sobre la lengua, la evolución histórica y la incorporación de neologismos.",
    "calidad": "buena",
-   "orden": 2
+   "orden": 3
   },
   {
    "id": "lengua-y-cultura-originarias-wichi-qom-p--e4--a3s3",
@@ -6489,7 +6489,7 @@
    "trimestre": 3,
    "texto": "Prácticas de lectura y escritura en lengua originaria con diferentes propósitos y de creciente complejidad y extensión.",
    "calidad": "buena",
-   "orden": 3
+   "orden": 4
   },
   {
    "id": "lengua--e1--pr-a1t1s1",
@@ -6525,7 +6525,7 @@
    "trimestre": 1,
    "texto": "Lectura de textos narrativos no ficcionales (relatos cotidianos, textos periodísticos).",
    "calidad": "buena",
-   "orden": 1
+   "orden": 4
   },
   {
    "id": "lengua--e2--pr-a1t1s2",
@@ -6534,7 +6534,7 @@
    "trimestre": 1,
    "texto": "Consideración del paratexto, anticipación de significados, inferencias y determinación de la intencionalidad.",
    "calidad": "buena",
-   "orden": 2
+   "orden": 5
   },
   {
    "id": "lengua--e2--pr-a1t1s3",
@@ -6543,7 +6543,7 @@
    "trimestre": 1,
    "texto": "Escritura de narraciones estructuradas lógica y temporalmente breves, adoptando una voz y perspectiva clara.",
    "calidad": "buena",
-   "orden": 3
+   "orden": 6
   },
   {
    "id": "lengua--e2--pr-a1t1s4",
@@ -6552,7 +6552,7 @@
    "trimestre": 1,
    "texto": "Monitoreo de la comprensión mediante la relectura, la formulación de preguntas, el intercambio con pares y docentes y la consulta de otras fuentes.",
    "calidad": "buena",
-   "orden": 4
+   "orden": 7
   },
   {
    "id": "lengua--e2--pr-a1t1s5",
@@ -6561,7 +6561,7 @@
    "trimestre": 1,
    "texto": "Producción de textos entendida como proceso: planificación, escritura de borradores, revisión y reescritura, con acompañamiento docente.",
    "calidad": "buena",
-   "orden": 5
+   "orden": 8
   },
   {
    "id": "lengua--e3--pr-a1t1s1",
@@ -6570,7 +6570,7 @@
    "trimestre": 1,
    "texto": "Lectura frecuente y mediada de cuentos completos de autores locales, regionales, nacionales y universales. Como posibles concreciones: cuentos realistas, maravillosos, policiales de enigma, entre otros.",
    "calidad": "buena",
-   "orden": 1
+   "orden": 9
   },
   {
    "id": "lengua--e3--pr-a1t1s2",
@@ -6579,7 +6579,7 @@
    "trimestre": 1,
    "texto": "Identificación de elementos fundamentales de la estructura narrativa (quién cuenta la historia, quiénes intervienen y cómo se ordenan los hechos en el tiempo). En el abordaje del cuento policial identificación de personajes y roles típicos ( detective, sospechoso, víctima), la recolección de pistas/indicios y resolución del misterio o enigma.,.",
    "calidad": "buena",
-   "orden": 2
+   "orden": 10
   },
   {
    "id": "lengua--e3--pr-a1t1s3",
@@ -6588,7 +6588,7 @@
    "trimestre": 1,
    "texto": "Escritura creativa basada en consignas de invención y experimentación genérica.",
    "calidad": "buena",
-   "orden": 3
+   "orden": 11
   },
   {
    "id": "lengua--e4--pr-a1t1s1",
@@ -6597,7 +6597,7 @@
    "trimestre": 1,
    "texto": "Reconocimiento de la estructura prototípica de la narración, diferenciando narración, descripción y diálogo.",
    "calidad": "buena",
-   "orden": 1
+   "orden": 12
   },
   {
    "id": "lengua--e4--pr-a1t1s2",
@@ -6606,7 +6606,7 @@
    "trimestre": 1,
    "texto": "Clases de palabras (sustantivos, adjetivos, verbos, pronombres): aspectos morfológicos, sintácticos y semánticos. Reglas de concordancia.",
    "calidad": "buena",
-   "orden": 2
+   "orden": 13
   },
   {
    "id": "lengua--e4--pr-a1t1s3",
@@ -6615,7 +6615,7 @@
    "trimestre": 1,
    "texto": "Tiempos verbales del relato y conectores temporales y causales.",
    "calidad": "buena",
-   "orden": 3
+   "orden": 14
   },
   {
    "id": "lengua--e4--pr-a1t1s4",
@@ -6624,7 +6624,7 @@
    "trimestre": 1,
    "texto": "Análisis de construcciones sintácticas oracionales y sus componentes básicos en el marco del texto.",
    "calidad": "buena",
-   "orden": 4
+   "orden": 15
   },
   {
    "id": "lengua--e4--pr-a1t1s5",
@@ -6633,7 +6633,7 @@
    "trimestre": 1,
    "texto": "Reflexión sobre las variedades lingüísticas, los registros y la adecuación de los usos de la lengua a diferentes situaciones comunicativas.",
    "calidad": "buena",
-   "orden": 5
+   "orden": 16
   },
   {
    "id": "lengua--e1--pr-a1t2s1",
@@ -6642,7 +6642,7 @@
    "trimestre": 2,
    "texto": "Escucha comprensiva de exposiciones orales sobre temas estudiados o de interés general.",
    "calidad": "buena",
-   "orden": 4
+   "orden": 1
   },
   {
    "id": "lengua--e1--pr-a1t2s2",
@@ -6651,7 +6651,7 @@
    "trimestre": 2,
    "texto": "Identificación de temas, subtemas, ejemplos y comparaciones.",
    "calidad": "buena",
-   "orden": 5
+   "orden": 2
   },
   {
    "id": "lengua--e1--pr-a1t2s3",
@@ -6660,7 +6660,7 @@
    "trimestre": 2,
    "texto": "Producción de exposiciones orales breves, planificadas a partir de información investigada y seleccionada.",
    "calidad": "buena",
-   "orden": 6
+   "orden": 3
   },
   {
    "id": "lengua--e2--pr-a1t2s1",
@@ -6669,7 +6669,7 @@
    "trimestre": 2,
    "texto": "Lectura de textos expositivos (enciclopedias, divulgación, revistas informativas) ampliación de vocabulario, resumen/ampliación y escritura de exposiciones.",
    "calidad": "buena",
-   "orden": 6
+   "orden": 4
   },
   {
    "id": "lengua--e2--pr-a1t2s2",
@@ -6678,7 +6678,7 @@
    "trimestre": 2,
    "texto": "Ampliación de vocabulario por etimología, familias de palabras y uso del diccionario.",
    "calidad": "buena",
-   "orden": 7
+   "orden": 5
   },
   {
    "id": "lengua--e2--pr-a1t2s3",
@@ -6687,7 +6687,7 @@
    "trimestre": 2,
    "texto": "Reformulación de textos por reducción (resumen) y ampliación.",
    "calidad": "buena",
-   "orden": 8
+   "orden": 6
   },
   {
    "id": "lengua--e2--pr-a1t2s4",
@@ -6696,7 +6696,7 @@
    "trimestre": 2,
    "texto": "Escritura de exposiciones sencillas adecuándose a la superestructura y la progresión temática.",
    "calidad": "buena",
-   "orden": 9
+   "orden": 7
   },
   {
    "id": "lengua--e2--pr-a1t2s5",
@@ -6705,7 +6705,7 @@
    "trimestre": 2,
    "texto": "Búsqueda, selección y contrastación de información proveniente de distintas fuentes, atendiendo progresivamente a su pertinencia y confiabilidad.",
    "calidad": "buena",
-   "orden": 10
+   "orden": 8
   },
   {
    "id": "lengua--e2--pr-a1t2s6",
@@ -6714,7 +6714,7 @@
    "trimestre": 2,
    "texto": "Monitoreo de la comprensión durante la lectura: formulación y revisión de anticipaciones, relectura y consulta de otras fuentes.",
    "calidad": "buena",
-   "orden": 11
+   "orden": 9
   },
   {
    "id": "lengua--e3--pr-a1t2s1",
@@ -6723,7 +6723,7 @@
    "trimestre": 2,
    "texto": "Lectura frecuente y mediada de poesía de tradición oral y de autores locales, regionales, nacionales y universales.",
    "calidad": "buena",
-   "orden": 4
+   "orden": 10
   },
   {
    "id": "lengua--e3--pr-a1t2s2",
@@ -6732,7 +6732,7 @@
    "trimestre": 2,
    "texto": "Reflexión sobre recursos poéticos (figuras retóricas y juegos sonoros) y sus efectos en el sentido literario.",
    "calidad": "buena",
-   "orden": 5
+   "orden": 11
   },
   {
    "id": "lengua--e3--pr-a1t2s3",
@@ -6741,7 +6741,7 @@
    "trimestre": 2,
    "texto": "Profundización de la lectura de cuentos y novelas completas de progresiva extensión y complejidad. Inicio de la construcción de itinerarios personales de lectura a partir de gustos, intereses y recomendaciones.",
    "calidad": "buena",
-   "orden": 6
+   "orden": 12
   },
   {
    "id": "lengua--e4--pr-a1t2s1",
@@ -6750,7 +6750,7 @@
    "trimestre": 2,
    "texto": "Verbos en presente y adjetivación precisa y objetiva en textos de divulgación.",
    "calidad": "buena",
-   "orden": 6
+   "orden": 13
   },
   {
    "id": "lengua--e4--pr-a1t2s2",
@@ -6759,7 +6759,7 @@
    "trimestre": 2,
    "texto": "Relaciones de significado: sinónimos, antónimos, hiperónimos e hipónimos para la cohesión léxica.",
    "calidad": "buena",
-   "orden": 7
+   "orden": 14
   },
   {
    "id": "lengua--e4--pr-a1t2s3",
@@ -6768,7 +6768,7 @@
    "trimestre": 2,
    "texto": "Sistematización ortográfica y de signos de puntuación básicos.",
    "calidad": "buena",
-   "orden": 8
+   "orden": 15
   },
   {
    "id": "lengua--e4--pr-a1t2s4",
@@ -6777,7 +6777,7 @@
    "trimestre": 2,
    "texto": "Reconocimiento de la estructura de la oración simple: sujeto y predicado, núcleos y modificadores, considerando su función en la producción e interpretación de textos.",
    "calidad": "buena",
-   "orden": 9
+   "orden": 16
   },
   {
    "id": "lengua--e4--pr-a1t2s5",
@@ -6786,7 +6786,7 @@
    "trimestre": 2,
    "texto": "Reflexión sobre estos recursos a partir de los textos leídos y producidos, atendiendo a su función en la construcción del sentido.",
    "calidad": "buena",
-   "orden": 10
+   "orden": 17
   },
   {
    "id": "lengua--e4--pr-a1t2s6",
@@ -6795,7 +6795,7 @@
    "trimestre": 2,
    "texto": "Relaciones de significado entre palabras, formación de palabras y etimología para la ampliación del vocabulario y la comprensión de los textos.",
    "calidad": "buena",
-   "orden": 11
+   "orden": 18
   },
   {
    "id": "lengua--e4--pr-a1t2s7",
@@ -6804,7 +6804,7 @@
    "trimestre": 2,
    "texto": "Uso de verbos en presente, adjetivación, organizadores y conectores propios de los textos expositivos.",
    "calidad": "buena",
-   "orden": 12
+   "orden": 19
   },
   {
    "id": "lengua--e1--pr-a1t3s1",
@@ -6813,7 +6813,7 @@
    "trimestre": 3,
    "texto": "Producción de textos orales expositivos y narrativos en situaciones comunicativas reales. • Planificación, organización y puesta en práctica de exposiciones orales planificadas e individuales.",
    "calidad": "buena",
-   "orden": 7
+   "orden": 1
   },
   {
    "id": "lengua--e1--pr-a1t3s2",
@@ -6822,7 +6822,7 @@
    "trimestre": 3,
    "texto": "Participación en conversaciones sobre las obras leídas, expresando interpretaciones, gustos y valoraciones y escuchando las perspectivas de otros.",
    "calidad": "buena",
-   "orden": 8
+   "orden": 2
   },
   {
    "id": "lengua--e2--pr-a1t3s1",
@@ -6831,7 +6831,7 @@
    "trimestre": 3,
    "texto": "Lectura de textos de opinión sencillos.",
    "calidad": "buena",
-   "orden": 12
+   "orden": 3
   },
   {
    "id": "lengua--e2--pr-a1t3s2",
@@ -6840,7 +6840,7 @@
    "trimestre": 3,
    "texto": "Iniciación a la escritura argumentativa a partir de situaciones próximas a la experiencia de los estudiantes: formulación de una posición clara y construcción de razones o argumentos sencillos que permitan fundamentarla.",
    "calidad": "buena",
-   "orden": 13
+   "orden": 4
   },
   {
    "id": "lengua--e2--pr-a1t3s3",
@@ -6849,7 +6849,7 @@
    "trimestre": 3,
    "texto": "Monitoreo, revisión entre pares y reescritura.",
    "calidad": "buena",
-   "orden": 14
+   "orden": 5
   },
   {
    "id": "lengua--e2--pr-a1t3s4",
@@ -6858,7 +6858,7 @@
    "trimestre": 3,
    "texto": "Uso de herramientas digitales para la producción, organización y presentación multimodal de información .",
    "calidad": "buena",
-   "orden": 15
+   "orden": 6
   },
   {
    "id": "lengua--e3--pr-a1t3s1",
@@ -6903,7 +6903,7 @@
    "trimestre": 3,
    "texto": "Análisis de efectos de sentido derivados del cambio de orden de palabras en la oración.",
    "calidad": "buena",
-   "orden": 13
+   "orden": 11
   },
   {
    "id": "lengua--e4--pr-a1t3s2",
@@ -6912,7 +6912,7 @@
    "trimestre": 3,
    "texto": "Sistematización del uso de signos de puntuación de cierre (punto, signos de interrogación/exclamación) e incisos.",
    "calidad": "buena",
-   "orden": 14
+   "orden": 12
   },
   {
    "id": "lengua--e4--pr-a1t3s3",
@@ -6921,7 +6921,7 @@
    "trimestre": 3,
    "texto": "Reconocimiento de los componentes y relaciones de la oración simple, atendiendo a cómo contribuyen a precisar y ampliar el significado en los textos trabajados.",
    "calidad": "buena",
-   "orden": 15
+   "orden": 13
   },
   {
    "id": "lengua--e1--pr-a2t1s1",
@@ -6930,7 +6930,7 @@
    "trimestre": 1,
    "texto": "Prácticas de conversación y discusión orales incorporando recursos avanzados: paráfrasis y remisión a fuentes consultadas.",
    "calidad": "buena",
-   "orden": 9
+   "orden": 1
   },
   {
    "id": "lengua--e1--pr-a2t1s2",
@@ -6939,7 +6939,7 @@
    "trimestre": 1,
    "texto": "Escucha comprensiva de narraciones extensas identificando descripciones e inferencias de lectura.",
    "calidad": "buena",
-   "orden": 10
+   "orden": 2
   },
   {
    "id": "lengua--e1--pr-a2t1s3",
@@ -6948,7 +6948,7 @@
    "trimestre": 1,
    "texto": "Participación en conversaciones y discusiones recuperando las intervenciones de otros, fundamentando acuerdos y desacuerdos y remitiendo a fuentes consultadas.",
    "calidad": "buena",
-   "orden": 11
+   "orden": 3
   },
   {
    "id": "lengua--e2--pr-a2t1s1",
@@ -6957,7 +6957,7 @@
    "trimestre": 1,
    "texto": "Selección y lectura de textos narrativos extensos de tramas complejas en distintos soportes.",
    "calidad": "buena",
-   "orden": 16
+   "orden": 4
   },
   {
    "id": "lengua--e2--pr-a2t1s2",
@@ -6966,7 +6966,7 @@
    "trimestre": 1,
    "texto": "Inclusión del discurso referido directo e indirecto e identificación de otras voces dentro del relato.",
    "calidad": "buena",
-   "orden": 17
+   "orden": 5
   },
   {
    "id": "lengua--e2--pr-a2t1s3",
@@ -6975,7 +6975,7 @@
    "trimestre": 1,
    "texto": "Lectura de textos argumentativos sencillos, reconociendo tema/problema, hechos y opiniones, posiciones, tesis y argumentos.",
    "calidad": "buena",
-   "orden": 18
+   "orden": 6
   },
   {
    "id": "lengua--e3--pr-a2t1s1",
@@ -6984,7 +6984,7 @@
    "trimestre": 1,
    "texto": "Lectura, análisis e interpretación de novelas completas de extensión y complejidad adecuadas a las trayectorias lectoras de los estudiantes.",
    "calidad": "buena",
-   "orden": 11
+   "orden": 7
   },
   {
    "id": "lengua--e3--pr-a2t1s2",
@@ -6993,7 +6993,7 @@
    "trimestre": 1,
    "texto": "Itinerarios personales de lectura y contraste/comparación de obras de un mismo autor.",
    "calidad": "buena",
-   "orden": 12
+   "orden": 8
   },
   {
    "id": "lengua--e3--pr-a2t1s3",
@@ -7002,7 +7002,7 @@
    "trimestre": 1,
    "texto": "Producción de invención escrita que ponga en juego las convenciones de los géneros",
    "calidad": "buena",
-   "orden": 13
+   "orden": 9
   },
   {
    "id": "lengua--e4--pr-a2t1s1",
@@ -7011,7 +7011,7 @@
    "trimestre": 1,
    "texto": "Estructura de la narración, análisis de secuencias descriptivas y de diálogo, y correlaciones verbales complejas.",
    "calidad": "buena",
-   "orden": 16
+   "orden": 10
   },
   {
    "id": "lengua--e4--pr-a2t1s2",
@@ -7020,7 +7020,7 @@
    "trimestre": 1,
    "texto": "Discurso directo e indirecto: análisis de los verbos del decir (verbos introductorios) y sus matices semánticos.",
    "calidad": "buena",
-   "orden": 17
+   "orden": 11
   },
   {
    "id": "lengua--e4--pr-a2t1s3",
@@ -7029,7 +7029,7 @@
    "trimestre": 1,
    "texto": "Reflexión sobre diferentes construcciones sintácticas y recursos de impersonalidad, atendiendo a los efectos de sentido que producen en los textos trabajados.",
    "calidad": "buena",
-   "orden": 18
+   "orden": 12
   },
   {
    "id": "lengua--e1--pr-a2t2s1",
@@ -7038,7 +7038,7 @@
    "trimestre": 2,
    "texto": "Escucha exposiciones orales complejas.",
    "calidad": "buena",
-   "orden": 12
+   "orden": 1
   },
   {
    "id": "lengua--e1--pr-a2t2s2",
@@ -7047,7 +7047,7 @@
    "trimestre": 2,
    "texto": "Identificación de temas, subtemas, ejemplos, comparaciones, paráfrasis y recapitulaciones.",
    "calidad": "buena",
-   "orden": 13
+   "orden": 2
   },
   {
    "id": "lengua--e2--pr-a2t2s1",
@@ -7056,7 +7056,7 @@
    "trimestre": 2,
    "texto": "Lectura de textos de opinión y argumentativos en soporte analógico y digital (cartas de lectores, reseñas críticas, comentarios en la web).",
    "calidad": "buena",
-   "orden": 19
+   "orden": 3
   },
   {
    "id": "lengua--e2--pr-a2t2s2",
@@ -7065,7 +7065,7 @@
    "trimestre": 2,
    "texto": "Trabajo con el hipertexto, estrategias cognitivas de lectura, inferencias y consideración del paratexto.",
    "calidad": "buena",
-   "orden": 20
+   "orden": 4
   },
   {
    "id": "lengua--e2--pr-a2t2s3",
@@ -7074,7 +7074,7 @@
    "trimestre": 2,
    "texto": "Estrategias de reformulación textual por reducción (resumen, síntesis) y por ampliación.",
    "calidad": "buena",
-   "orden": 21
+   "orden": 5
   },
   {
    "id": "lengua--e2--pr-a2t2s4",
@@ -7083,7 +7083,7 @@
    "trimestre": 2,
    "texto": "Escritura de textos expositivos profundizando en la progresión temática.",
    "calidad": "buena",
-   "orden": 22
+   "orden": 6
   },
   {
    "id": "lengua--e2--pr-a2t2s5",
@@ -7092,7 +7092,7 @@
    "trimestre": 2,
    "texto": "Contrastación de información y perspectivas provenientes de diferentes textos y fuentes.",
    "calidad": "buena",
-   "orden": 23
+   "orden": 7
   },
   {
    "id": "lengua--e3--pr-a2t2s1",
@@ -7101,7 +7101,7 @@
    "trimestre": 2,
    "texto": "Lectura e interpretación de poesía de autores locales, regionales, nacionales y universales, profundizando progresivamente el análisis de los procedimientos y recursos del lenguaje poético.",
    "calidad": "buena",
-   "orden": 14
+   "orden": 8
   },
   {
    "id": "lengua--e3--pr-a2t2s2",
@@ -7110,7 +7110,7 @@
    "trimestre": 2,
    "texto": "Configuración guiada de itinerarios personales de lectura explicitando fundamentos.",
    "calidad": "buena",
-   "orden": 15
+   "orden": 9
   },
   {
    "id": "lengua--e4--pr-a2t2s1",
@@ -7119,7 +7119,7 @@
    "trimestre": 2,
    "texto": "Análisis de verbos en presente de indicativo y adjetivación en textos de divulgación.",
    "calidad": "buena",
-   "orden": 19
+   "orden": 10
   },
   {
    "id": "lengua--e4--pr-a2t2s2",
@@ -7128,7 +7128,7 @@
    "trimestre": 2,
    "texto": "Cohesión léxica a través del uso de sinónimos, antónimos, hiperónimos e hipónimos.",
    "calidad": "buena",
-   "orden": 20
+   "orden": 11
   },
   {
    "id": "lengua--e4--pr-a2t2s3",
@@ -7137,7 +7137,7 @@
    "trimestre": 2,
    "texto": "Uso de organizadores y conectores de textos expositivos.",
    "calidad": "buena",
-   "orden": 21
+   "orden": 12
   },
   {
    "id": "lengua--e4--pr-a2t2s4",
@@ -7146,7 +7146,7 @@
    "trimestre": 2,
    "texto": "Reconocimiento y empleo de relaciones de coordinación para ampliar, contraponer, alternar y relacionar ideas en los textos leídos y producidos.",
    "calidad": "buena",
-   "orden": 22
+   "orden": 13
   },
   {
    "id": "lengua--e1--pr-a2t3s1",
@@ -7155,7 +7155,7 @@
    "trimestre": 3,
    "texto": "Participación en discusiones orales planificadas como aproximación al debate formal: construcción de una posición, fundamentación, escucha y respuesta a otras perspectivas.",
    "calidad": "buena",
-   "orden": 14
+   "orden": 1
   },
   {
    "id": "lengua--e1--pr-a2t3s2",
@@ -7164,7 +7164,7 @@
    "trimestre": 3,
    "texto": "Discriminación entre temas y problemas, hechos y opiniones.",
    "calidad": "buena",
-   "orden": 15
+   "orden": 2
   },
   {
    "id": "lengua--e1--pr-a2t3s3",
@@ -7173,7 +7173,7 @@
    "trimestre": 3,
    "texto": "Reconocimiento de la tesis propia y la ajena, argumentos, manifestaciones de acuerdo/desacuerdo y valoraciones.",
    "calidad": "buena",
-   "orden": 16
+   "orden": 3
   },
   {
    "id": "lengua--e2--pr-a2t3s1",
@@ -7182,7 +7182,7 @@
    "trimestre": 3,
    "texto": "Escritura argumentativa formal: a partir de una situación conflictiva, fijar una posición clara y formular argumentos consistentes que la sostengan.",
    "calidad": "buena",
-   "orden": 24
+   "orden": 4
   },
   {
    "id": "lengua--e2--pr-a2t3s2",
@@ -7191,7 +7191,7 @@
    "trimestre": 3,
    "texto": "Empleo de estrategias argumentativas y conectores lógicos sencillos.",
    "calidad": "buena",
-   "orden": 25
+   "orden": 5
   },
   {
    "id": "lengua--e2--pr-a2t3s3",
@@ -7200,7 +7200,7 @@
    "trimestre": 3,
    "texto": "Monitoreo, revisión del borrador y reescritura.",
    "calidad": "buena",
-   "orden": 26
+   "orden": 6
   },
   {
    "id": "lengua--e2--pr-a2t3s4",
@@ -7209,7 +7209,7 @@
    "trimestre": 3,
    "texto": "Uso de herramientas digitales para organizar información y producir y comunicar textos multimodales.",
    "calidad": "buena",
-   "orden": 27
+   "orden": 7
   },
   {
    "id": "lengua--e3--pr-a2t3s1",
@@ -7218,7 +7218,7 @@
    "trimestre": 3,
    "texto": "Lectura e interpretación de obras del género dramático (obras más extensas, comparación de autores del mismo género).",
    "calidad": "buena",
-   "orden": 16
+   "orden": 8
   },
   {
    "id": "lengua--e3--pr-a2t3s2",
@@ -7227,7 +7227,7 @@
    "trimestre": 3,
    "texto": "Producción de textos dramáticos individuales o colectivos y fomento de la lectura y producción en soportes digitales.",
    "calidad": "buena",
-   "orden": 17
+   "orden": 9
   },
   {
    "id": "lengua--e3--pr-a2t3s3",
@@ -7236,7 +7236,7 @@
    "trimestre": 3,
    "texto": "Comparación y valoración de obras literarias, fundamentando interpretaciones, gustos y preferencias.",
    "calidad": "buena",
-   "orden": 18
+   "orden": 10
   },
   {
    "id": "lengua--e3--pr-a2t3s4",
@@ -7245,7 +7245,7 @@
    "trimestre": 3,
    "texto": "Desarrollo progresivo de itinerarios personales y participación en prácticas de recomendación y mediación de lectura.",
    "calidad": "buena",
-   "orden": 19
+   "orden": 11
   },
   {
    "id": "lengua--e4--pr-a2t3s1",
@@ -7254,7 +7254,7 @@
    "trimestre": 3,
    "texto": "Identificación y sistematización de subjetivemas: sustantivos, adjetivos y adverbios con matiz valorativo.",
    "calidad": "buena",
-   "orden": 23
+   "orden": 12
   },
   {
    "id": "lengua--e4--pr-a2t3s2",
@@ -7263,7 +7263,7 @@
    "trimestre": 3,
    "texto": "Empleo de organizadores y conectores textuales específicos del discurso argumentativo.",
    "calidad": "buena",
-   "orden": 24
+   "orden": 13
   },
   {
    "id": "lengua--e4--pr-a2t3s3",
@@ -7272,7 +7272,7 @@
    "trimestre": 3,
    "texto": "Análisis de los conectores y de las relaciones lógico-semánticas entre proposiciones para favorecer la cohesión y la coherencia textual.",
    "calidad": "buena",
-   "orden": 25
+   "orden": 14
   },
   {
    "id": "lengua--e1--pr-a3t1s1",
@@ -7281,7 +7281,7 @@
    "trimestre": 1,
    "texto": "Exposición oral autónoma y grupal sobre contenidos disciplinares y de estudio.",
    "calidad": "buena",
-   "orden": 17
+   "orden": 1
   },
   {
    "id": "lengua--e1--pr-a3t1s2",
@@ -7290,7 +7290,7 @@
    "trimestre": 1,
    "texto": "Escucha comprensiva y crítica de relatos distinguiendo orden cronológico lineal y anacronías (analepsis, prolepsis .",
    "calidad": "buena",
-   "orden": 18
+   "orden": 2
   },
   {
    "id": "lengua--e1--pr-a3t1s3",
@@ -7299,7 +7299,7 @@
    "trimestre": 1,
    "texto": "Reconocimiento y valoración de las variedades lingüísticas presentes en la comunidad, adecuando progresivamente las intervenciones orales a diferentes situaciones comunicativas.",
    "calidad": "buena",
-   "orden": 19
+   "orden": 3
   },
   {
    "id": "lengua--e1--pr-a3t1s4",
@@ -7308,7 +7308,7 @@
    "trimestre": 1,
    "texto": "Participación en discusiones y debates sobre temas controversiales, construyendo una posición personal, recuperando argumentos ajenos y empleando progresivamente estrategias de refutación y contraargumentación.",
    "calidad": "buena",
-   "orden": 20
+   "orden": 4
   },
   {
    "id": "lengua--e2--pr-a3t1s1",
@@ -7317,7 +7317,7 @@
    "trimestre": 1,
    "texto": "Lectura de textos narrativos complejos extensos en formatos digitales e impresos.",
    "calidad": "buena",
-   "orden": 28
+   "orden": 5
   },
   {
    "id": "lengua--e2--pr-a3t1s2",
@@ -7326,7 +7326,7 @@
    "trimestre": 1,
    "texto": "Escritura de narraciones complejas, alternando voces, perspectivas e incorporando el discurso directo e indirecto de manera sólida.",
    "calidad": "buena",
-   "orden": 29
+   "orden": 6
   },
   {
    "id": "lengua--e2--pr-a3t1s3",
@@ -7335,7 +7335,7 @@
    "trimestre": 1,
    "texto": "Lectura de textos que expresen diferentes posiciones sobre un mismo tema, reconociendo tesis, argumentos y procedimientos utilizados para sostenerlas.",
    "calidad": "buena",
-   "orden": 30
+   "orden": 7
   },
   {
    "id": "lengua--e3--pr-a3t1s1",
@@ -7344,7 +7344,7 @@
    "trimestre": 1,
    "texto": "Lectura frecuente y progresivamente autónoma de obras literarias de autores locales, regionales, nacionales y universales que posibiliten diversas interpretaciones y perspectivas sobre experiencias humanas, sociales y culturales.",
    "calidad": "buena",
-   "orden": 20
+   "orden": 8
   },
   {
    "id": "lengua--e3--pr-a3t1s2",
@@ -7353,7 +7353,7 @@
    "trimestre": 1,
    "texto": "Construcción y fundamentación de interpretaciones sobre las obras leídas mediante referencias al texto y el intercambio con otros lectores.",
    "calidad": "buena",
-   "orden": 21
+   "orden": 9
   },
   {
    "id": "lengua--e3--pr-a3t1s3",
@@ -7362,7 +7362,7 @@
    "trimestre": 1,
    "texto": "Reconocimiento y análisis de diferentes perspectivas, voces, conflictos y valoraciones presentes en las obras literarias.",
    "calidad": "buena",
-   "orden": 22
+   "orden": 10
   },
   {
    "id": "lengua--e3--pr-a3t1s4",
@@ -7371,7 +7371,7 @@
    "trimestre": 1,
    "texto": "Comparación de interpretaciones sobre una misma obra, recuperando argumentos propios y ajenos para sostener, ampliar o revisar las interpretaciones construidas.",
    "calidad": "buena",
-   "orden": 23
+   "orden": 11
   },
   {
    "id": "lengua--e3--pr-a3t1s5",
@@ -7380,7 +7380,7 @@
    "trimestre": 1,
    "texto": "Producción de textos breves de interpretación, valoración y recomendación literaria, fundamentando las apreciaciones personales sobre las obras leídas.",
    "calidad": "buena",
-   "orden": 24
+   "orden": 12
   },
   {
    "id": "lengua--e4--pr-a3t1s1",
@@ -7389,7 +7389,7 @@
    "trimestre": 1,
    "texto": "Sistematización de los tiempos verbales del relato en castellano.",
    "calidad": "buena",
-   "orden": 26
+   "orden": 13
   },
   {
    "id": "lengua--e4--pr-a3t1s2",
@@ -7398,7 +7398,7 @@
    "trimestre": 1,
    "texto": "Función y uso de conectores causales y temporales complejos para la cohesión narrativa.",
    "calidad": "buena",
-   "orden": 27
+   "orden": 14
   },
   {
    "id": "lengua--e4--pr-a3t1s3",
@@ -7407,7 +7407,7 @@
    "trimestre": 1,
    "texto": "Reconocimiento de proposiciones principales y subordinadas, y análisis de los nexos subordinantes en textos narrativos, expositivos y argumentativos.",
    "calidad": "buena",
-   "orden": 28
+   "orden": 15
   },
   {
    "id": "lengua--e1--pr-a3t2s1",
@@ -7416,7 +7416,7 @@
    "trimestre": 2,
    "texto": "Escucha y análisis crítico de exposiciones orales que incorporen soporte gráfico (infografías, diapositivas).",
    "calidad": "buena",
-   "orden": 21
+   "orden": 1
   },
   {
    "id": "lengua--e1--pr-a3t2s2",
@@ -7425,7 +7425,7 @@
    "trimestre": 2,
    "texto": "Toma de posición individual frente a lo escuchado y socialización fundamentada con los pares.",
    "calidad": "buena",
-   "orden": 22
+   "orden": 2
   },
   {
    "id": "lengua--e2--pr-a3t2s1",
@@ -7434,7 +7434,7 @@
    "trimestre": 2,
    "texto": "Lectura crítica de textos expositivos-explicativos y de múltiples textos de opinión que expresan distintas posiciones en torno a un mismo tema.",
    "calidad": "buena",
-   "orden": 31
+   "orden": 3
   },
   {
    "id": "lengua--e2--pr-a3t2s2",
@@ -7443,7 +7443,7 @@
    "trimestre": 2,
    "texto": "Identificación de marcas de subjetividad en la escritura (citas de autoridad, preguntas retóricas, comparaciones, ironía).",
    "calidad": "buena",
-   "orden": 32
+   "orden": 4
   },
   {
    "id": "lengua--e2--pr-a3t2s3",
@@ -7452,7 +7452,7 @@
    "trimestre": 2,
    "texto": "Estrategias avanzadas de reformulación por reducción y ampliación.",
    "calidad": "buena",
-   "orden": 33
+   "orden": 5
   },
   {
    "id": "lengua--e2--pr-a3t2s4",
@@ -7461,7 +7461,7 @@
    "trimestre": 2,
    "texto": "Producción de textos interpretativos y argumentativos sobre las obras leídas, fundamentando interpretaciones mediante referencias a los textos.",
    "calidad": "buena",
-   "orden": 34
+   "orden": 6
   },
   {
    "id": "lengua--e3--pr-a3t2s1",
@@ -7470,7 +7470,7 @@
    "trimestre": 2,
    "texto": "Lectura de cuentos fantásticos y de ciencia ficción.",
    "calidad": "buena",
-   "orden": 25
+   "orden": 7
   },
   {
    "id": "lengua--e3--pr-a3t2s2",
@@ -7479,7 +7479,7 @@
    "trimestre": 2,
    "texto": "Análisis de rupturas y coincidencias temporales (anticipaciones, retrocesos, paralelismos, alternancias), perspectivas del narrador y múltiples interpretaciones.",
    "calidad": "buena",
-   "orden": 26
+   "orden": 8
   },
   {
    "id": "lengua--e3--pr-a3t2s3",
@@ -7488,7 +7488,7 @@
    "trimestre": 2,
    "texto": "Lectura de novelas e intertextualidad: comparación de novelas con transposiciones cinematográficas.",
    "calidad": "buena",
-   "orden": 27
+   "orden": 9
   },
   {
    "id": "lengua--e3--pr-a3t2s4",
@@ -7497,7 +7497,7 @@
    "trimestre": 2,
    "texto": "Lectura crítica y progresivamente autónoma de obras poéticas de autores locales, regionales, nacionales y universales.",
    "calidad": "buena",
-   "orden": 28
+   "orden": 10
   },
   {
    "id": "lengua--e3--pr-a3t2s5",
@@ -7506,7 +7506,7 @@
    "trimestre": 2,
    "texto": "Interpretación de los efectos de sentido producidos por figuras retóricas, recursos sonoros y otras elecciones propias del lenguaje poético.",
    "calidad": "buena",
-   "orden": 29
+   "orden": 11
   },
   {
    "id": "lengua--e3--pr-a3t2s6",
@@ -7515,7 +7515,7 @@
    "trimestre": 2,
    "texto": "Desarrollo de la autonomía lectora y realización de prácticas de mediación de lectura en ámbitos escolares y comunitarios.",
    "calidad": "buena",
-   "orden": 30
+   "orden": 12
   },
   {
    "id": "lengua--e4--pr-a3t2s1",
@@ -7524,7 +7524,7 @@
    "trimestre": 2,
    "texto": "Uso y correlaciones de los verbos en presente en textos de divulgación científica.",
    "calidad": "buena",
-   "orden": 29
+   "orden": 13
   },
   {
    "id": "lengua--e4--pr-a3t2s2",
@@ -7533,7 +7533,7 @@
    "trimestre": 2,
    "texto": "Organizadores textuales avanzados y relaciones semánticas complejas (etimología para ampliar léxico).",
    "calidad": "buena",
-   "orden": 30
+   "orden": 14
   },
   {
    "id": "lengua--e4--pr-a3t2s3",
@@ -7542,7 +7542,7 @@
    "trimestre": 2,
    "texto": "Reflexión sobre relaciones de subordinación presentes en los textos trabajados, atendiendo a su función sintáctica y semántica y a su aporte a la construcción del sentido.",
    "calidad": "buena",
-   "orden": 31
+   "orden": 15
   },
   {
    "id": "lengua--e4--pr-a3t2s4",
@@ -7551,7 +7551,7 @@
    "trimestre": 2,
    "texto": "Reconocimiento y empleo de subjetivemas, conectores y otros recursos lingüísticos utilizados para construir y sostener posiciones.",
    "calidad": "buena",
-   "orden": 32
+   "orden": 16
   },
   {
    "id": "lengua--e1--pr-a3t3s1",
@@ -7560,7 +7560,7 @@
    "trimestre": 3,
    "texto": "Participación en debates formales sobre temas controversiales de interés general.",
    "calidad": "buena",
-   "orden": 23
+   "orden": 1
   },
   {
    "id": "lengua--e1--pr-a3t3s2",
@@ -7569,7 +7569,7 @@
    "trimestre": 3,
    "texto": "Estrategias de debate: acordar tema/problema, argumentar, refutar, contraargumentar, aceptar opiniones ajenas.",
    "calidad": "buena",
-   "orden": 24
+   "orden": 2
   },
   {
    "id": "lengua--e1--pr-a3t3s3",
@@ -7578,7 +7578,7 @@
    "trimestre": 3,
    "texto": "Distinción entre afirmaciones presentadas como hechos y aquellas formuladas como hipótesis o posibilidades en situaciones de debate y argumentación.",
    "calidad": "buena",
-   "orden": 25
+   "orden": 3
   },
   {
    "id": "lengua--e2--pr-a3t3s1",
@@ -7587,7 +7587,7 @@
    "trimestre": 3,
    "texto": "Escritura argumentativa formal con procedimientos y estrategias retóricas complejas.",
    "calidad": "buena",
-   "orden": 35
+   "orden": 4
   },
   {
    "id": "lengua--e2--pr-a3t3s2",
@@ -7596,7 +7596,7 @@
    "trimestre": 3,
    "texto": "Lectura y producción de textos de participación social y ciudadana adecuados a diferentes situaciones comunicativas: solicitudes, notas formales, peticiones y otras comunicaciones institucionales. Como posible concreción, aproximación al Curriculum Vitae.",
    "calidad": "buena",
-   "orden": 36
+   "orden": 5
   },
   {
    "id": "lengua--e2--pr-a3t3s3",
@@ -7605,7 +7605,7 @@
    "trimestre": 3,
    "texto": "Planificación, redacción, monitoreo y revisión de la adecuación al registro formal y a la situación comunicativa y reescritura.",
    "calidad": "buena",
-   "orden": 37
+   "orden": 6
   },
   {
    "id": "lengua--e3--pr-a3t3s1",
@@ -7614,7 +7614,7 @@
    "trimestre": 3,
    "texto": "Género dramático complejo: lectura e interpretación dramática en el aula.",
    "calidad": "buena",
-   "orden": 31
+   "orden": 7
   },
   {
    "id": "lengua--e3--pr-a3t3s2",
@@ -7623,7 +7623,7 @@
    "trimestre": 3,
    "texto": "Distinción conceptual y práctica entre el texto dramático (la palabra escrita) y el texto espectacular (la puesta en escena) a partir de una dramatización.",
    "calidad": "buena",
-   "orden": 32
+   "orden": 8
   },
   {
    "id": "lengua--e3--pr-a3t3s3",
@@ -7632,7 +7632,7 @@
    "trimestre": 3,
    "texto": "Ejercicio de prácticas de mediación de lectura en ámbitos escolares y extraescolares.",
    "calidad": "buena",
-   "orden": 33
+   "orden": 9
   },
   {
    "id": "lengua--e3--pr-a3t3s4",
@@ -7641,7 +7641,7 @@
    "trimestre": 3,
    "texto": "Selección progresivamente autónoma de obras y fundamentación de preferencias mediante prácticas de recomendación y mediación de lectura.",
    "calidad": "buena",
-   "orden": 34
+   "orden": 10
   },
   {
    "id": "lengua--e4--pr-a3t3s1",
@@ -7650,7 +7650,7 @@
    "trimestre": 3,
    "texto": "Sistematización del discurso directo e indirecto: reformulación de enunciados de discurso directo al indirecto.",
    "calidad": "buena",
-   "orden": 33
+   "orden": 11
   },
   {
    "id": "lengua--e4--pr-a3t3s2",
@@ -7659,7 +7659,7 @@
    "trimestre": 3,
    "texto": "Correlaciones verbales en el discurso referido y matices semánticos detallados de los verbos del decir .",
    "calidad": "buena",
-   "orden": 34
+   "orden": 12
   },
   {
    "id": "lengua--e4--pr-a3t3s3",
@@ -7668,7 +7668,7 @@
    "trimestre": 3,
    "texto": "Reconocimiento, interpretación y empleo de subjetivemas y otros recursos lingüísticos que permiten construir valoraciones y posiciones en los discursos.",
    "calidad": "buena",
-   "orden": 35
+   "orden": 13
   },
   {
    "id": "lengua--e4--pr-a3t3s4",
@@ -7677,7 +7677,7 @@
    "trimestre": 3,
    "texto": "Sistematización de relaciones de subordinación en los textos trabajados, atendiendo a su función en la organización, precisión y ampliación de las ideas.",
    "calidad": "buena",
-   "orden": 36
+   "orden": 14
   },
   {
    "id": "matematica--e1--pr-a1t1s1",
@@ -7686,7 +7686,7 @@
    "trimestre": 1,
    "texto": "Resolución de problemas que requieran del uso de las propiedades de la suma, resta, multiplicación y división entre naturales, incluyendo el caso de la proporcionalidad con constante natural",
    "calidad": "buena",
-   "orden": 1
+   "orden": 4
   },
   {
    "id": "matematica--e1--pr-a1t1s2",
@@ -7695,7 +7695,7 @@
    "trimestre": 1,
    "texto": "Expresión de cantidades y números seleccionando el tipo de cálculo (mental y escrito, exacto y aproximado, con y sin uso de la calculadora), y la forma de explicitar los números involucrados que resulte más conveniente en función de la situación planteada.",
    "calidad": "buena",
-   "orden": 2
+   "orden": 5
   },
   {
    "id": "matematica--e3--pr-a1t1s1",
@@ -7731,7 +7731,7 @@
    "trimestre": 2,
    "texto": "Resolución de problemas que requieran la realización de operaciones en el conjunto de los naturales y del uso de sus propiedades incluyendo el caso de la proporcionalidad con constante natural.",
    "calidad": "buena",
-   "orden": 3
+   "orden": 5
   },
   {
    "id": "matematica--e2--pr-a1t2s1",
@@ -7776,7 +7776,7 @@
    "trimestre": 3,
    "texto": "Interpretación y comparación de números enteros en diferentes contextos: como numero relativo",
    "calidad": "buena",
-   "orden": 4
+   "orden": 5
   },
   {
    "id": "matematica--e1--pr-a1t3s2",
@@ -7785,7 +7785,7 @@
    "trimestre": 3,
    "texto": "Resolución de situaciones que den significado a la suma, resta, multiplicación, división en Z.",
    "calidad": "buena",
-   "orden": 5
+   "orden": 6
   },
   {
    "id": "matematica--e4--pr-a1t3s1",
@@ -7830,7 +7830,7 @@
    "trimestre": 1,
    "texto": "Interpretación y comparación de números enteros en diferentes contextos: como número relativo y a partir de la resta de dos naturales (juegos de cartas, pérdidas y ganancias, dados)",
    "calidad": "buena",
-   "orden": 6
+   "orden": 5
   },
   {
    "id": "matematica--e1--pr-a2t1s2",
@@ -7839,7 +7839,7 @@
    "trimestre": 1,
    "texto": "Resolución de situaciones problemáticas en donde comparen números enteros en diferentes contextos: como número relativo a partir de la resta de dos naturales.",
    "calidad": "buena",
-   "orden": 7
+   "orden": 6
   },
   {
    "id": "matematica--e1--pr-a2t1s3",
@@ -7848,7 +7848,7 @@
    "trimestre": 1,
    "texto": "Uso adecuado de las diferentes representaciones de un número racional (expresiones fraccionarias y decimales, notación científica, punto de la recta numérica) en una situación a resolver.",
    "calidad": "buena",
-   "orden": 8
+   "orden": 7
   },
   {
    "id": "matematica--e4--pr-a2t1s1",
@@ -7857,7 +7857,7 @@
    "trimestre": 1,
    "texto": "Identificación de diferentes variables (cualitativas y cuantitativas), organización de los datos y construcción de gráficos adecuados en base a la información relevada",
    "calidad": "buena",
-   "orden": 5
+   "orden": 1
   },
   {
    "id": "matematica--e4--pr-a2t1s2",
@@ -7866,7 +7866,7 @@
    "trimestre": 1,
    "texto": "Interpretación del significado de la media y el modo para describir los datos de la realidad en estudio.",
    "calidad": "buena",
-   "orden": 6
+   "orden": 2
   },
   {
    "id": "matematica--e4--pr-a2t1s3",
@@ -7875,7 +7875,7 @@
    "trimestre": 1,
    "texto": "Resolución de problemas que requieran utilizar información de gráficos de situaciones extraídas de la realidad.",
    "calidad": "buena",
-   "orden": 7
+   "orden": 3
   },
   {
    "id": "matematica--e4--pr-a2t1s4",
@@ -7884,7 +7884,7 @@
    "trimestre": 1,
    "texto": "Identificación de situaciones de certeza y azar a través de juegos.",
    "calidad": "buena",
-   "orden": 8
+   "orden": 4
   },
   {
    "id": "matematica--e1--pr-a2t2s1",
@@ -7893,7 +7893,7 @@
    "trimestre": 2,
    "texto": "Resolución de problemas de varios pasos, sobre los diferentes sentidos de las cuatro operaciones, en distintos campos numéricos, que impliquen utilizar variados procedimientos.",
    "calidad": "buena",
-   "orden": 9
+   "orden": 6
   },
   {
    "id": "matematica--e2--pr-a2t2s1",
@@ -7902,7 +7902,7 @@
    "trimestre": 2,
    "texto": "Interpretación de relaciones entre variables en tablas, gráficos y fórmulas en diversos contextos.",
    "calidad": "buena",
-   "orden": 5
+   "orden": 1
   },
   {
    "id": "matematica--e2--pr-a2t2s2",
@@ -7911,7 +7911,7 @@
    "trimestre": 2,
    "texto": "Confección de tablas y gráficos cartesianos para establecer relaciones entre magnitudes discretas y/o continuas.",
    "calidad": "buena",
-   "orden": 6
+   "orden": 2
   },
   {
    "id": "matematica--e2--pr-a2t2s3",
@@ -7920,7 +7920,7 @@
    "trimestre": 2,
    "texto": "Reconocimiento de la ubicación de puntos a partir de un sistema de referencia en el plano.",
    "calidad": "buena",
-   "orden": 7
+   "orden": 3
   },
   {
    "id": "matematica--e2--pr-a2t2s4",
@@ -7929,7 +7929,7 @@
    "trimestre": 2,
    "texto": "Resolución de situaciones que relacionen variables en tablas, gráficos y fórmulas en diversos contextos.",
    "calidad": "buena",
-   "orden": 8
+   "orden": 4
   },
   {
    "id": "matematica--e2--pr-a2t2s5",
@@ -7938,7 +7938,7 @@
    "trimestre": 2,
    "texto": "Producción de fórmulas para representar regularidades numéricas en N y analizar sus equivalencias.",
    "calidad": "buena",
-   "orden": 9
+   "orden": 5
   },
   {
    "id": "matematica--e1--pr-a2t3s1",
@@ -7947,7 +7947,7 @@
    "trimestre": 3,
    "texto": "Resolución de problemas que requieran del uso de las propiedades de la suma, resta, multiplicación y división entre naturales, incluyendo el caso de la proporcionalidad con constante natural.",
    "calidad": "buena",
-   "orden": 10
+   "orden": 6
   },
   {
    "id": "matematica--e3--pr-a2t3s1",
@@ -7956,7 +7956,7 @@
    "trimestre": 3,
    "texto": "Construcción de circunferencias, círculos, mediatrices y bisectrices como lugares geométricos.",
    "calidad": "buena",
-   "orden": 4
+   "orden": 1
   },
   {
    "id": "matematica--e3--pr-a2t3s2",
@@ -7965,7 +7965,7 @@
    "trimestre": 3,
    "texto": "Resolución de problemas que requieran cálculo de perímetro y área de figuras geométricas más usuales, con unidades de medidas convencionales o no (incluir cálculo del área de una figura por sumas o diferencia de otras áreas).",
    "calidad": "buena",
-   "orden": 5
+   "orden": 2
   },
   {
    "id": "matematica--e3--pr-a2t3s3",
@@ -7974,7 +7974,7 @@
    "trimestre": 3,
    "texto": "Reconocimiento de triángulos y cuadriláteros elementos y clasificación según sus lados y ángulos.",
    "calidad": "buena",
-   "orden": 6
+   "orden": 3
   },
   {
    "id": "matematica--e3--pr-a2t3s4",
@@ -7983,7 +7983,7 @@
    "trimestre": 3,
    "texto": "Reconocimiento de la propiedad de la suma de los ángulos interiores de triángulos y cuadriláteros a través de demostraciones sencillas.",
    "calidad": "buena",
-   "orden": 7
+   "orden": 4
   },
   {
    "id": "matematica--e3--pr-a2t3s5",
@@ -7992,7 +7992,7 @@
    "trimestre": 3,
    "texto": "Relaciones entre distintos tipos de ángulos a partir de las propiedades del paralelogramo, para calcular sus respectivos valores de amplitud.",
    "calidad": "buena",
-   "orden": 8
+   "orden": 5
   },
   {
    "id": "matematica--e1--pr-a3t1s1",
@@ -8001,7 +8001,7 @@
    "trimestre": 1,
    "texto": "Resolución de situaciones problemáticas utilizando números racionales, las operaciones y sus propiedades, seleccionando el tipo de cálculo y la forma de expresar los números involucrados, incluyendo su encuadramiento.",
    "calidad": "buena",
-   "orden": 11
+   "orden": 4
   },
   {
    "id": "matematica--e1--pr-a3t1s2",
@@ -8010,7 +8010,7 @@
    "trimestre": 1,
    "texto": "Resolución de problemas de varios pasos, sobre los diferentes sentidos de las cuatro operaciones, en distintos campos numéricos, que impliquen utilizar variados procedimientos.",
    "calidad": "buena",
-   "orden": 12
+   "orden": 5
   },
   {
    "id": "matematica--e3--pr-a3t1s1",
@@ -8019,7 +8019,7 @@
    "trimestre": 1,
    "texto": "Análisis y construcción de figuras, argumentando en base a propiedades usando la noción de lugar geométrico para justificar construcciones (rectas paralelas y perpendiculares con regla y compas, circunferencia que pasa por tres puntos, entre otras)",
    "calidad": "buena",
-   "orden": 9
+   "orden": 1
   },
   {
    "id": "matematica--e3--pr-a3t1s2",
@@ -8028,7 +8028,7 @@
    "trimestre": 1,
    "texto": "Producción de argumentos que permitan validar las propiedades de las figuras (en relación con ángulos interiores, bisectrices, diagonales, entre otras)",
    "calidad": "buena",
-   "orden": 10
+   "orden": 2
   },
   {
    "id": "matematica--e3--pr-a3t1s3",
@@ -8037,7 +8037,7 @@
    "trimestre": 1,
    "texto": "Resolución de problemas que requieran el concepto y cálculo del área y /o perímetro de polígonos regulares más usuales",
    "calidad": "buena",
-   "orden": 11
+   "orden": 3
   },
   {
    "id": "matematica--e1--pr-a3t2s1",
@@ -8046,7 +8046,7 @@
    "trimestre": 2,
    "texto": "Resolución de problemas de varios pasos, sobre los diferentes sentidos de las cuatro operaciones, en distintos campos numéricos, que impliquen utilizar variados procedimientos.",
    "calidad": "buena",
-   "orden": 13
+   "orden": 6
   },
   {
    "id": "matematica--e2--pr-a3t2s1",
@@ -8055,7 +8055,7 @@
    "trimestre": 2,
    "texto": "Análisis de la relación de dependencia entre variables, a partir de sus distintas representaciones.",
    "calidad": "buena",
-   "orden": 10
+   "orden": 1
   },
   {
    "id": "matematica--e2--pr-a3t2s2",
@@ -8064,7 +8064,7 @@
    "trimestre": 2,
    "texto": "Interpretación de gráficos y fórmulas que modelicen variaciones lineales y no lineales en función de la situación planteada.",
    "calidad": "buena",
-   "orden": 11
+   "orden": 2
   },
   {
    "id": "matematica--e2--pr-a3t2s3",
@@ -8073,7 +8073,7 @@
    "trimestre": 2,
    "texto": "Identificación del punto que pertenece a una función que valida su expresión algebraica (fórmula).",
    "calidad": "buena",
-   "orden": 12
+   "orden": 3
   },
   {
    "id": "matematica--e2--pr-a3t2s4",
@@ -8082,7 +8082,7 @@
    "trimestre": 2,
    "texto": "Modelización de variaciones lineales expresadas mediante gráficos y/o formulas, interpretando sus parámetros.",
    "calidad": "buena",
-   "orden": 13
+   "orden": 4
   },
   {
    "id": "matematica--e2--pr-a3t2s5",
@@ -8091,7 +8091,7 @@
    "trimestre": 2,
    "texto": "Resolución de problemas que requieran plantear y hallar la solución de una ecuación lineal con una variable.",
    "calidad": "buena",
-   "orden": 14
+   "orden": 5
   },
   {
    "id": "matematica--e1--pr-a3t3s1",
@@ -8100,7 +8100,7 @@
    "trimestre": 3,
    "texto": "Resolución de problemas de varios pasos, sobre los diferentes sentidos de las operaciones, en distintos campos numéricos, que impliquen utilizar variados procedimientos.",
    "calidad": "buena",
-   "orden": 14
+   "orden": 6
   },
   {
    "id": "matematica--e4--pr-a3t3s1",
@@ -8109,7 +8109,7 @@
    "trimestre": 3,
    "texto": "Organización de datos para estudiar un fenómeno y/o tomar decisiones analizando el proceso de relevamiento y los modos de comunicar los resultados obtenidos.",
    "calidad": "buena",
-   "orden": 9
+   "orden": 1
   },
   {
    "id": "matematica--e4--pr-a3t3s2",
@@ -8118,7 +8118,7 @@
    "trimestre": 3,
    "texto": "Elaboración de gráficos estadísticos (histogramas, polígonos de frecuencia, gráficos circulares).",
    "calidad": "buena",
-   "orden": 10
+   "orden": 2
   },
   {
    "id": "matematica--e4--pr-a3t3s3",
@@ -8127,7 +8127,7 @@
    "trimestre": 3,
    "texto": "Resolución de problemas que requieran leer, interpretar y extraer información de un gráfico estadístico.",
    "calidad": "buena",
-   "orden": 11
+   "orden": 3
   },
   {
    "id": "matematica--e4--pr-a3t3s4",
@@ -8136,7 +8136,7 @@
    "trimestre": 3,
    "texto": "Cálculo de valores estadísticos representativos con el uso de recursos tecnológicos.",
    "calidad": "buena",
-   "orden": 12
+   "orden": 4
   },
   {
    "id": "matematica--e4--pr-a3t3s5",
@@ -8145,7 +8145,7 @@
    "trimestre": 3,
    "texto": "Reconocimiento y uso de la probabilidad como un modo de cuantificar la incertidumbre en situaciones problemáticas.",
    "calidad": "buena",
-   "orden": 13
+   "orden": 5
   }
  ],
  "contenidos": [

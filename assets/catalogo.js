@@ -143,8 +143,10 @@ const Catalogo = (function () {
 
   /* ---------- Saberes ---------- */
 
-  // Saberes visibles de un espacio para un año, repartidos por trimestre y en el
-  // orden del diseño (eje, luego saber). Si el espacio no diferencia por año
+  // Saberes visibles de un espacio para un año, repartidos por trimestre. Dentro
+  // de cada trimestre van por «orden», que es la posición que les dio el equipo
+  // (el ciclado de la materia), no agrupados por eje: en Matemática los ejes se
+  // intercalan a propósito. Si el espacio no diferencia por año
   // (saberes_por_ciclo), se toman los saberes con anio null.
   function saberesPorTramo(espacioId, anio) {
     const clave = espacioId + '|' + anio;
@@ -159,6 +161,9 @@ const Catalogo = (function () {
           const t = [1, 2, 3].includes(s.trimestre) ? s.trimestre : 1;
           tramos[t].push(s);
         }
+      }
+      for (const t of [1, 2, 3]) {
+        tramos[t].sort((a, b) => (a.orden || 0) - (b.orden || 0) || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
       }
     }
     cacheTramos.set(clave, tramos);

@@ -414,19 +414,29 @@ def reemplazar(catalogo: dict, espacio: str, saberes: list[dict]) -> dict:
     catalogo["saberes"] = [s for s in catalogo["saberes"] if s["id"] not in viejos]
     catalogo["contenidos"] = [c for c in catalogo["contenidos"] if c["saber_id"] not in viejos]
 
+    # El orden es el de la grilla: el equipo ordenó los saberes de cada
+    # trimestre a propósito, porque es el ciclado de la materia. En Matemática
+    # los ejes se intercalan, así que no se puede ordenar por eje. «orden» es la
+    # posición del saber dentro de su año y trimestre, contada de arriba abajo.
+    posicion: dict[tuple, int] = {}
+    for s in sorted(saberes, key=lambda x: (x["anio"], x["trimestre"], x["fila"])):
+        clave = (s["anio"], s["trimestre"])
+        posicion[clave] = posicion.get(clave, 0) + 1
+        s["orden"] = posicion[clave]
+
     nuevos_saberes, nuevos_contenidos = [], []
     cuenta: dict[tuple, int] = {}
-    orden_eje: dict[str, int] = {}
+    # Los id se siguen contando por eje, como cuando se cargaron por primera
+    # vez: cambiarlos ahora movería las respuestas de un saber a otro.
     for s in sorted(saberes, key=lambda x: (x["anio"], x["trimestre"], x["eje"], x["fila"])):
         eje = ejes[s["eje"]]
         clave = (eje["id"], s["anio"], s["trimestre"])
         cuenta[clave] = cuenta.get(clave, 0) + 1
-        orden_eje[eje["id"]] = orden_eje.get(eje["id"], 0) + 1
         sid = f'{eje["id"]}--pr-a{s["anio"]}t{s["trimestre"]}s{cuenta[clave]}'
         s["id"] = sid
         nuevos_saberes.append({
             "id": sid, "eje_id": eje["id"], "anio": s["anio"], "trimestre": s["trimestre"],
-            "texto": s["texto"], "calidad": "buena", "orden": orden_eje[eje["id"]],
+            "texto": s["texto"], "calidad": "buena", "orden": s["orden"],
         })
         for i, t in enumerate(s["contenidos"], 1):
             nuevos_contenidos.append({

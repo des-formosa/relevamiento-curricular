@@ -183,6 +183,19 @@ Va de 7 (Físico-Química 1°) a 65 (Matemática 1°). Por eso la carga se recor
 progreso cuenta sobre el tramo: «Saber 3 de 27» en Matemática y «Saber 1 de 4» en Historia 1°
 usan exactamente la misma pantalla.
 
+**6. El orden de los saberes lo decide el equipo, no el eje.**
+Dentro de cada trimestre, los saberes van en el orden en que los puso el equipo: es el ciclado
+de la materia, y lo armaron así a propósito. En Matemática la grilla intercala ejes (tres de
+Geometría, después dos de Números), así que ordenar por eje lo desarmaba. `saberes.orden` es
+la **posición del saber dentro de su año y trimestre**, y solo se compara ahí adentro. Lo usan
+igual el formulario (lista del trimestre y recorrido), el panel (Detalle y numeración), el
+editor, la planilla y la exportación. El Mapa de calor sigue con una fila por eje, en el orden
+del diseño, porque su pregunta es por eje.
+
+Para las 14 materias de la Resolución se numeró de corrido el orden que ya se veía (por eje);
+en Lengua y Matemática sale de la fila de la grilla (`convertir.py`). Los id **no** cambiaron:
+se siguen contando por eje, como cuando se cargaron.
+
 ### Saberes priorizados (Lengua y Matemática)
 
 El 23/09/2026 el equipo técnico rehízo **Lengua y Matemática** con los saberes que priorizó el
@@ -221,7 +234,13 @@ archiva si tienen respuestas. De paso limpia lo que haya entrado duplicado por e
 
 **Los id salen de la posición en la grilla.** Hasta que arranque la carga real el script se
 puede correr las veces que haga falta. Después no: reordenar la grilla movería los id y con
-ellos las respuestas.
+ellos las respuestas. El orden (`saberes.orden`) también sale de la grilla, de arriba abajo
+dentro de cada año y trimestre; si después del 26 hay que reordenar, se hace desde el editor o
+con la planilla, no volviendo a correr el script.
+
+Ojo al volver a correrlo: compara contra los saberes que ya están en el catálogo, que ahora son
+los priorizados, así que `revision.md` sale sin la lista de ejes dudosos. Si hace falta, se
+restaura con `git checkout datos/priorizados/revision.md`.
 
 ### Regenerar el catálogo
 
@@ -282,6 +301,10 @@ Consecuencias que conviene tener presentes:
 ## Flujo del docente
 
 Nueve pantallas, una decisión por pantalla. **Sin login, sin registro, sin contraseñas.**
+Todas tienen «Volver», también en escritorio, salvo la bienvenida, que es la primera. En la
+confirmación, «Volver» abre «Lo que enviaste»: el resumen de la materia recién mandada, con
+«Enviar de nuevo» (reemplaza el envío anterior, por la `clave`). Si vuelve sin reenviar, vale
+lo que ya había mandado.
 
 Se usa desde el celular tanto como desde la computadora: diseñar mobile-first.
 
@@ -304,8 +327,9 @@ están escritas a mano. Si una materia y año no tienen saberes visibles (hoy: E
 
 ### Pantalla 7 — carga de contenidos
 
-**Primero, la lista del trimestre.** Antes de cada tramo aparecen todos sus saberes, agrupados
-por eje, como casillas **ya tildadas**: el docente destilda los que no trabaja y toca «Seguir
+**Primero, la lista del trimestre.** Antes de cada tramo aparecen todos sus saberes, en el
+orden del equipo, como casillas **ya tildadas** (los seguidos del mismo eje van bajo un título;
+si los ejes se intercalan, el eje va dentro de cada casilla): el docente destilda los que no trabaja y toca «Seguir
 con los 11». Es más rápido que llegar a cada saber y tocar «No trabajo este saber», y en
 Matemática o Lengua, con 20 saberes por trimestre, es lo que hace que no abandone. Arrancan
 tildadas porque lo esperable es que trabaje la mayoría: destildar es la excepción.
@@ -443,6 +467,12 @@ seguridad: el formulario nunca se queda sin catálogo. `Catalogo.origen()` dice 
 El `cacheControl` es de cinco minutos, así que una corrección tarda eso en verse; quien ya
 estaba cargando termina con el catálogo que bajó al entrar.
 
+**El orden se cambia con flechas.** El editor muestra los saberes por trimestre, cada uno con
+su lugar («3 de 12») y flechas para subirlo o bajarlo un lugar (`mover_saber()`). En el
+historial queda una sola línea por movimiento, con acción `orden` («Pasó del lugar 4 al 3 del
+1er trimestre»): el vecino que cede su lugar y la renumeración no se anotan. Un saber nuevo, o
+uno que cambia de trimestre, va al final del trimestre (`ultimo_orden()`).
+
 La barra del editor dice en qué estado está —«hay 4 cambios sin publicar», «todo publicado
 desde hace 2 horas, lo publicó fulano»— usando `estado_publicacion()`, que compara la última
 publicación contra la auditoría.
@@ -478,6 +508,12 @@ completarla en palabras del equipo. Se corrige en Excel y se sube acá mismo. Su
    trimestre fuera de 1 a 3, eje que no es de la materia, código de otra materia— cancela todo,
    y la pantalla dice cuál es y por qué.
 
+5. **El orden de las filas es el orden de los saberes** dentro de cada año y trimestre. Se
+   compara el orden relativo, no el número: bajar y subir sin tocar no cambia nada aunque haya
+   huecos por algo archivado. Si cambia, la vista previa dice «1 trimestre cambia el orden de sus
+   saberes» y con qué saber empieza. La hoja de instrucciones explica cómo mover una fila y avisa
+   que ordenar con el filtro por otra columna desarma el orden.
+
 El eje se acepta como lo escriba el equipo: su id, «EJE II», «Eje II: Lectura…», «2» o el
 nombre sin el número («Literatura») — `eje_desde_texto()`. El importador también entiende un
 Excel con **una fila por contenido** (como el que armó el equipo para Lengua): junta las filas
@@ -504,8 +540,8 @@ formulario solo entra por `registrar_aporte`.
 
 Son veinte personas que entran cada tanto, no todos los días. En vez de un instructivo que
 nadie lee, el panel se explica solo: ilumina una parte de la pantalla y dice qué mira, con
-«Saltar», «Anterior» y «Siguiente». Diez pasos para leer los resultados y diez para editar el
-catálogo.
+«Saltar», «Anterior» y «Siguiente». Diez pasos para leer los resultados y once para editar el
+catálogo (el último agregado: el orden de los saberes).
 
 Arranca solo la primera vez que se entra a cada pantalla (queda anotado en `localStorage`,
 claves `relevamiento.tour.<modo>.<versión>`) y se vuelve a ver desde «¿Cómo se usa?» en la
@@ -719,7 +755,7 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
   archiva nada; un saber corregido en sus cinco filas genera una sola edición y una sola
   entrada de auditoría; corregido en una sola fila, se rechaza por contradictorio
 - **Recorrido guiado del panel** (`assets/tour.js`): diez pasos para leer los resultados y
-  diez para editar el catálogo. Arranca solo la primera vez y se repite desde «¿Cómo se usa?»
+  once para editar el catálogo. Arranca solo la primera vez y se repite desde «¿Cómo se usa?»
 - Dashboard completo (`dashboard.html` + `assets/dashboard.js` + `assets/tablero.css`):
   ingreso con Supabase Auth, chequeo de `equipo_planificacion`, Detalle, Mapa de calor,
   datos de ejemplo, exportar a Excel y PDF
@@ -738,7 +774,25 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
   https://des-formosa.github.io/relevamiento-curricular/ (formulario) y
   https://des-formosa.github.io/relevamiento-curricular/dashboard.html (panel)
 
+- **El orden de los saberes es el del equipo** (24/09/2026): el formulario, el panel, el editor,
+  la planilla y la exportación ordenan por `saberes.orden` (posición en el año y trimestre), no
+  por eje. Lengua y Matemática toman el orden de las grillas. El editor mueve saberes con
+  flechas (`mover_saber()`, una línea `orden` en el historial) y la planilla toma el orden de sus
+  filas. Recorrido del editor en `v3`, con un paso sobre el orden. Probado contra PostgreSQL 16:
+  mover arriba y abajo, bordes, archivado rechazado, alta y cambio de trimestre al final, planilla
+  sin tocar = cero cambios, fila movida = «cambia el orden» y se aplica, saber nuevo entra en su
+  fila; instalación desde cero del `01` al `12` más el script de mantenimiento. En el navegador:
+  la lista y el recorrido de Matemática 1° siguen la grilla, el Mapa de calor mantiene los ejes
+  en orden, el panel refleja lo movido
+- **«Volver» en todas las pantallas del docente** (24/09/2026): en escritorio la carga y el
+  resumen lo escondían; la confirmación no tenía. Ahora vuelve a «Lo que enviaste»
+
 **Pendiente**
+- **El orden de los saberes en la base**, en el SQL Editor y en este orden (el `09` redefine
+  `panel_resultados()` del `04`, así que va después): `sql/04_vistas.sql`,
+  `sql/09_edicion_catalogo.sql`, `sql/11_importar_catalogo.sql`, `sql/12_reemplazar_materia.sql` y
+  después `sql/mantenimiento/2026-09-24_orden_de_los_saberes.sql` (el control del final tiene
+  que dar cero filas). Después, **Publicar** desde el panel
 - **Poner al día la base y los datos de ejemplo**, en el SQL Editor y en este orden:
   1. `sql/mantenimiento/2026-09-23_solo_priorizados.sql` (si no se corrió): tiene que dar
      Lengua 132 activos y Matemática 52, todos priorizados

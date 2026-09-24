@@ -19,7 +19,7 @@ const Tour = (function () {
   const CLAVE = 'relevamiento.tour.';
   // Subir la versión hace que el recorrido vuelva a aparecer solo una vez a
   // todos: se usa cuando cambia algo que el equipo ya había visto explicado.
-  const VERSION = 'v2';
+  const VERSION = 'v3';
 
   let capa = null;
   let pasos = [];
@@ -104,6 +104,12 @@ const Tour = (function () {
         texto: 'El lápiz abre el texto para editarlo y también deja cambiar el trimestre. Sirve para arreglar una transcripción que quedó mal.',
       },
       {
+        objetivo: '.ed-saber__flechas',
+        opcional: true,
+        titulo: 'El orden de los saberes',
+        texto: 'Cada trimestre muestra sus saberes en el orden en que los ve el docente: «3 de 12» es el tercero. Con las flechas lo subís o lo bajás un lugar. El cambio queda en el historial y, como todo, lo ven los docentes cuando publicás.',
+      },
+      {
         objetivo: '.ed-fila',
         opcional: true,
         titulo: 'Los contenidos sugeridos',
@@ -129,7 +135,7 @@ const Tour = (function () {
       {
         objetivo: '[data-accion="ar-abrir"]',
         titulo: 'Muchos cambios juntos: la planilla',
-        texto: 'Si hay que cambiar muchas cosas o rehacer la materia, es más fácil en Excel. Acá bajás la planilla de la materia, ya completa: una fila por saber y los contenidos al lado. La corregís y la subís acá mismo.',
+        texto: 'Si hay que cambiar muchas cosas o rehacer la materia, es más fácil en Excel. Acá bajás la planilla de la materia, ya completa: una fila por saber y los contenidos al lado. El orden de las filas es el orden de los saberes: para cambiarlo, movés la fila. La corregís y la subís acá mismo.',
       },
       {
         objetivo: '[data-accion="ar-abrir"]',

@@ -107,21 +107,23 @@ const Archivo = (function () {
       if (error) throw new Error(error.message);
       if (data && data.error) throw new Error(data.error);
 
-      // Una fila por saber activo, con sus contenidos activos. El orden de los
-      // ejes es el de la primera aparición: catalogo_filas ya viene ordenado.
+      // Una fila por saber activo, con sus contenidos activos. catalogo_filas
+      // ya viene en el orden del equipo (año, trimestre y ciclado): las filas
+      // salen así, y ese orden es el que vuelve cuando la suben.
       const ejes = [];
       const saberes = new Map();
       for (const f of data || []) {
-        if (!ejes.some((e) => e.id === f.eje_id)) ejes.push({ id: f.eje_id, nombre: f.eje });
+        if (!ejes.some((e) => e.id === f.eje_id)) ejes.push({ id: f.eje_id, nombre: f.eje, orden: Number(f.eje_orden) || 0 });
         if (f.saber_estado !== 'activo') continue;
         if (!saberes.has(f.saber_id)) {
           saberes.set(f.saber_id, { codigo: f.saber_id, anio: f.anio, trimestre: f.trimestre,
-            eje: f.eje, ejeOrden: ejes.findIndex((e) => e.id === f.eje_id), texto: f.saber, contenidos: [] });
+            eje: f.eje, posicion: saberes.size, texto: f.saber, contenidos: [] });
         }
         if (f.contenido && f.contenido_estado === 'activo') saberes.get(f.saber_id).contenidos.push(f.contenido);
       }
+      ejes.sort((a, b) => a.orden - b.orden);
       const lista = [...saberes.values()].sort((a, b) =>
-        (a.anio || 0) - (b.anio || 0) || a.trimestre - b.trimestre || a.ejeOrden - b.ejeOrden);
+        (a.anio || 0) - (b.anio || 0) || a.trimestre - b.trimestre || a.posicion - b.posicion);
 
       const nCont = Math.max(6, ...lista.map((s) => s.contenidos.length));
       const titulos = ['Año', 'Trimestre', 'Eje', 'Saber',
@@ -169,6 +171,9 @@ const Archivo = (function () {
       ['Saber', 'El texto completo del saber.'],
       ['Contenidos', 'Los que hagan falta, uno por columna. Si necesitás más, agregá columnas con el mismo título: «Contenido 11», «Contenido 12»…'],
       ['Código (no tocar)', 'Lo usa el sistema para reconocer cada saber. No lo cambies. En un saber nuevo, dejalo vacío. Si copiás una fila para hacer un saber nuevo, borrale el código.'],
+      ['', ''],
+      ['El orden', 'El orden de las filas es el orden en que el docente ve los saberes de cada trimestre: el de más arriba va primero. Para cambiarlo, cortá la fila entera y pegala donde va.'],
+      ['Cuidado al ordenar', 'No uses «Ordenar» del filtro sobre otra columna (por ejemplo, por Eje): cambiaría el orden de los saberes. Filtrar para ver un solo año sí se puede.'],
       ['', ''],
       ['Para agregar un saber', 'Agregá una fila con el código vacío.'],
       ['Para sacar un saber', 'Borrá la fila entera. No se pierde nada: queda archivado con sus respuestas.'],
@@ -409,6 +414,7 @@ const Archivo = (function () {
     ['saberes_se_mantienen', 'saber queda igual', 'saberes quedan igual'],
     ['saberes_corregidos', 'saber corregido', 'saberes corregidos'],
     ['saberes_se_mueven', 'saber cambia de trimestre, año o eje', 'saberes cambian de trimestre, año o eje'],
+    ['trimestres_reordenados', 'trimestre cambia el orden de sus saberes', 'trimestres cambian el orden de sus saberes'],
     ['saberes_vuelven', 'saber que estaba archivado vuelve', 'saberes que estaban archivados vuelven'],
     ['saberes_nuevos', 'saber nuevo', 'saberes nuevos'],
     ['saberes_salen', 'saber sale (queda archivado, con sus respuestas)', 'saberes salen (quedan archivados, con sus respuestas)'],

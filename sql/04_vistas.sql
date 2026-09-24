@@ -248,7 +248,7 @@ as $$
                  'no_trabajan', coalesce(nt.n, 0),
                  'contenidos',  coalesce(c.lista, '[]'::jsonb)
                )
-               order by s.eje_orden, s.orden
+               order by s.trimestre, s.orden, s.id
              )
         from sab s
         left join trabajan t     on t.saber_id = s.id

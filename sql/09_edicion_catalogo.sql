@@ -72,6 +72,12 @@ create table if not exists public.catalogo_auditoria (
   nota           text
 );
 
+-- 'orden' = el saber cambió de lugar dentro de su trimestre (mover_saber).
+-- Se agregó después: en una base que ya tenía la tabla, se reemplaza el check.
+alter table public.catalogo_auditoria drop constraint if exists catalogo_auditoria_accion_check;
+alter table public.catalogo_auditoria add constraint catalogo_auditoria_accion_check
+  check (accion in ('alta', 'edicion', 'orden', 'archivado', 'restaurado', 'baja'));
+
 create index if not exists ix_auditoria_momento  on public.catalogo_auditoria (momento desc);
 create index if not exists ix_auditoria_registro on public.catalogo_auditoria (tabla, registro_id);
 
@@ -118,7 +124,11 @@ begin
     if to_jsonb(old) = to_jsonb(new) then
       return new;                      -- update que no cambió nada
     end if;
-    v_accion := 'edicion';
+    -- Solo cambió de lugar: se anota aparte, para que el historial diga
+    -- «pasó del 4° lugar al 3°» y no una edición con el mismo texto
+    v_accion := case when tg_table_name = 'saberes'
+                          and to_jsonb(old) - 'orden' = to_jsonb(new) - 'orden'
+                     then 'orden' else 'edicion' end;
   end if;
 
   select u.email into v_email from auth.users u where u.id = auth.uid();
@@ -222,7 +232,9 @@ as $$
                           'calidad', s.calidad, 'orden', s.orden, 'estado', s.estado,
                           'respuestas', coalesce(rs.n, 0),
                           'contenidos', coalesce(c.lista, '[]'::jsonb))
-                        order by s.eje_orden, s.orden)
+                        -- El orden del equipo: por trimestre y, dentro, por
+                        -- «orden» (el ciclado), sin agrupar por eje
+                        order by s.trimestre, s.estado <> 'activo', s.orden, s.id)
                  from sab s
                  left join respuestas_saber rs on rs.saber_id = s.id
                  left join contenidos c        on c.saber_id = s.id
@@ -255,6 +267,26 @@ $$;
 
 revoke execute on function public.anotar_cambio(text) from public, anon;
 grant  execute on function public.anotar_cambio(text) to authenticated;
+
+
+-- El último lugar ocupado en un trimestre de una materia. «orden» cuenta
+-- dentro del año y el trimestre, no dentro del eje.
+create or replace function public.ultimo_orden(p_espacio_id text, p_anio smallint, p_trimestre smallint)
+returns integer
+language sql
+stable
+set search_path = ''
+as $$
+  select coalesce(max(s.orden), 0)
+    from public.saberes s
+    join public.ejes e on e.id = s.eje_id
+   where e.espacio_id = p_espacio_id
+     and s.anio is not distinct from p_anio
+     and s.trimestre = p_trimestre
+     and s.estado = 'activo';
+$$;
+
+revoke execute on function public.ultimo_orden(text, smallint, smallint) from public, anon;
 
 
 -- guardar_saber(payload): alta si no viene id, edición si viene.
@@ -320,20 +352,24 @@ begin
      where s.eje_id = v_eje_id and s.id like v_eje_id || '--n%';
     v_id := v_eje_id || '--n' || v_n;
 
-    select coalesce(max(s.orden), 0) + 1 into v_orden
-      from public.saberes s where s.eje_id = v_eje_id;
-    v_orden := coalesce((payload ->> 'orden')::smallint, v_orden);
+    -- Va al final de su trimestre. «orden» es la posición dentro del año y
+    -- el trimestre, sin importar el eje: es el ciclado que arma el equipo.
+    v_orden := coalesce((payload ->> 'orden')::smallint, public.ultimo_orden(v_espacio, v_anio, v_trimestre) + 1);
 
     insert into public.saberes (id, eje_id, anio, trimestre, texto, calidad, orden, estado)
     values (v_id, v_eje_id, v_anio, v_trimestre, v_texto, v_calidad, v_orden, 'activo');
   else
+    -- Si pasa a otro trimestre (o año) y no dice dónde, va al final
     update public.saberes s
        set eje_id    = v_eje_id,
            anio      = v_anio,
            trimestre = v_trimestre,
            texto     = v_texto,
            calidad   = v_calidad,
-           orden     = coalesce((payload ->> 'orden')::smallint, s.orden)
+           orden     = coalesce((payload ->> 'orden')::smallint,
+                         case when s.trimestre = v_trimestre and s.anio is not distinct from v_anio
+                              then s.orden
+                              else public.ultimo_orden(v_espacio, v_anio, v_trimestre) + 1 end)
      where s.id = v_id;
     if not found then
       raise exception 'El saber que querés editar no existe.' using errcode = '22023';
@@ -346,6 +382,91 @@ $$;
 
 revoke execute on function public.guardar_saber(jsonb) from public, anon;
 grant  execute on function public.guardar_saber(jsonb) to authenticated;
+
+
+-- mover_saber(id, hacia): sube (-1) o baja (+1) un lugar el saber dentro de su
+-- año y trimestre. Es el orden en que lo ve el docente: el equipo lo arma a
+-- propósito, porque es el ciclado de la materia.
+--
+-- Primero numera el trimestre de corrido (1, 2, 3…) por si quedaron huecos o
+-- empates, sin anotarlo: es la misma secuencia con otros números. Después
+-- intercambia el lugar con el vecino. En la auditoría queda solo el saber que
+-- se movió, no el vecino ni la renumeración: un cambio, una línea.
+create or replace function public.mover_saber(p_id text, p_hacia integer, p_nota text default null)
+returns jsonb
+language plpgsql
+volatile
+security definer
+set search_path = ''
+as $$
+declare
+  v_saber   record;
+  v_espacio text;
+  v_vecino  record;
+  v_lugar   integer;
+  v_total   integer;
+begin
+  if not public.es_equipo() then
+    raise exception 'Tu usuario no está en el equipo de Planificación.' using errcode = '42501';
+  end if;
+  if p_hacia not in (-1, 1) then
+    raise exception 'Solo se puede subir o bajar un lugar.' using errcode = '22023';
+  end if;
+
+  select s.* into v_saber from public.saberes s where s.id = p_id;
+  if v_saber.id is null then
+    raise exception 'El saber que querés mover no existe.' using errcode = '22023';
+  end if;
+  if v_saber.estado <> 'activo' then
+    raise exception 'Este saber está archivado: primero volvé a ofrecerlo.' using errcode = '22023';
+  end if;
+  select e.espacio_id into v_espacio from public.ejes e where e.id = v_saber.eje_id;
+
+  -- Numerar de corrido, sin auditoría
+  perform set_config('app.carga_masiva', 'on', true);
+  update public.saberes s
+     set orden = n.lugar
+    from (
+      select s2.id, row_number() over (order by s2.orden, s2.id) as lugar
+        from public.saberes s2
+        join public.ejes e on e.id = s2.eje_id
+       where e.espacio_id = v_espacio
+         and s2.anio is not distinct from v_saber.anio
+         and s2.trimestre = v_saber.trimestre
+         and s2.estado = 'activo'
+    ) n
+   where s.id = n.id and s.orden <> n.lugar;
+
+  select s.orden into v_lugar from public.saberes s where s.id = p_id;
+  select count(*) into v_total
+    from public.saberes s join public.ejes e on e.id = s.eje_id
+   where e.espacio_id = v_espacio and s.anio is not distinct from v_saber.anio
+     and s.trimestre = v_saber.trimestre and s.estado = 'activo';
+
+  select s.id, s.orden into v_vecino
+    from public.saberes s join public.ejes e on e.id = s.eje_id
+   where e.espacio_id = v_espacio and s.anio is not distinct from v_saber.anio
+     and s.trimestre = v_saber.trimestre and s.estado = 'activo'
+     and s.orden = v_lugar + p_hacia;
+  if v_vecino.id is null then
+    perform set_config('app.carga_masiva', 'off', true);
+    return jsonb_build_object('id', p_id, 'lugar', v_lugar, 'total', v_total, 'movido', false);
+  end if;
+
+  -- El vecino ocupa el lugar que deja este, sin anotarlo
+  update public.saberes set orden = v_lugar where id = v_vecino.id;
+  perform set_config('app.carga_masiva', 'off', true);
+
+  -- Este sí queda en la auditoría, como 'orden'
+  perform public.anotar_cambio(p_nota);
+  update public.saberes set orden = v_lugar + p_hacia where id = p_id;
+
+  return jsonb_build_object('id', p_id, 'lugar', v_lugar + p_hacia, 'total', v_total, 'movido', true);
+end;
+$$;
+
+revoke execute on function public.mover_saber(text, integer, text) from public, anon;
+grant  execute on function public.mover_saber(text, integer, text) to authenticated;
 
 
 -- guardar_contenido(payload): alta si no viene id, edición si viene.
@@ -503,6 +624,9 @@ as $$
                    'accion', a.accion,
                    'texto_antes', a.antes ->> 'texto',
                    'texto_despues', a.despues ->> 'texto',
+                   'orden_antes', a.antes ->> 'orden',
+                   'orden_despues', a.despues ->> 'orden',
+                   'trimestre', coalesce(a.despues, a.antes) ->> 'trimestre',
                    'nota', a.nota) as x
             from public.catalogo_auditoria a
            where (p_registro_id is null or a.registro_id = p_registro_id)
@@ -692,7 +816,7 @@ as $$
                  'no_trabajan', coalesce(nt.n, 0),
                  'contenidos',  coalesce(c.lista, '[]'::jsonb)
                )
-               order by s.eje_orden, s.orden
+               order by s.trimestre, s.orden, s.id
              )
         from sab s
         left join trabajan t     on t.saber_id = s.id

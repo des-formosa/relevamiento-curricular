@@ -934,6 +934,15 @@ mark.coincidencia {
   padding: 14px 2px 2px;
 }
 .lista-casillas__cabecera + .lista-casillas__eje { padding-top: 4px; }
+.casilla__eje {
+  display: block;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--ladrillo);
+  line-height: 1.35;
+}
 
 .casilla {
   display: flex;
@@ -1284,7 +1293,10 @@ mark.coincidencia {
     align-items: stretch;
     background: linear-gradient(to right, var(--blanco) 0, var(--blanco) 350px, var(--pista) 350px, var(--pista) 351.5px, transparent 351.5px);
   }
-  .pantalla--carga .subcabecera { display: none; }
+  /* «Volver» también en escritorio: el paso ya lo dice el lateral */
+  .pantalla--carga .subcabecera { width: calc(100% - 96px); max-width: 760px; height: 48px; margin: 14px auto 0; padding: 0; }
+  .pantalla--carga .subcabecera .volver { margin-left: -8px; }
+  .pantalla--carga .subcabecera .paso { display: none; }
   .lateral {
     display: flex;
     flex-direction: column;
@@ -1400,7 +1412,7 @@ mark.coincidencia {
   .pantalla--carga .cuerpo .nota-guardado { display: none; }
 
   /* Resumen en tres columnas */
-  .pantalla--resumen .subcabecera { display: none; }
+  .pantalla--resumen .subcabecera { height: 56px; padding: 8px 32px 0; }
   .pantalla--resumen .cuerpo { padding: 28px 40px 28px; gap: 20px; min-height: 0; }
   .resumen__encabezado {
     display: flex;
