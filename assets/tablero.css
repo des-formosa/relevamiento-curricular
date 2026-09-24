@@ -1511,3 +1511,6 @@ body.tour-abierto { overflow: hidden; }
 /* El botón que vuelve a abrirlo */
 .t-ayuda { border-color: var(--borde); }
 .t-ayuda:hover { border-color: var(--verde); color: var(--verde); }
+
+/* Datos para que el administrador compare con equipo_planificacion */
+.t-ingreso__datos { font-family: var(--texto); font-size: 13px; color: var(--t-gris-2); overflow-wrap: anywhere; margin: 0; }

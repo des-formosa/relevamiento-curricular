@@ -166,7 +166,10 @@
     const sesion = data && data.session;
     if (!sesion) { estado.pantalla = 'ingreso'; estado.usuario = null; render(); return; }
     estado.usuario = sesion.user;
-    const { data: fila } = await sb.from('equipo_planificacion').select('usuario_id').eq('usuario_id', sesion.user.id).maybeSingle();
+    // Si la consulta falla no es lo mismo que no estar en el equipo: antes las
+    // dos cosas mostraban «no está habilitado» y no había forma de saber cuál era
+    const { data: fila, error: errorPermiso } = await sb.from('equipo_planificacion').select('usuario_id').eq('usuario_id', sesion.user.id).maybeSingle();
+    estado.errorPermiso = errorPermiso ? (errorPermiso.message || String(errorPermiso)) : null;
     if (!fila) { estado.pantalla = 'sin-permiso'; render(); return; }
     estado.pantalla = 'panel';
     Editor.iniciar(sb, { render, refrescar: () => Editor.cargar(estado.espacio_id, estado.anio) });
@@ -689,12 +692,24 @@
   }
 
   function pantallaSinPermiso() {
+    const u = estado.usuario || {};
+    const e = estado.errorPermiso;
+    // Un reloj adelantado o atrasado hace que la base rechace la sesión
+    const reloj = e && /future|iat|clock|expired|exp/i.test(e);
+    const titulo = e ? 'No pudimos comprobar tu usuario' : 'Tu usuario todavía no está habilitado';
+    const texto = !e
+      ? `Entraste como <strong>${esc(u.email || '')}</strong>, pero ese usuario no está en el equipo de Planificación. Pedile al administrador que lo agregue y volvé a entrar.`
+      : reloj
+        ? 'La fecha y la hora de esta computadora no coinciden con las reales, y por eso la base no acepta la sesión. Corregilas (en Windows: Configuración → Hora e idioma → «Establecer la hora automáticamente») y volvé a intentar.'
+        : 'La base de datos no respondió como esperábamos. Revisá la conexión y volvé a intentar. Si sigue igual, pasale al administrador los datos de abajo.';
     return `<div class="tablero t-ingreso">
       ${heroIngreso()}
       <section class="t-ingreso__cuerpo">
         <div class="t-ingreso__tarjeta">
-          <h2 class="t-ingreso__titulo">Tu usuario todavía no está habilitado</h2>
-          <p class="bajada">Entraste como <strong>${esc(estado.usuario ? estado.usuario.email : '')}</strong>, pero ese usuario no está en el equipo de Planificación. Pedile al administrador que lo agregue y volvé a entrar.</p>
+          <h2 class="t-ingreso__titulo">${titulo}</h2>
+          <p class="bajada">${texto}</p>
+          <p class="t-ingreso__datos">Para el administrador: ${esc(u.email || '')} · código ${esc(u.id || '')}${e ? ` · ${esc(e)}` : ''}</p>
+          ${e ? '<button type="button" class="boton boton--primario" data-accion="reintentar-permiso">Volver a intentar</button>' : ''}
           <button type="button" class="boton boton--secundario" data-accion="salir">Salir</button>
         </div>
       </section>
@@ -749,6 +764,7 @@
     if (d.accion.startsWith('ed-') || d.accion.startsWith('ar-')) { Editor.manejar(d.accion, d, objetivo); return; }
     switch (d.accion) {
       case 'salir': salir(); break;
+      case 'reintentar-permiso': estado.pantalla = 'cargando'; render(); verificarSesion(); break;
       case 'reintentar': cargarDatos(); break;
       case 'alternar-ejemplo': estado.ejemplo = !estado.ejemplo; escribirHash(); cargarDatos(); break;
       case 'tour': Tour.iniciar(estado.modo === 'catalogo' ? 'catalogo' : 'resultados'); break;
