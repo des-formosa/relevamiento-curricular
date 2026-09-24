@@ -181,6 +181,7 @@ strong { font-weight: 700; }
 .espaciador { flex-grow: 1; }
 
 .columna { display: flex; flex-direction: column; }
+.columna--8 { gap: 8px; }
 .columna--10 { gap: 10px; }
 .columna--12 { gap: 12px; }
 .columna--14 { gap: 14px; }
@@ -899,6 +900,93 @@ mark.coincidencia {
 .sugerencia__libre-titulo { font-size: 16.5px; font-weight: 800; color: var(--ocre); }
 .sugerencia__libre-texto { font-size: 16px; line-height: 1.35; color: var(--tinta-2); }
 
+/* ---------- Casillas: la lista del trimestre y las sugerencias ----------
+
+   Dos atajos que pidieron los docentes. En la lista del trimestre se
+   destildan de una vez los saberes que no se trabajan; en cada saber, las
+   sugerencias se tocan en vez de escribirse. Filas altas (56 px como mínimo),
+   casilla cuadrada y el texto completo: se usa con el pulgar y al sol. */
+.lista-casillas { display: flex; flex-direction: column; gap: 8px; }
+.lista-casillas__cabecera {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gris);
+  padding: 0 2px 2px;
+}
+.lista-casillas__cabecera .enlace { font-size: 15px; letter-spacing: 0; text-transform: none; }
+.lista-casillas__ayuda { font-weight: 600; letter-spacing: 0; text-transform: none; font-size: 14.5px; }
+.lista-casillas__cabecera--apilada { flex-direction: column; align-items: flex-start; gap: 3px; }
+.lista-casillas__cabecera--apilada .lista-casillas__ayuda { font-family: var(--texto); font-size: 15px; color: var(--tinta-2); }
+/* El eje, una sola vez arriba de sus saberes. El primero va pegado a la cabecera */
+.lista-casillas__eje {
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ladrillo);
+  line-height: 1.35;
+  padding: 14px 2px 2px;
+}
+.lista-casillas__cabecera + .lista-casillas__eje { padding-top: 4px; }
+
+.casilla {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  width: 100%;
+  min-height: 56px;
+  padding: 14px 14px 14px 12px;
+  background: var(--blanco);
+  border: 1.5px solid var(--borde-suave);
+  border-radius: var(--radio);
+  font-family: var(--ui);
+  color: var(--tinta);
+  text-align: left;
+  cursor: pointer;
+}
+.casilla:active { background: var(--crema-3); }
+.casilla--si { border-color: var(--verde); background: var(--verde-suave); }
+.casilla--si:active { background: var(--verde-suave-2); }
+.casilla--no { background: var(--crema-3); border-style: dashed; }
+.casilla__caja {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  margin-top: 1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--borde-campo);
+  border-radius: 2px;
+  background: var(--blanco);
+}
+.casilla--si .casilla__caja { background: var(--verde); border-color: var(--verde); }
+.casilla__cuerpo { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.casilla__eje {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ladrillo);
+  line-height: 1.3;
+}
+.casilla__texto { font-size: 17px; line-height: 1.35; }
+/* El enunciado del saber va en la letra de la Resolución, como en su pantalla */
+.casilla__texto--saber { font-family: var(--serif); font-size: 17.5px; line-height: 1.38; }
+.casilla--no .casilla__texto { color: var(--gris); }
+.casilla__no { font-size: 13.5px; font-weight: 700; color: var(--gris); }
+.casilla__aviso { font-size: 14px; font-weight: 700; color: var(--ocre); }
+
+.campo__etiqueta--otro { font-size: 16.5px; color: var(--tinta); }
+.conteo-contenidos--total { color: var(--verde); }
+.tramo__acciones { padding-top: 6px; }
+
 /* Fichas de contenido */
 .fichas { display: flex; flex-direction: column; gap: 12px; }
 .ficha {
@@ -1131,13 +1219,19 @@ mark.coincidencia {
 
   /* Columna centrada para las pantallas cortas */
   .pantalla--centrada .subcabecera,
-  .pantalla--centrada .cuerpo {
+  .pantalla--centrada .cuerpo,
+  .pantalla--tramo .subcabecera,
+  .pantalla--tramo .cuerpo {
     width: 100%;
     max-width: 560px;
     margin: 0 auto;
   }
-  .pantalla--centrada .subcabecera { margin-top: 18px; }
-  .pantalla--centrada .cuerpo { flex-grow: 0; padding-bottom: 60px; }
+  .pantalla--tramo .cuerpo { max-width: 640px; }
+  .pantalla--tramo .subcabecera { max-width: 640px; }
+  .pantalla--centrada .subcabecera,
+  .pantalla--tramo .subcabecera { margin-top: 18px; }
+  .pantalla--centrada .cuerpo,
+  .pantalla--tramo .cuerpo { flex-grow: 0; padding-bottom: 60px; }
 
   /* Bienvenida a dos columnas */
   .pantalla--bienvenida { flex-direction: row; }

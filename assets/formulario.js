@@ -154,6 +154,7 @@
     errorAnio: null,
     espacioPendiente: null,
     errores: {},
+    lista: null,            // { tramo, fuera: Set } — casillas de la lista del trimestre
   };
 
   function guardar() {
@@ -181,6 +182,27 @@
   const saberActual = () => (tramosActuales()[estado.tramo] || [])[estado.indice] || null;
   const registro = (saberId) => estado.saberes[saberId] || { contenidos: [], noTrabajado: false };
   const estaResuelto = (saberId) => { const r = registro(saberId); return r.noTrabajado || r.contenidos.length > 0; };
+
+  // Un saber que el docente destildó en la lista del trimestre ya está resuelto
+  // (no lo trabaja), y el recorrido de a uno lo saltea. El que se marca con «No
+  // trabajo este saber» adentro del recorrido, en cambio, sigue en el camino:
+  // si vuelve atrás, lo encuentra y puede arrepentirse.
+  const salteado = (s) => { const r = registro(s.id); return r.noTrabajado && r.desdeLista === true; };
+
+  // Próximo saber a visitar en el trimestre t, desde la posición «desde» y en
+  // la dirección «paso» (1 adelante, -1 atrás). -1 si no queda ninguno.
+  function visitable(t, desde, paso) {
+    const lista = tramosActuales()[t] || [];
+    for (let i = desde; i >= 0 && i < lista.length; i += paso) if (!salteado(lista[i])) return i;
+    return -1;
+  }
+
+  // Los saberes que cuentan para «Saber 3 de 7»: los que no se destildaron,
+  // más el que está en pantalla (al editar uno destildado desde el resumen).
+  function recorridoDelTramo(t) {
+    const actual = saberActual();
+    return (tramosActuales()[t] || []).filter((s) => !salteado(s) || (actual && s.id === actual.id));
+  }
 
   function tramoNoVacioDesde(t) {
     const tr = tramosActuales();
@@ -249,6 +271,7 @@
 
   function ir(pantalla) {
     estado.pantalla = pantalla;
+    ui.lista = null;          // la lista del trimestre se vuelve a armar desde lo guardado
     ui.hojaAbierta = false;
     ui.sugerenciaActiva = -1;
     ui.textoContenido = '';
@@ -280,18 +303,26 @@
       case 'sin-saberes': irAEleccionDeEspacio(); break;
       case 'tramo': {
         const previo = tramoNoVacioAntes(estado.tramo);
-        if (previo) { estado.tramo = previo; estado.indice = tr[previo].length - 1; ir('saber'); }
+        if (previo) {
+          // Al último saber que se recorrió del trimestre anterior; si los
+          // destildó todos, a la lista de ese trimestre
+          const i = visitable(previo, tr[previo].length - 1, -1);
+          estado.tramo = previo;
+          if (i >= 0) { estado.indice = i; ir('saber'); } else { estado.indice = 0; ir('tramo'); }
+        }
         else irAEleccionDeEspacio();
         break;
       }
-      case 'saber':
-        if (estado.volverA === 'resumen') { estado.volverA = null; ir('resumen'); }
-        else if (estado.volverA && typeof estado.volverA === 'object') {
+      case 'saber': {
+        if (estado.volverA === 'resumen') { estado.volverA = null; ir('resumen'); break; }
+        if (estado.volverA && typeof estado.volverA === 'object') {
           estado.tramo = estado.volverA.tramo; estado.indice = estado.volverA.indice; estado.volverA = null; ir('saber');
+          break;
         }
-        else if (estado.indice > 0) { estado.indice -= 1; ir('saber'); }
-        else ir('tramo');
+        const i = visitable(estado.tramo, estado.indice - 1, -1);
+        if (i >= 0) { estado.indice = i; ir('saber'); } else ir('tramo');
         break;
+      }
       case 'resumen': {
         if (estado.resumenDesde) {
           estado.tramo = estado.resumenDesde.tramo;
@@ -301,7 +332,11 @@
           break;
         }
         const ultimo = tramoNoVacioAntes(4);
-        if (ultimo) { estado.tramo = ultimo; estado.indice = tr[ultimo].length - 1; ir('saber'); }
+        if (ultimo) {
+          const i = visitable(ultimo, tr[ultimo].length - 1, -1);
+          estado.tramo = ultimo;
+          if (i >= 0) { estado.indice = i; ir('saber'); } else { estado.indice = 0; ir('tramo'); }
+        }
         else irAEleccionDeEspacio();
         break;
       }
@@ -414,9 +449,56 @@
     ir('tramo');
   }
 
+  // La lista del trimestre: todos marcados de entrada. Si arrancaran vacíos,
+  // quien toca «Seguir» sin leer quedaría como que no trabaja nada, y ese error
+  // no se ve. Marcados, un descuido se corrige solo: cada saber pide contenidos.
+  function listaDelTramo() {
+    const t = estado.tramo;
+    if (!ui.lista || ui.lista.tramo !== t) {
+      const fuera = new Set();
+      for (const s of tramosActuales()[t]) if (registro(s.id).noTrabajado) fuera.add(s.id);
+      ui.lista = { tramo: t, fuera };
+    }
+    return ui.lista;
+  }
+
+  function alternarEnLista(id) {
+    const { fuera } = listaDelTramo();
+    if (fuera.has(id)) fuera.delete(id); else fuera.add(id);
+    render();
+  }
+
+  function alternarTodaLaLista() {
+    const lista = listaDelTramo();
+    const saberes = tramosActuales()[estado.tramo];
+    if (lista.fuera.size === 0) saberes.forEach((s) => lista.fuera.add(s.id));
+    else lista.fuera.clear();
+    render();
+  }
+
+  // «Seguir» de la lista: recién acá se aplican las casillas. Destildar por
+  // error, mientras se mira la lista, no borra nada.
   function comenzarTramo() {
-    estado.indice = 0;
-    ir('saber');
+    const t = estado.tramo;
+    const { fuera } = listaDelTramo();
+    for (const s of tramosActuales()[t]) {
+      const r = registro(s.id);
+      if (fuera.has(s.id)) {
+        if (!salteado(s)) estado.saberes[s.id] = { contenidos: [], noTrabajado: true, desdeLista: true };
+      } else if (r.noTrabajado) {
+        estado.saberes[s.id] = { contenidos: [], noTrabajado: false };
+      }
+    }
+    guardar();
+    const i = visitable(t, 0, 1);
+    if (i >= 0) { estado.indice = i; ir('saber'); } else irAlProximoTramo();
+  }
+
+  function irAlProximoTramo() {
+    const proximo = tramoNoVacioDesde(estado.tramo + 1);
+    if (proximo) { estado.tramo = proximo; estado.indice = 0; ir('tramo'); return; }
+    estado.resumenDesde = null;
+    ir('resumen');
   }
 
   function siguienteSaber() {
@@ -426,15 +508,24 @@
     if (estado.volverA && typeof estado.volverA === 'object') {
       estado.tramo = estado.volverA.tramo; estado.indice = estado.volverA.indice; estado.volverA = null; ir('saber'); return;
     }
-    const tr = tramosActuales();
-    if (estado.indice + 1 < tr[estado.tramo].length) { estado.indice += 1; ir('saber'); return; }
-    const proximo = tramoNoVacioDesde(estado.tramo + 1);
-    if (proximo) { estado.tramo = proximo; estado.indice = 0; ir('tramo'); return; }
-    estado.resumenDesde = null;
-    ir('resumen');
+    const i = visitable(estado.tramo, estado.indice + 1, 1);
+    if (i >= 0) { estado.indice = i; ir('saber'); return; }
+    irAlProximoTramo();
   }
 
-  function agregarContenido({ contenido, textoLibre }) {
+  // Tocar una sugerencia la agrega; tocarla de nuevo la saca
+  function alternarSugerido(id) {
+    const s = saberActual();
+    const c = Catalogo.contenido(id);
+    if (!s || !c) return;
+    const reg = estado.saberes[s.id];
+    const tn = c.texto_normalizado || normalizarTexto(c.texto);
+    const pos = reg ? reg.contenidos.findIndex((x) => x.contenido_sugerido_id === id || normalizarTexto(x.texto) === tn) : -1;
+    if (pos >= 0) { quitarContenido(pos); return; }
+    agregarContenido({ contenido: c, sinFoco: true });
+  }
+
+  function agregarContenido({ contenido, textoLibre, sinFoco }) {
     const s = saberActual();
     if (!s) return;
     const reg = estado.saberes[s.id] || { contenidos: [], noTrabajado: false };
@@ -453,12 +544,15 @@
     if (!tn) return;
     if (!reg.contenidos.some((c) => normalizarTexto(c.texto) === tn)) reg.contenidos.push(nuevo);
     reg.noTrabajado = false;
+    delete reg.desdeLista;
     estado.saberes[s.id] = reg;
     ui.textoContenido = '';
     ui.sugerenciaActiva = -1;
     guardar();
     render();
-    if (esEscritorio()) { const campo = document.getElementById('contenido'); if (campo) campo.focus(); }
+    // Al tocar una sugerencia de la lista no se salta al campo de texto: en el
+    // teléfono abriría el teclado y taparía la lista que se está recorriendo
+    if (!sinFoco && esEscritorio()) { const campo = document.getElementById('contenido'); if (campo) campo.focus(); }
   }
 
   function quitarContenido(posicion) {
@@ -930,12 +1024,42 @@
     }).join('')}</div>`;
   }
 
+  // Una casilla de la lista del trimestre
+  function casillaSaber(s, adentro) {
+    const reg = registro(s.id);
+    // Si tenía contenidos cargados y lo destilda, se avisa antes de «Seguir»
+    const aviso = !adentro && reg.contenidos.length
+      ? `<span class="casilla__aviso">Tenía ${reg.contenidos.length} ${plural(reg.contenidos.length, 'contenido cargado: se va a borrar', 'contenidos cargados: se van a borrar')}</span>`
+      : '';
+    return `<button type="button" class="casilla ${adentro ? 'casilla--si' : 'casilla--no'}" role="checkbox" aria-checked="${adentro}" data-accion="marcar-saber" data-id="${esc(s.id)}">
+      <span class="casilla__caja" aria-hidden="true">${adentro ? Icono.check({ tam: 17, color: '#FFFFFF', grosor: 3.4 }) : ''}</span>
+      <span class="casilla__cuerpo">
+        <span class="casilla__texto casilla__texto--saber">${esc(s.texto)}</span>
+        ${adentro ? '' : '<span class="casilla__no">No lo trabajo</span>'}
+        ${aviso}
+      </span>
+    </button>`;
+  }
+
+  // Saberes seguidos del mismo eje, juntos: el eje se lee una vez y no en cada fila
+  function gruposPorEje(saberes) {
+    const grupos = [];
+    for (const s of saberes) {
+      const ultimo = grupos[grupos.length - 1];
+      if (ultimo && ultimo.ejeId === s.eje_id) ultimo.saberes.push(s);
+      else grupos.push({ ejeId: s.eje_id, eje: Catalogo.eje(s.eje_id), saberes: [s] });
+    }
+    return grupos;
+  }
+
   function pantallaTramo() {
     const t = estado.tramo;
     const tr = tramosActuales();
     const previo = tramoNoVacioAntes(t);
     const esPrimero = !previo;
     const cantidad = tr[t].length;
+    const { fuera } = listaDelTramo();
+    const marcados = cantidad - tr[t].filter((s) => fuera.has(s.id)).length;
     const listo = previo ? `
       <div class="tramo-listo">
         <div class="tramo-listo__icono">${Icono.check({ tam: 24, color: '#FFFFFF', grosor: 2.8 })}</div>
@@ -947,26 +1071,37 @@
     const etiqueta = esPrimero
       ? `${nombreEspacioCorto()} · ${textoAnio(estado.anio)}`
       : 'Seguimos con el';
-    const botonTexto = esPrimero ? 'Comenzar' : `Comenzar el ${ORDINAL[t]} trimestre`;
+    const botonTexto = marcados === 0
+      ? 'No trabajo ninguno, seguir'
+      : `Seguir con ${marcados === cantidad ? (cantidad === 1 ? 'este saber' : `los ${cantidad}`) : `${marcados} ${plural(marcados, 'saber', 'saberes')}`}`;
     const pie = esPrimero
       ? notaGuardado('Si tenés que cortar, lo cargado queda guardado')
       : `<button type="button" class="boton boton--enlace" data-accion="ver-resumen">Ver lo que cargué hasta acá</button>`;
-    return pantalla('pantalla--centrada', `
+    const explicacion = cantidad === 1
+      ? 'Este es el saber del trimestre. Si no lo trabajás, destildalo.'
+      : `Estos son los ${cantidad} saberes del trimestre. <strong>Destildá los que no trabajás</strong>; después vamos de a uno por los que quedan marcados.`;
+    return pantalla('pantalla--tramo', `
       ${cabecera()}
       ${subcabecera(`Tramo ${t} de 3`)}
-      <div class="cuerpo" style="gap:${esPrimero ? 26 : 22}px;padding-top:14px">
+      <div class="cuerpo" style="gap:20px;padding-top:14px">
         ${barrasTramos(t)}
         ${listo}
-        <div class="tramo__centro">
+        <div class="columna columna--8">
           <div class="etiqueta etiqueta--ladrillo etiqueta--12">${esc(etiqueta)}</div>
           <h1 class="titulo ${esPrimero ? 'titulo--grande' : 'titulo--grande-2'}">${TRIMESTRE_TITULO[t]}</h1>
-          <div class="tramo__cantidad">
-            <div class="tramo__numero ${esPrimero ? '' : 'tramo__numero--35'}">${cantidad}</div>
-            <div class="tramo__texto">${plural(cantidad, 'saber para revisar', 'saberes para revisar')}</div>
-          </div>
+          <p class="bajada">${explicacion}</p>
         </div>
-        <div class="columna columna--14">
-          <button type="button" class="boton boton--primario ${esPrimero ? '' : 'boton--21'}" data-accion="comenzar-tramo">${botonTexto} ${Icono.flecha()}</button>
+        <div class="lista-casillas">
+          ${cantidad > 1 ? `<div class="lista-casillas__cabecera">
+            <span>${marcados} de ${cantidad} ${plural(cantidad, 'marcado', 'marcados')}</span>
+            <button type="button" class="enlace" data-accion="marcar-todos">${fuera.size === 0 ? 'Destildar todos' : 'Marcar todos'}</button>
+          </div>` : ''}
+          ${gruposPorEje(tr[t]).map(({ eje, saberes }) => `
+            <div class="lista-casillas__eje">${esc(eje ? eje.nombre : '')}</div>
+            ${saberes.map((s) => casillaSaber(s, !fuera.has(s.id))).join('')}`).join('')}
+        </div>
+        <div class="columna columna--14 tramo__acciones">
+          <button type="button" class="boton boton--primario boton--21" data-accion="comenzar-tramo">${esc(botonTexto)} ${Icono.flecha()}</button>
           ${pie}
         </div>
       </div>
@@ -1009,8 +1144,35 @@
     </div>`;
   }
 
-  function fichasHTML(reg) {
-    return `<div class="fichas">${reg.contenidos.map((c, i) => c.tipo === 'libre' ? `
+  // Las sugerencias del saber, a la vista para tocar. Todas, en el orden en que
+  // las escribió el equipo y sin ninguna marcada de antemano: ordenarlas por lo
+  // que eligieron otros docentes empujaría a todos hacia la mayoría, y eso es
+  // justo lo que el relevamiento quiere medir, no inducir.
+  function sugeridosHTML(s, reg) {
+    const lista = Catalogo.contenidosDeSaber(s.id);
+    if (!lista.length) return '';
+    const elegidos = new Set(reg.contenidos.map((c) => normalizarTexto(c.texto)));
+    return `<div class="lista-casillas lista-casillas--sugeridos" role="group" aria-labelledby="titulo-sugeridos">
+      <div class="lista-casillas__cabecera lista-casillas__cabecera--apilada">
+        <span id="titulo-sugeridos">Sugerencias para este saber</span>
+        <span class="lista-casillas__ayuda">Tocá los que trabajás. Podés elegir varios.</span>
+      </div>
+      ${lista.map((c) => {
+        const si = elegidos.has(c.texto_normalizado || normalizarTexto(c.texto));
+        return `<button type="button" class="casilla casilla--contenido ${si ? 'casilla--si' : ''}" role="checkbox" aria-checked="${si}" data-accion="alternar-sugerido" data-id="${esc(c.id)}">
+          <span class="casilla__caja" aria-hidden="true">${si ? Icono.check({ tam: 17, color: '#FFFFFF', grosor: 3.4 }) : ''}</span>
+          <span class="casilla__cuerpo"><span class="casilla__texto">${esc(c.texto)}</span></span>
+        </button>`;
+      }).join('')}
+    </div>`;
+  }
+
+  // Las fichas muestran lo que no está en la lista de sugerencias: lo que
+  // escribió el docente. Lo sugerido ya se ve tildado arriba.
+  function fichasHTML(reg, ocultar) {
+    const visibles = reg.contenidos.map((c, i) => ({ c, i })).filter(({ c }) => !ocultar.has(normalizarTexto(c.texto)));
+    if (!visibles.length) return '';
+    return `<div class="fichas">${visibles.map(({ c, i }) => c.tipo === 'libre' ? `
       <div class="ficha ficha--libre">
         <div class="ficha__cuerpo">
           <div class="chip-libre">Agregado por vos</div>
@@ -1028,12 +1190,18 @@
     const tr = tramosActuales();
     const t = estado.tramo;
     const lista = tr[t];
+    const recorrido = recorridoDelTramo(t);
+    const actual = saberActual();
+    const posicion = actual ? recorrido.findIndex((x) => x.id === actual.id) + 1 : 0;
     const filas = [];
     let pendientesMostrados = 0;
     let pendientesOcultos = 0;
-    lista.forEach((s, i) => {
+    // Numera sobre el recorrido, igual que «Saber 2 de 5»: los destildados en
+    // la lista no se recorren, así que tampoco se cuentan acá
+    recorrido.forEach((s, k) => {
+      const i = lista.indexOf(s);
       const reg = registro(s.id);
-      const titulo = `${i + 1} · ${s.texto}`;
+      const titulo = `${k + 1} · ${s.texto}`;
       if (i === estado.indice) {
         filas.push(`<div class="lateral__saber lateral__saber--actual">${Icono.flecha({ tam: 20, grosor: 2.6 })}<div><div class="lateral__saber-titulo">${esc(titulo)}</div><div class="lateral__saber-sub">${reg.noTrabajado ? 'No trabajo este saber' : `${reg.contenidos.length} ${plural(reg.contenidos.length, 'contenido', 'contenidos')}`}</div></div></div>`);
       } else if (reg.noTrabajado) {
@@ -1048,13 +1216,15 @@
       }
     });
     if (pendientesOcultos) filas.push(`<div class="lateral__nota">${pendientesOcultos} ${plural(pendientesOcultos, 'saber más', 'saberes más')} en este tramo</div>`);
+    const fuera = lista.length - recorrido.length;
+    if (fuera) filas.push(`<div class="lateral__nota">${fuera} ${plural(fuera, 'saber destildado', 'saberes destildados')} en la lista</div>`);
     const otros = [1, 2, 3].filter((k) => k !== t && tr[k].length).map((k) =>
       `<div class="lateral__trimestre"><span>${ORDINAL[k]} TRIMESTRE</span><span>${tr[k].length} ${plural(tr[k].length, 'saber', 'saberes')}</span></div>`).join('');
     return `<aside class="lateral">
       <div class="progreso">
         <div class="etiqueta etiqueta--verde etiqueta--tal-cual">${esc(etiquetaTramo(t))}</div>
-        <div class="progreso__fila"><div class="progreso__actual">Saber ${estado.indice + 1} de ${lista.length}</div><div class="progreso__faltan">tramo ${t} de 3</div></div>
-        <div class="progreso__pista"><div class="progreso__barra" style="width:${Math.round(((estado.indice + 1) / lista.length) * 100)}%"></div></div>
+        <div class="progreso__fila"><div class="progreso__actual">Saber ${posicion} de ${recorrido.length}</div><div class="progreso__faltan">tramo ${t} de 3</div></div>
+        <div class="progreso__pista"><div class="progreso__barra" style="width:${Math.round((posicion / Math.max(recorrido.length, 1)) * 100)}%"></div></div>
       </div>
       <div class="lateral__lista">${filas.join('')}</div>
       <div class="lateral__lista">${otros}</div>
@@ -1066,15 +1236,19 @@
   function pantallaSaber() {
     const s = saberActual();
     if (!s) { ir('resumen'); return ''; }
-    const tr = tramosActuales();
     const t = estado.tramo;
-    const total = tr[t].length;
-    const n = estado.indice + 1;
+    // «Saber 2 de 5» cuenta solo los que quedaron marcados en la lista
+    const recorrido = recorridoDelTramo(t);
+    const total = recorrido.length;
+    const n = recorrido.findIndex((x) => x.id === s.id) + 1;
     const faltan = total - n;
     const reg = registro(s.id);
     const eje = Catalogo.eje(s.eje_id);
     const hayContenidos = reg.contenidos.length > 0;
     const escribiendo = ui.textoContenido.trim() !== '';
+    const sugeridos = Catalogo.contenidosDeSaber(s.id);
+    const haySugeridos = sugeridos.length > 0;
+    const textosSugeridos = new Set(sugeridos.map((c) => c.texto_normalizado || normalizarTexto(c.texto)));
     const editando = estado.volverA !== null;
     const textoSiguiente = editando ? (estado.volverA === 'resumen' ? 'Guardar y volver al resumen' : 'Guardar y seguir') : 'Siguiente saber';
 
@@ -1094,35 +1268,46 @@
         <div class="saber__texto">${esc(s.texto)}</div>
       </div>`;
 
+    // Con sugerencias a la vista, el campo de texto queda para lo que falta.
+    // Sin sugerencias (un saber que el equipo dejó sin), es la única vía.
+    const etiquetaCampo = haySugeridos
+      ? '¿Trabajás otro que no está en la lista?'
+      : '¿Qué contenidos trabajás de este saber?';
+    const placeholder = haySugeridos
+      ? 'Escribilo acá…'
+      : (hayContenidos ? 'Agregar otro contenido…' : (esEscritorio() ? 'Escribí un contenido y elegí de la lista…' : 'Escribí un contenido…'));
     const campo = `
       <div class="campo campo--10 campo-contenido">
-        <label class="campo__etiqueta campo__etiqueta--grande ${hayContenidos ? 'oculto-visual' : ''}" for="contenido">¿Qué contenidos trabajás de este saber?</label>
-        <div class="entrada-icono ${escribiendo ? 'entrada-icono--activa' : ''} ${hayContenidos && !escribiendo ? 'entrada-icono--60' : ''}">
+        <label class="campo__etiqueta ${haySugeridos ? 'campo__etiqueta--otro' : 'campo__etiqueta--grande'} ${hayContenidos && !haySugeridos ? 'oculto-visual' : ''}" for="contenido">${etiquetaCampo}</label>
+        <div class="entrada-icono ${escribiendo ? 'entrada-icono--activa' : ''} ${(hayContenidos || haySugeridos) && !escribiendo ? 'entrada-icono--60' : ''}">
           ${Icono.mas(escribiendo ? { color: '#0B4F4A' } : {})}
-          <input class="entrada-icono__input ${hayContenidos ? 'entrada-icono__input--18' : 'entrada-icono__input--19'}" id="contenido" type="text" autocomplete="off" autocorrect="off" autocapitalize="sentences" enterkeyhint="done" role="combobox" aria-autocomplete="list" aria-expanded="${escribiendo ? 'true' : 'false'}" aria-controls="sugerencias" placeholder="${hayContenidos ? 'Agregar otro contenido…' : (esEscritorio() ? 'Escribí un contenido y elegí de la lista…' : 'Escribí un contenido…')}" value="${esc(ui.textoContenido)}">
+          <input class="entrada-icono__input ${hayContenidos || haySugeridos ? 'entrada-icono__input--18' : 'entrada-icono__input--19'}" id="contenido" type="text" autocomplete="off" autocorrect="off" autocapitalize="sentences" enterkeyhint="done" role="combobox" aria-autocomplete="list" aria-expanded="${escribiendo ? 'true' : 'false'}" aria-controls="sugerencias" placeholder="${placeholder}" value="${esc(ui.textoContenido)}">
         </div>
       </div>
       <div id="sugerencias-contenedor">${sugerenciasHTML()}</div>`;
 
+    const fichas = fichasHTML(reg, textosSugeridos);
     let cuerpoCentral;
-    if (hayContenidos) {
-      cuerpoCentral = `
-        <div class="conteo-contenidos">${reg.contenidos.length} ${plural(reg.contenidos.length, 'contenido', 'contenidos')} en este saber</div>
-        ${fichasHTML(reg)}`;
-    } else if (escribiendo) {
+    if (escribiendo && !fichas) {
       cuerpoCentral = `<div class="ayuda">Lo que agregás vos queda marcado aparte. No es un error: nos sirve igual.</div>`;
-    } else {
+    } else if (fichas) {
+      cuerpoCentral = haySugeridos ? fichas
+        : `<div class="conteo-contenidos">${reg.contenidos.length} ${plural(reg.contenidos.length, 'contenido', 'contenidos')} en este saber</div>${fichas}`;
+    } else if (!haySugeridos) {
       cuerpoCentral = `<div class="caja-ayuda">Escribí las primeras letras y te mostramos los contenidos sugeridos para este saber.<br><br>Si el tuyo no aparece, igual lo podés agregar.</div>`;
+    } else {
+      cuerpoCentral = '';
     }
 
     const acciones = hayContenidos ? `
       <div class="columna columna--12 acciones-saber">
+        ${haySugeridos ? `<div class="conteo-contenidos conteo-contenidos--total">${reg.contenidos.length} ${plural(reg.contenidos.length, 'contenido elegido', 'contenidos elegidos')}</div>` : ''}
         <button type="button" class="boton boton--primario boton--21" data-accion="siguiente-saber">${esc(textoSiguiente)} ${Icono.flecha()}</button>
         <button type="button" class="boton boton--secundario solo-escritorio" data-accion="abrir-no-trabajo">No trabajo este saber</button>
         ${notaGuardado('Se guarda en este teléfono, aunque se corte internet')}
       </div>` : `
       <div class="columna columna--12 acciones-saber">
-        ${escribiendo ? '' : '<div class="ayuda ayuda--avanzar">Para pasar al siguiente saber, agregá al menos un contenido.</div>'}
+        ${escribiendo ? '' : `<div class="ayuda ayuda--avanzar">${haySugeridos ? 'Para pasar al siguiente saber, marcá al menos un contenido.' : 'Para pasar al siguiente saber, agregá al menos un contenido.'}</div>`}
         ${escribiendo ? '' : '<button type="button" class="boton boton--secundario" data-accion="abrir-no-trabajo">No trabajo este saber</button>'}
         ${notaGuardado('Se guarda en este teléfono, aunque se corte internet')}
       </div>`;
@@ -1148,6 +1333,7 @@
           <div class="cuerpo" style="gap:16px;padding-top:4px;padding-bottom:22px">
             ${progreso}
             ${tarjeta}
+            ${sugeridosHTML(s, reg)}
             ${campo}
             ${cuerpoCentral}
             <div class="espaciador"></div>
@@ -1449,6 +1635,9 @@
       case 'elegir-area': elegirArea(d.id); break;
       case 'elegir-espacio': elegirEspacio(d.id); break;
       case 'comenzar-tramo': comenzarTramo(); break;
+      case 'marcar-saber': alternarEnLista(d.id); break;
+      case 'marcar-todos': alternarTodaLaLista(); break;
+      case 'alternar-sugerido': alternarSugerido(d.id); break;
       case 'ver-resumen': estado.resumenDesde = { tramo: estado.tramo }; ir('resumen'); break;
       case 'elegir-sugerencia': agregarContenido({ contenido: Catalogo.contenido(d.id) }); break;
       case 'agregar-libre': agregarContenido({ textoLibre: ui.textoContenido }); break;

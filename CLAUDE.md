@@ -165,9 +165,9 @@ importa para los reportes.
 
 **3. El trimestre lo asigna el Ministerio, no el docente.**
 Cada saber ya trae su `trimestre` (1, 2 o 3). El docente **no lo elige**: la carga se recorre
-en tres tramos, uno por trimestre, con una pantalla corta antes de cada uno («Primer
-trimestre · 7 saberes para revisar») y el progreso contado sobre el tramo («Saber 3 de 7»).
-Un tramo sin saberes visibles se salta solo.
+en tres tramos, uno por trimestre. Antes de cada uno, la lista de sus saberes para destildar
+los que no trabaja (ver «Pantalla 7»), y el progreso contado sobre lo que quedó marcado
+(«Saber 3 de 7»). Un tramo sin saberes visibles se salta solo.
 
 La distribución se hizo respetando el orden de los ejes del diseño, de forma lineal, con un
 reparto aproximado de 40 % / 35 % / 25 %.
@@ -293,7 +293,7 @@ Se usa desde el celular tanto como desde la computadora: diseñar mobile-first.
 | 4 | Año | 1°, 2° o 3°; respetar `anios_dictados` |
 | 5 | Área | seis opciones |
 | 6 | Espacio curricular | filtrado por área |
-| 7 | Carga de contenidos | **la pantalla crítica**, ver abajo; antes de cada trimestre hay una pantalla de tramo |
+| 7 | Carga de contenidos | **la pantalla crítica**, ver abajo; antes de cada trimestre, la lista de sus saberes para destildar |
 | 8 | Resumen y chequeo | todo lo cargado, agrupado por trimestre, editable; si quedan saberes sin revisar no deja enviar |
 | 9 | Confirmación | "¿cargás otra materia?" → [misma escuela] [otra escuela] [terminé] |
 
@@ -304,14 +304,31 @@ están escritas a mano. Si una materia y año no tienen saberes visibles (hoy: E
 
 ### Pantalla 7 — carga de contenidos
 
-Se recorre **un saber por vez**, con barra de progreso ("Saber 3 de 9").
+**Primero, la lista del trimestre.** Antes de cada tramo aparecen todos sus saberes, agrupados
+por eje, como casillas **ya tildadas**: el docente destilda los que no trabaja y toca «Seguir
+con los 11». Es más rápido que llegar a cada saber y tocar «No trabajo este saber», y en
+Matemática o Lengua, con 20 saberes por trimestre, es lo que hace que no abandone. Arrancan
+tildadas porque lo esperable es que trabaje la mayoría: destildar es la excepción.
 
-Arriba, el eje y el texto completo del saber, bien legible. Abajo, un campo donde el docente
-empieza a escribir y se despliegan sugerencias del catálogo **de ese saber**. Toca una y queda
-agregada como ficha.
+Lo destildado queda como «no trabajo» (`noTrabajado: true, desdeLista: true` en el borrador)
+y **no se recorre**: el progreso («Saber 3 de 11») y la lista lateral de escritorio cuentan
+solo lo marcado. Se puede volver a tildar desde la lista (con «Volver» desde el primer saber)
+o desde el resumen. Un saber marcado como «no trabajo» con el botón, en cambio, sigue en el
+recorrido: lo decidió mirándolo, y ahí tiene que poder cambiarlo.
 
-Si lo que escribe no aparece, puede agregarlo igual con un botón "Agregar como está". Esos
-contenidos se guardan con `tipo = 'libre'` y se marcan visualmente distinto.
+**Después, un saber por vez.** Arriba, el eje y el texto completo del saber, bien legible.
+Abajo, **las sugerencias de ese saber a la vista, como casillas** («Tocá los que trabajás.
+Podés elegir varios.»): tocar tilda, volver a tocar destilda. Con cinco sugerencias por saber,
+completar un trimestre largo es tocar y seguir, sin escribir.
+
+Van en el orden en que las escribió el equipo, **ninguna viene tildada y no se ordenan por
+lo que más eligieron otros**: cualquiera de las dos cosas empujaría al docente hacia una
+respuesta y el relevamiento mediría la sugerencia, no lo que se enseña.
+
+Debajo, el campo «¿Trabajás otro que no está en la lista?». Sigue buscando en las sugerencias
+del saber mientras se escribe, y si lo que escribe no aparece, lo agrega con «Agregar como
+está». Esos contenidos se guardan con `tipo = 'libre'` y se ven como fichas aparte, marcadas
+distinto. Si el saber no tiene sugerencias, el campo es lo único y vuelve a su texto original.
 
 Sin límite de contenidos por saber.
 
