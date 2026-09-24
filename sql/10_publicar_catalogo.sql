@@ -124,7 +124,7 @@ security definer
 set search_path = ''
 as $$
   with ultima as (
-    select momento, usuario_email, saberes, contenidos
+    select momento, usuario_id, usuario_email, saberes, contenidos
       from public.catalogo_publicaciones
      order by momento desc
      limit 1
@@ -132,7 +132,10 @@ as $$
   select case when not public.es_equipo() then '{}'::jsonb else
     jsonb_build_object(
       'publicado_en',   (select momento from ultima),
-      'publicado_por',  (select coalesce(usuario_email, 'sistema') from ultima),
+      -- El nombre cargado en equipo_planificacion; si no tiene, el mail
+      'publicado_por',  (select coalesce((select nullif(btrim(ep.nombre), '') from public.equipo_planificacion ep
+                                           where ep.usuario_id = ultima.usuario_id),
+                                         usuario_email, 'sistema') from ultima),
       'saberes',        (select saberes from ultima),
       'contenidos',     (select contenidos from ultima),
       -- Sin publicaciones todavía, todo cambio cuenta como pendiente

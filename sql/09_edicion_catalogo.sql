@@ -648,7 +648,10 @@ as $$
           select jsonb_build_object(
                    'id', u.id,
                    'momento', u.momento,
-                   'usuario', coalesce(u.usuario_email, 'sistema'),
+                   -- El nombre cargado en equipo_planificacion; si no tiene, el mail
+                   'usuario', coalesce((select nullif(btrim(ep.nombre), '') from public.equipo_planificacion ep
+                                         where ep.usuario_id = u.usuario_id),
+                                       u.usuario_email, 'sistema'),
                    'tabla', u.tabla,
                    'registro_id', u.registro_id,
                    'accion', u.accion,
