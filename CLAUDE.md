@@ -791,8 +791,10 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
 - **El orden de los saberes en la base**, en el SQL Editor y en este orden (el `09` redefine
   `panel_resultados()` del `04`, así que va después): `sql/04_vistas.sql`,
   `sql/09_edicion_catalogo.sql`, `sql/11_importar_catalogo.sql`, `sql/12_reemplazar_materia.sql` y
-  después `sql/mantenimiento/2026-09-24_orden_de_los_saberes.sql` (el control del final tiene
-  que dar cero filas). Después, **Publicar** desde el panel
+  después `sql/mantenimiento/2026-09-24_orden_de_los_saberes.sql`. El control del final muestra
+  una fila por materia y tiene que decir «sí» en todas. Después, **Publicar** desde el panel.
+  La primera versión del script dependía de que el `09` estuviera corrido: si no, fallaba el
+  último paso y la base deshacía todo en silencio. Ahora se puede correr en cualquier orden
 - **Poner al día la base y los datos de ejemplo**, en el SQL Editor y en este orden:
   1. `sql/mantenimiento/2026-09-23_solo_priorizados.sql` (si no se corrió): tiene que dar
      Lengua 132 activos y Matemática 52, todos priorizados

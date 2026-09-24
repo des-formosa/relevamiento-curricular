@@ -14,17 +14,25 @@
 --     queda al final de su trimestre.
 --
 -- Solo cambia el número de orden: ni textos, ni ids, ni respuestas.
--- Antes de correrlo: 09_edicion_catalogo.sql (la auditoría tiene que aceptar
--- 'orden'). Se puede correr más de una vez. Después hay que tocar «Publicar».
+-- Se puede correr antes o después del 09 y más de una vez. Al final muestra,
+-- materia por materia, cuántos saberes quedaron en el orden del Excel.
+-- Después hay que tocar «Publicar» en el panel.
 --
 -- Generado desde datos/catalogo.json.
 -- ============================================================================
 
 begin;
 
+-- La auditoría tiene que aceptar 'orden' (lo agrega el 09; si este script se
+-- corre antes, sin esto fallaba el final y se deshacía todo)
+alter table public.catalogo_auditoria drop constraint if exists catalogo_auditoria_accion_check;
+alter table public.catalogo_auditoria add constraint catalogo_auditoria_accion_check
+  check (accion in ('alta', 'edicion', 'orden', 'archivado', 'restaurado', 'baja'));
+
 select set_config('app.carga_masiva', 'on', true);
 
-create temp table orden_nuevo (id text primary key, orden smallint) on commit drop;
+drop table if exists orden_nuevo;
+create temp table orden_nuevo (id text primary key, orden smallint);
 insert into orden_nuevo (id, orden) values
   ('biologia--e1--a1s1', 1),
   ('biologia--e1--a1s10', 1),
@@ -916,12 +924,20 @@ select 'saberes', 'todos', 'orden',
 
 commit;
 
--- Control: en cada materia, año y trimestre, ningún lugar repetido entre los
--- activos. Tiene que dar cero filas.
-select ec.nombre as materia, s.anio, s.trimestre, s.orden, count(*) as saberes_en_ese_lugar
+-- Control. Tiene que decir «sí» en todas las materias. Si una dice «no»,
+-- mirá las columnas: «fuera_de_orden» son saberes del Excel que no quedaron
+-- en su lugar; «no_estan_en_el_excel» son saberes activos que el Excel no
+-- tiene (por ejemplo, subidos con otra planilla).
+select ec.nombre as materia,
+       count(*) as saberes_activos,
+       count(*) filter (where v.id is not null and s.orden = v.orden) as en_su_lugar,
+       count(*) filter (where v.id is not null and s.orden <> v.orden) as fuera_de_orden,
+       count(*) filter (where v.id is null) as no_estan_en_el_excel,
+       case when count(*) filter (where v.id is null or s.orden <> v.orden) = 0 then 'sí' else 'no' end as bien
   from public.saberes s
   join public.ejes e on e.id = s.eje_id
   join public.espacios_curriculares ec on ec.id = e.espacio_id
+  left join orden_nuevo v on v.id = s.id
  where s.estado = 'activo'
- group by ec.nombre, s.anio, s.trimestre, s.orden
-having count(*) > 1;
+ group by ec.nombre, ec.orden
+ order by ec.orden;
