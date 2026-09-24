@@ -601,9 +601,18 @@ grant  execute on function public.archivar_catalogo(text, text, boolean, text) t
 -- 5. Historial para la pantalla de auditoría
 -- ----------------------------------------------------------------------------
 
+-- Cada cambio dice de qué materia, año y trimestre es, y se puede filtrar
+-- por eso. La materia sale del saber: el del registro si es un saber, o el
+-- saber del contenido si es un contenido. Año y trimestre, los que tenía el
+-- saber en ese cambio (o los de hoy, para un contenido).
+drop function if exists public.historial_catalogo(integer, text);
+
 create or replace function public.historial_catalogo(
-  p_limite      integer default 100,
-  p_registro_id text default null
+  p_limite      integer  default 100,
+  p_registro_id text     default null,
+  p_espacio_id  text     default null,
+  p_anio        smallint default null,
+  p_trimestre   smallint default null
 )
 returns jsonb
 language sql
@@ -611,34 +620,56 @@ stable
 security definer
 set search_path = ''
 as $$
+  with filas as (
+    select a.*,
+           coalesce(a.despues, a.antes) as fila,
+           case when a.tabla = 'saberes' then a.registro_id
+                else coalesce(a.despues, a.antes) ->> 'saber_id' end as saber_id
+      from public.catalogo_auditoria a
+     where (p_registro_id is null or a.registro_id = p_registro_id)
+  ),
+  ubicadas as (
+    select f.*, ec.id as espacio_id, ec.nombre as materia,
+           case when f.tabla = 'saberes' then (f.fila ->> 'anio')::smallint else s.anio end as anio,
+           case when f.tabla = 'saberes' then (f.fila ->> 'trimestre')::smallint else s.trimestre end as trimestre
+      from filas f
+      left join public.saberes s on s.id = f.saber_id
+      left join public.ejes e on e.id = coalesce(case when f.tabla = 'saberes' then f.fila ->> 'eje_id' end, s.eje_id)
+      left join public.espacios_curriculares ec on ec.id = e.espacio_id
+  )
   select case when not public.es_equipo() then '[]'::jsonb else
     coalesce((
       select jsonb_agg(x order by x ->> 'momento' desc)
         from (
           select jsonb_build_object(
-                   'id', a.id,
-                   'momento', a.momento,
-                   'usuario', coalesce(a.usuario_email, 'sistema'),
-                   'tabla', a.tabla,
-                   'registro_id', a.registro_id,
-                   'accion', a.accion,
-                   'texto_antes', a.antes ->> 'texto',
-                   'texto_despues', a.despues ->> 'texto',
-                   'orden_antes', a.antes ->> 'orden',
-                   'orden_despues', a.despues ->> 'orden',
-                   'trimestre', coalesce(a.despues, a.antes) ->> 'trimestre',
-                   'nota', a.nota) as x
-            from public.catalogo_auditoria a
-           where (p_registro_id is null or a.registro_id = p_registro_id)
-           order by a.momento desc
+                   'id', u.id,
+                   'momento', u.momento,
+                   'usuario', coalesce(u.usuario_email, 'sistema'),
+                   'tabla', u.tabla,
+                   'registro_id', u.registro_id,
+                   'accion', u.accion,
+                   'texto_antes', u.antes ->> 'texto',
+                   'texto_despues', u.despues ->> 'texto',
+                   'orden_antes', u.antes ->> 'orden',
+                   'orden_despues', u.despues ->> 'orden',
+                   'materia', u.materia,
+                   'espacio_id', u.espacio_id,
+                   'anio', u.anio,
+                   'trimestre', u.trimestre,
+                   'nota', u.nota) as x
+            from ubicadas u
+           where (p_espacio_id is null or u.espacio_id = p_espacio_id)
+             and (p_anio is null or u.anio = p_anio or u.anio is null)   -- artísticas: todo el ciclo
+             and (p_trimestre is null or u.trimestre = p_trimestre)
+           order by u.momento desc
            limit greatest(1, least(coalesce(p_limite, 100), 500))
         ) t
     ), '[]'::jsonb)
   end;
 $$;
 
-revoke execute on function public.historial_catalogo(integer, text) from public, anon;
-grant  execute on function public.historial_catalogo(integer, text) to authenticated;
+revoke execute on function public.historial_catalogo(integer, text, text, smallint, smallint) from public, anon;
+grant  execute on function public.historial_catalogo(integer, text, text, smallint, smallint) to authenticated;
 
 
 -- ----------------------------------------------------------------------------

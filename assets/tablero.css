@@ -1514,3 +1514,8 @@ body.tour-abierto { overflow: hidden; }
 
 /* Datos para que el administrador compare con equipo_planificacion */
 .t-ingreso__datos { font-family: var(--texto); font-size: 13px; color: var(--t-gris-2); overflow-wrap: anywhere; margin: 0; }
+
+/* Historial: dónde es cada cambio, y filtros */
+.ed-historial__filtros { display: flex; flex-wrap: wrap; gap: 10px 18px; margin-bottom: 14px; }
+.ed-historial__alcance { font-family: var(--texto); font-size: 14.5px; color: var(--t-gris); margin: 0 0 12px; }
+.ed-historial__donde { font-size: 12.5px; font-weight: 700; color: var(--verde); margin-top: 2px; }

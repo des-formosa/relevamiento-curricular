@@ -31,6 +31,7 @@ const Editor = (function () {
     guardando: false,
     confirmar: null,      // { tipo, id, texto, respuestas, archivar }
     historial: null,      // [] cuando está abierto
+    filtroHistorial: null, // { registro_id, espacio_id, anio, trimestre }
     verArchivados: false, // lo archivado se muestra solo si se pide
     movido: null,         // { id, hacia }: el saber recién movido, para resaltarlo y no perderlo de vista
     aviso: null,
@@ -225,9 +226,11 @@ const Editor = (function () {
       ? estado.historial.map((h) => `
         <div class="ed-historial__fila">
           <div class="ed-historial__cabecera">
-            <span class="ed-historial__accion ed-historial__accion--${esc(h.accion)}">${esc(h.accion)}</span>
+            <span class="ed-historial__accion ed-historial__accion--${esc(h.accion)}">${esc(({ alta: 'alta', edicion: 'edición', orden: 'orden', archivado: 'archivado', restaurado: 'restaurado', baja: 'baja' })[h.accion] || h.accion)}</span>
             <span class="ed-historial__fecha">${new Date(h.momento).toLocaleString('es-AR')}</span>
             <span class="ed-historial__usuario">${esc(h.usuario)}</span>
+          </div>
+          <div class="ed-historial__donde">${esc(dondeHistorial(h))}
           </div>
           ${h.accion === 'orden' && h.orden_antes && h.orden_despues
             ? `<div class="ed-historial__lugar">Pasó del lugar ${esc(h.orden_antes)} al ${esc(h.orden_despues)}${h.trimestre ? ` del ${ORDINAL[h.trimestre] || ''} trimestre` : ''}.</div>` : ''}
@@ -236,12 +239,36 @@ const Editor = (function () {
           ${h.nota ? `<div class="ed-historial__nota">${esc(h.nota)}</div>` : ''}
         </div>`).join('')
       : '<div class="ed-vacio">Todavía no hay cambios registrados.</div>';
+    const f = estado.filtroHistorial || {};
+    const filtros = f.registro_id
+      ? '<p class="ed-historial__alcance">Los cambios de este saber.</p>'
+      : `<div class="ed-historial__filtros">
+          <label class="ed-select-linea">Materia
+            <select class="ed-select" data-filtro-historial="espacio_id">
+              <option value="${esc(estado.espacio_id)}" ${f.espacio_id ? 'selected' : ''}>${esc(estado.nombreMateria || 'Esta materia')}</option>
+              <option value="" ${f.espacio_id ? '' : 'selected'}>Todas</option>
+            </select>
+          </label>
+          <label class="ed-select-linea">Año
+            <select class="ed-select" data-filtro-historial="anio">
+              <option value="">Todos</option>
+              ${[1, 2, 3].map((a) => `<option value="${a}" ${Number(f.anio) === a ? 'selected' : ''}>${a}°</option>`).join('')}
+            </select>
+          </label>
+          <label class="ed-select-linea">Trimestre
+            <select class="ed-select" data-filtro-historial="trimestre">
+              <option value="">Todos</option>
+              ${[1, 2, 3].map((t) => `<option value="${t}" ${Number(f.trimestre) === t ? 'selected' : ''}>${ORDINAL[t]}</option>`).join('')}
+            </select>
+          </label>
+        </div>`;
     return `<div class="t-velo" data-accion="ed-cerrar-historial"></div>
     <div class="t-panel ed-panel ed-panel--historial" role="dialog" aria-modal="true">
       <div class="t-panel__cabecera">
         <h2 class="t-panel__titulo">Historial de cambios</h2>
         <button type="button" class="t-panel__cerrar" data-accion="ed-cerrar-historial" aria-label="Cerrar">${svg('<path d="M6 6l12 12"/><path d="M18 6L6 18"/>', { tam: 21, color: '#55605A', grosor: 2.4 })}</button>
       </div>
+      ${filtros}
       <div class="ed-historial">${filas}</div>
     </div>`;
   }
@@ -428,13 +455,15 @@ const Editor = (function () {
         await llamar('archivar_catalogo', { p_tabla: 'contenidos_sugeridos', p_id: d.id, p_archivar: false }, 'Contenido restaurado.');
         break;
 
-      case 'ed-historial': {
-        const { data } = await sb.rpc('historial_catalogo', { p_limite: 100, p_registro_id: d.id || null });
-        estado.historial = data || [];
-        pintar();
+      case 'ed-historial':
+        // Desde la barra: arranca en la materia, el año y todos los trimestres
+        // que se están mirando. Desde un saber: solo ese saber.
+        estado.filtroHistorial = d.id
+          ? { registro_id: d.id }
+          : { espacio_id: estado.espacio_id, anio: estado.anioActual || estado.anio || null, trimestre: null };
+        await traerHistorial();
         break;
-      }
-      case 'ed-cerrar-historial': estado.historial = null; pintar(); break;
+      case 'ed-cerrar-historial': estado.historial = null; estado.filtroHistorial = null; pintar(); break;
       case 'ed-ver-archivados': estado.verArchivados = !estado.verArchivados; pintar(); break;
       case 'ed-mover': await mover(d.id, Number(d.hacia)); break;
       case 'ed-publicar': await publicar(); break;
@@ -464,6 +493,34 @@ const Editor = (function () {
       const t = document.querySelector('.ed-saber--movido');
       if (t) t.classList.remove('ed-saber--movido');
     }, 1600);
+  }
+
+  async function traerHistorial() {
+    const f = estado.filtroHistorial || {};
+    const { data } = await sb.rpc('historial_catalogo', {
+      p_limite: 200,
+      p_registro_id: f.registro_id || null,
+      p_espacio_id: f.espacio_id || null,
+      p_anio: f.anio ? Number(f.anio) : null,
+      p_trimestre: f.trimestre ? Number(f.trimestre) : null,
+    });
+    estado.historial = data || [];
+    pintar();
+  }
+
+  // Los filtros del historial son <select>: se escuchan por «change»
+  document.addEventListener('change', (e) => {
+    const campo = e.target.closest && e.target.closest('[data-filtro-historial]');
+    if (!campo || !estado.filtroHistorial) return;
+    estado.filtroHistorial[campo.dataset.filtroHistorial] = campo.value || null;
+    traerHistorial();
+  });
+
+  function dondeHistorial(h) {
+    if (!h.materia) return h.registro_id === 'todos' ? 'Todo el catálogo' : '';
+    return [h.materia, h.anio ? `${h.anio}° año` : 'todo el ciclo',
+      h.trimestre ? `${ORDINAL[h.trimestre]} trimestre` : '',
+      h.tabla === 'contenidos_sugeridos' ? 'contenido' : 'saber'].filter(Boolean).join(' · ');
   }
 
   function enfocar() {

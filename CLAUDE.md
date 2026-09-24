@@ -473,6 +473,11 @@ historial queda una sola línea por movimiento, con acción `orden` («Pasó del
 1er trimestre»): el vecino que cede su lugar y la renumeración no se anotan. Un saber nuevo, o
 uno que cambia de trimestre, va al final del trimestre (`ultimo_orden()`).
 
+**El historial dice dónde fue cada cambio** («Matemática · 1° año · 1er trimestre · contenido») y
+se filtra por materia, año y trimestre. Desde «Ver historial» arranca en la materia y el año que
+se están mirando; desde el reloj de un saber, solo ese saber. `historial_catalogo()` toma la
+materia del eje del saber (o del saber del contenido).
+
 La barra del editor dice en qué estado está —«hay 4 cambios sin publicar», «todo publicado
 desde hace 2 horas, lo publicó fulano»— usando `estado_publicacion()`, que compara la última
 publicación contra la auditoría.
@@ -788,6 +793,8 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
   resumen lo escondían; la confirmación no tenía. Ahora vuelve a «Lo que enviaste»
 
 **Pendiente**
+- **Correr `sql/09_edicion_catalogo.sql`** otra vez (24/09/2026): trae el historial con materia,
+  año y trimestre, y sus filtros. Sin eso, «Ver historial» del panel da error
 - **El orden de los saberes en la base**, en el SQL Editor y en este orden (el `09` redefine
   `panel_resultados()` del `04`, así que va después): `sql/04_vistas.sql`,
   `sql/09_edicion_catalogo.sql`, `sql/11_importar_catalogo.sql`, `sql/12_reemplazar_materia.sql` y
