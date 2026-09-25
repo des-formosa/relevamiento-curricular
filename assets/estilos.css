@@ -1480,10 +1480,10 @@ mark.coincidencia {
 /* ============================================================================
    Movimiento
 
-   Poco y corto: una pantalla nueva entra con un fundido de 220 ms, la barra de
-   progreso avanza, la casilla que se toca hace un «pop», la hoja sube desde
-   abajo y los botones se hunden un pixel al apretarlos. Nada se mueve solo ni
-   se repite. Con «reducir movimiento» del sistema, nada de esto corre.
+   Poco y corto: la barra de progreso avanza, la casilla que se toca hace un
+   «pop», la hoja sube desde abajo y los botones se hunden un pixel al
+   apretarlos. Entre pantallas no hay transición: se probó un fundido al tocar
+   «Siguiente» y molestaba. Con «reducir movimiento» del sistema, nada corre.
    ============================================================================ */
 :root { --curva: cubic-bezier(.2, .7, .2, 1); }
 
@@ -1492,7 +1492,6 @@ mark.coincidencia {
 @keyframes subir { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: none; } }
 @keyframes pop { 0% { transform: scale(.72); } 60% { transform: scale(1.12); } 100% { transform: scale(1); } }
 
-.entra { animation: entrar 220ms var(--curva) both; }
 .hoja.entra-abajo { animation: subir 260ms var(--curva) both; }
 .velo.entra-abajo { animation: aparecer 200ms ease both; }
 .casilla--tocada .casilla__caja { animation: pop 240ms var(--curva); }

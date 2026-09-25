@@ -1569,8 +1569,8 @@
 
   // Movimiento: solo lo que ayuda a ver qué cambió, y una sola vez. La
   // pantalla se redibuja entera en cada toque, así que cada animación mira si
-  // de verdad hay algo nuevo (otra pantalla, otro saber, la hoja que se abre,
-  // la casilla recién tocada). Con «reducir movimiento» no se anima nada (CSS).
+  // de verdad hay algo nuevo (la barra de progreso, la hoja que se abre, la
+  // casilla recién tocada). Con «reducir movimiento» no se anima nada (CSS).
   let vistaAnterior = null;
   let hojaAnterior = false;
 
@@ -1589,11 +1589,9 @@
     document.body.style.overflow = ui.hojaAbierta ? 'hidden' : '';
     enlazarEntradas();
 
+    // Sin transición entre pantallas: al tocar «Siguiente» la pantalla nueva
+    // tiene que estar ahí, no aparecer. Se probó un fundido y molestaba.
     const clave = claveVista();
-    if (clave !== vistaAnterior) {
-      const objetivo = app.querySelector('.carga__principal .cuerpo') || app.querySelector('.pantalla');
-      if (objetivo) objetivo.classList.add('entra');
-    }
     // La barra de progreso avanza desde donde estaba, en vez de saltar
     app.querySelectorAll('.progreso__barra').forEach((b, i) => {
       const destino = b.style.width;
