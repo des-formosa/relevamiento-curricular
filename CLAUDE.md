@@ -330,7 +330,7 @@ Dónde va, armado siempre igual (`marcaResap()` en `formulario.js` y en `dashboa
 **El logo es para fondo claro.** Su azul marino es el mismo de los botones, así que sobre un
 bloque azul se pierde. Por eso la bienvenida y el ingreso, que antes eran un panel oscuro,
 ahora son blancos y se separan del resto con un filete. En la bienvenida de escritorio, el
-título «Contanos qué contenidos trabajás» pasó a la tarjeta de la derecha, junto a
+título «Contanos qué saberes y contenidos trabajás» pasó a la tarjeta de la derecha, junto a
 «Comenzar»; a la izquierda quedó la marca.
 
 **Los colores salen del logo.** El principal es el azul marino (`--azul: #003380`, antes un

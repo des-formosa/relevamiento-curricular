@@ -787,7 +787,7 @@
         <div class="bienvenida__marca">${marcaResap()}</div>
         <div class="columna columna--12 solo-movil">
           <div class="etiqueta bienvenida__etiqueta">Educación Secundaria · Resolución 672</div>
-          <h1 class="bienvenida__titulo">Contanos qué contenidos trabajás</h1>
+          <h1 class="bienvenida__titulo">Contanos qué saberes y contenidos trabajás</h1>
           <p class="bajada bienvenida__bajada">Un relevamiento del Ministerio para conocer qué se enseña en cada escuela de la provincia y acompañar mejor a los equipos.</p>
         </div>
         <div class="espaciador solo-escritorio"></div>
@@ -812,7 +812,7 @@
         <div class="bienvenida__panel solo-escritorio">
           <div class="columna columna--12">
             <div class="etiqueta bienvenida__etiqueta">Educación Secundaria · Resolución 672</div>
-            <h1 class="bienvenida__titulo">Contanos qué contenidos trabajás</h1>
+            <h1 class="bienvenida__titulo">Contanos qué saberes y contenidos trabajás</h1>
           </div>
           <div class="columna columna--14">
             <p class="bajada">Un relevamiento provincial para conocer qué se enseña en cada escuela y acompañar mejor a los equipos docentes.</p>

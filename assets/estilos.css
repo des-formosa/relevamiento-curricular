@@ -1374,6 +1374,13 @@ mark.coincidencia {
   }
   .bienvenida__panel .bajada { font-size: 18px; line-height: 1.5; }
   .bienvenida__panel .boton--primario { height: 66px; font-size: 21px; }
+  /* Pantallas de 1024 a 1279 (notebooks chicas, tablets acostadas): la tarjeta
+     queda angosta y el título larga a cuatro renglones, que empujan «Comenzar»
+     debajo del pliegue. Menos margen alrededor, la misma letra. */
+  @media (max-width: 1279px) {
+    .bienvenida__cuerpo { padding: 32px 28px; }
+    .bienvenida__panel { padding: 32px 30px 30px; gap: 20px; }
+  }
 
   /* Carga con barra lateral (el fondo blanco del lateral cubre toda la altura) */
   .carga {
