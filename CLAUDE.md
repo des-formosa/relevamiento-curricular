@@ -326,6 +326,19 @@ Dónde va, armado siempre igual (`marcaResap()` en `formulario.js` y en `dashboa
 | Cabeceras (formulario y panel) | símbolo y palabra chicos (`resapChico()`), después de los logos del Ministerio y la DES. **No en el inicio del panel**, que ya tiene el grande: dos veces el mismo logo en una pantalla sobra |
 | PDF exportados | símbolo, palabra y nombre en una línea arriba de todo (`marcaDocumento()`) |
 | Pestaña del navegador | `resap-icono.png` (y `resap-icono-180.png` para el acceso directo del celular) |
+| Vista previa al compartir el link | `resap-compartir.jpg` (1200 × 630): los logos del Ministerio y la DES arriba y la placa de ReSaP debajo |
+
+**Vista previa en WhatsApp** (25/09/2026). El link se reparte por WhatsApp, y sin vista previa
+llega como una dirección pelada que el docente puede tomar por un engaño. Las dos páginas llevan
+en el `<head>` las etiquetas *Open Graph* (`og:title`, `og:description`, `og:image`…) que leen
+WhatsApp, Facebook y Telegram: el formulario dice «Contanos qué saberes y contenidos trabajás ·
+unos 10 minutos, sin usuario ni contraseña»; el panel, que es para el equipo y pide usuario.
+Las direcciones van **completas** (`https://des-formosa.github.io/…`), porque quien arma la vista
+previa no sabe de qué sitio viene: si el sitio cambia de dirección, hay que cambiarlas. La imagen
+es JPG de menos de 100 KB (con más de 300 KB algunos celulares no la bajan) y la genera
+`recortar_resap.py`, que además pasa a blanco puro el fondo casi blanco de la placa. WhatsApp
+guarda la vista previa de cada dirección un tiempo: un link que ya se había compartido sin
+vista previa puede seguir apareciendo así; agregándole algo al final (`?v=2`) se ve la nueva.
 
 **El logo es para fondo claro.** Su azul marino es el mismo de los botones, así que sobre un
 bloque azul se pierde. Por eso la bienvenida y el ingreso, que antes eran un panel oscuro,
@@ -941,6 +954,8 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
   de 320 a 1920 px: sin scroll horizontal en ningún ancho, la cabecera del panel en una fila
   desde 1280, «Comenzar» a la vista en un teléfono de 360 × 640. De paso se arregló que en el
   teléfono la cabecera del panel se saliera de la pantalla cuando la marca no entraba
+- **Vista previa al compartir** (25/09/2026): etiquetas Open Graph en el formulario y el panel, e
+  imagen `resap-compartir.jpg` de 1200 × 630 (89 KB). Ver «La marca»
 - **PDF de barras sin huecos** (25/09/2026): los trimestres van de corrido y los saberes largos
   siguen en la hoja siguiente sin dejar encabezados sueltos (ver «Exportar»). Medido sobre los
   PDF generados con un Supabase simulado: Lengua completa pasó de 36 a 34 hojas y Matemática de

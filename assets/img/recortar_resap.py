@@ -8,6 +8,9 @@ Genera, en esta misma carpeta:
                         cuadraditos blancos)
   resap-icono.png       el símbolo en 64 × 64, para la pestaña del navegador
   resap-icono-180.png   el mismo en 180 × 180, para el acceso directo del celular
+  resap-compartir.jpg   1200 × 630, la vista previa cuando se comparte el link
+                        (WhatsApp, Facebook, Telegram): los logos del Ministerio y
+                        la DES arriba y la placa de ReSaP debajo
 
 Si llega un original con otra composición, hay que revisar las dos cajas de
 recorte de abajo. Uso: python assets/img/recortar_resap.py (necesita Pillow).
@@ -15,7 +18,7 @@ recorte de abajo. Uso: python assets/img/recortar_resap.py (necesita Pillow).
 import pathlib
 from collections import deque
 
-from PIL import Image, ImageFilter
+from PIL import Image, ImageChops, ImageFilter
 
 CARPETA = pathlib.Path(__file__).resolve().parent
 MARGEN = 6          # px de aire alrededor de lo recortado
@@ -88,3 +91,32 @@ cuadro = Image.new('RGBA', (lado, lado))
 cuadro.paste(simbolo, ((lado - simbolo.width) // 2, (lado - simbolo.height) // 2))
 cuadro.resize((64, 64), Image.LANCZOS).save(CARPETA / 'resap-icono.png', optimize=True)
 cuadro.resize((180, 180), Image.LANCZOS).save(CARPETA / 'resap-icono-180.png', optimize=True)
+
+# Vista previa para compartir: 1200 × 630 es la proporción que WhatsApp muestra
+# grande. En JPG y liviana: con más de 300 KB algunos celulares no la bajan.
+ANCHO, ALTO = 1200, 630
+lienzo = Image.new('RGB', (ANCHO, ALTO), (255, 255, 255))
+logos = [Image.open(CARPETA / 'logo-ministerio.webp').convert('RGB'), Image.open(CARPETA / 'logo-secundaria.webp').convert('RGB')]
+alto_logo = 96
+logos = [l.resize((round(l.width * alto_logo / l.height), alto_logo), Image.LANCZOS) for l in logos]
+separacion = 44
+x = (ANCHO - sum(l.width for l in logos) - separacion) // 2
+for i, l in enumerate(logos):
+    lienzo.paste(l, (x, 26))
+    x += l.width + separacion
+    if i == 0:
+        for y in range(40, 26 + alto_logo - 14):
+            lienzo.putpixel((x - separacion // 2, y), (222, 227, 235))
+placa = original.copy()
+# El fondo de la placa no es blanco parejo: tiene zonas gris azuladas muy
+# claras que sobre el lienzo blanco dibujan un recuadro. Lo casi blanco, a blanco.
+r, g, b = placa.split()
+casi_blanco = ImageChops.darker(ImageChops.darker(r, g), b).point(lambda v: 255 if v >= 236 else 0)
+placa.paste((255, 255, 255), mask=casi_blanco)
+arriba = 26 + alto_logo + 18
+lugar = (ANCHO - 80, ALTO - arriba - 24)
+escala = min(lugar[0] / placa.width, lugar[1] / placa.height)
+placa = placa.resize((round(placa.width * escala), round(placa.height * escala)), Image.LANCZOS)
+lienzo.paste(placa, ((ANCHO - placa.width) // 2, arriba + (lugar[1] - placa.height) // 2))
+lienzo.save(CARPETA / 'resap-compartir.jpg', quality=86, optimize=True, progressive=True)
+print('resap-compartir ->', lienzo.size, round((CARPETA / 'resap-compartir.jpg').stat().st_size / 1024), 'KB')
