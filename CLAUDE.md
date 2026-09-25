@@ -326,19 +326,35 @@ Dónde va, armado siempre igual (`marcaResap()` en `formulario.js` y en `dashboa
 | Cabeceras (formulario y panel) | símbolo y palabra chicos (`resapChico()`), después de los logos del Ministerio y la DES. **No en el inicio del panel**, que ya tiene el grande: dos veces el mismo logo en una pantalla sobra |
 | PDF exportados | símbolo, palabra y nombre en una línea arriba de todo (`marcaDocumento()`) |
 | Pestaña del navegador | `resap-icono.png` (y `resap-icono-180.png` para el acceso directo del celular) |
-| Vista previa al compartir el link | `resap-compartir.jpg` (1200 × 630): los logos del Ministerio y la DES arriba y la placa de ReSaP debajo |
+| Vista previa al compartir el link | `resap-compartir.jpg` (formulario) y `resap-compartir-panel.jpg` (panel), 1200 × 630 |
 
-**Vista previa en WhatsApp** (25/09/2026). El link se reparte por WhatsApp, y sin vista previa
-llega como una dirección pelada que el docente puede tomar por un engaño. Las dos páginas llevan
-en el `<head>` las etiquetas *Open Graph* (`og:title`, `og:description`, `og:image`…) que leen
-WhatsApp, Facebook y Telegram: el formulario dice «Contanos qué saberes y contenidos trabajás ·
-unos 10 minutos, sin usuario ni contraseña»; el panel, que es para el equipo y pide usuario.
-Las direcciones van **completas** (`https://des-formosa.github.io/…`), porque quien arma la vista
-previa no sabe de qué sitio viene: si el sitio cambia de dirección, hay que cambiarlas. La imagen
-es JPG de menos de 100 KB (con más de 300 KB algunos celulares no la bajan) y la genera
-`recortar_resap.py`, que además pasa a blanco puro el fondo casi blanco de la placa. WhatsApp
-guarda la vista previa de cada dirección un tiempo: un link que ya se había compartido sin
-vista previa puede seguir apareciendo así; agregándole algo al final (`?v=2`) se ve la nueva.
+**Vista previa en WhatsApp** (25/09/2026, retocada el mismo día). El link se reparte por
+WhatsApp, y sin vista previa llega como una dirección pelada que el docente puede tomar por un
+engaño. Las dos páginas llevan en el `<head>` las etiquetas *Open Graph* (`og:title`,
+`og:description`, `og:image`…) que leen WhatsApp, Facebook y Telegram: el formulario dice
+«Contanos qué saberes y contenidos trabajás · unos 10 minutos, sin usuario ni contraseña»; el
+panel, que es para el equipo y pide usuario. Las direcciones van **completas**
+(`https://des-formosa.github.io/…`), porque quien arma la vista previa no sabe de qué sitio
+viene: si el sitio cambia de dirección, hay que cambiarlas.
+
+**Dos imágenes, no una.** La primera versión usaba la misma imagen (la placa recortada) para
+los dos links, y a la vez el eslogan en letra chica se leía borroso: una vista previa se ve del
+tamaño de una miniatura en la lista de chats. Ahora `recortar_resap.py` arma las dos por
+separado, con pocos elementos grandes en vez de la placa entera: los logos del Ministerio y la
+DES arriba, el símbolo y «ReSaP» a mayor resolución que los de la cabecera, y el nombre completo
+**escrito con la tipografía de la marca** (Kumbh Sans convertida de woff2 a ttf al vuelo con
+fontTools, porque Pillow no lee woff2), no recortado de la placa: así se ve nítido a cualquier
+tamaño, igual que en pantalla. Lo que distingue una de otra, para que no se confundan al mirar
+la miniatura sin leer el texto:
+- **Formulario:** el filete tricolor de siempre, sin nada más arriba.
+- **Panel:** una etiqueta en ladrillo, «EQUIPO DE PLANIFICACIÓN CURRICULAR», y una sola barra
+  azul en vez del filete tricolor, que es del formulario.
+
+El eslogan no va en la imagen: ya está en `og:description`, y ponerlo en letra chica es lo que
+la hacía ilegible en miniatura. Las dos son JPG de unos 70-80 KB (con más de 300 KB algunos
+celulares no las bajan). WhatsApp guarda la vista previa de cada dirección un tiempo: un link
+que ya se había compartido puede seguir mostrando la versión vieja; agregándole algo al final
+(`?v=2`) se ve la nueva.
 
 **El logo es para fondo claro.** Su azul marino es el mismo de los botones, así que sobre un
 bloque azul se pierde. Por eso la bienvenida y el ingreso, que antes eran un panel oscuro,
@@ -954,8 +970,10 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
   de 320 a 1920 px: sin scroll horizontal en ningún ancho, la cabecera del panel en una fila
   desde 1280, «Comenzar» a la vista en un teléfono de 360 × 640. De paso se arregló que en el
   teléfono la cabecera del panel se saliera de la pantalla cuando la marca no entraba
-- **Vista previa al compartir** (25/09/2026): etiquetas Open Graph en el formulario y el panel, e
-  imagen `resap-compartir.jpg` de 1200 × 630 (89 KB). Ver «La marca»
+- **Vista previa al compartir** (25/09/2026): etiquetas Open Graph en el formulario y el panel,
+  con una imagen distinta cada uno (`resap-compartir.jpg` y `resap-compartir-panel.jpg`,
+  1200 × 630, 70-80 KB), el nombre escrito con la tipografía de la marca en vez de recortado de
+  la placa. Ver «La marca»
 - **PDF de barras sin huecos** (25/09/2026): los trimestres van de corrido y los saberes largos
   siguen en la hoja siguiente sin dejar encabezados sueltos (ver «Exportar»). Medido sobre los
   PDF generados con un Supabase simulado: Lengua completa pasó de 36 a 34 hojas y Matemática de
