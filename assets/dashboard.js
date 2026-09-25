@@ -196,7 +196,9 @@
     window.scrollTo(0, 0);
     const cargas = await sb.from('aportes').select('id', { count: 'exact', head: true }).eq('es_ejemplo', false);
     estado.inicio = { cargas: cargas && !cargas.error && typeof cargas.count === 'number' ? cargas.count : null };
-    if (estado.pantalla === 'inicio') render();
+    // Solo se completa la línea de estado: redibujar todo cortaría la entrada
+    const lugar = document.getElementById('inicio-estado');
+    if (estado.pantalla === 'inicio' && lugar) lugar.innerHTML = lineaEstadoInicio();
   }
 
   function irAlPanel(modo) {
@@ -1001,7 +1003,7 @@
             <span class="t-inicio__nombre-central">Relevamiento y Sistematización Curricular</span>
             <span class="t-inicio__nombre-pos">de la Provincia de Formosa</span>
           </h1>
-          ${lineaEstadoInicio()}
+          <div id="inicio-estado">${lineaEstadoInicio()}</div>
           <div class="t-inicio__opciones">
             ${opcion('ir-resultados',
               svg('<path d="M4 20h16"/><rect x="5" y="11" width="3" height="6"/><rect x="10.5" y="7" width="3" height="10"/><rect x="16" y="4" width="3" height="13"/>', { tam: 28, color: '#0B4F4A', grosor: 2 }),
@@ -1021,9 +1023,47 @@
     return `<div class="tablero">${cabecera()}<div class="t-estado"><div class="t-estado__texto">Cargando…</div></div></div>`;
   }
 
+  // Movimiento: el panel se redibuja entero en cada acción, así que cada
+  // animación corre solo si hay algo nuevo: otra sección, otros datos u otra
+  // vista, un panel que recién se abre. Con «reducir movimiento», nada (CSS).
+  const previo = { seccion: null, datos: null, vista: null, editor: null };
+
+  function animarLoNuevo(habiaPanel) {
+    const seccion = estado.pantalla + '|' + estado.modo;
+    if (seccion !== previo.seccion) {
+      const t = app.querySelector('.t-inicio__marco, .t-hero__textos, .t-ingreso__tarjeta');
+      if (t) t.classList.add('t-entra');
+    }
+    if (estado.pantalla === 'panel' && estado.modo !== 'catalogo' && estado.datos
+        && (estado.datos !== previo.datos || estado.vista !== previo.vista)) {
+      const cuerpo = app.querySelector('.t-columnas, .t-mapa');
+      if (cuerpo) {
+        cuerpo.classList.add('t-entra');
+        app.querySelectorAll('.t-barra').forEach((b) => b.classList.add('t-barra--crece'));
+        previo.datos = estado.datos;
+        previo.vista = estado.vista;
+      }
+    }
+    // En el editor, solo al cambiar de materia o año: después de cada edición
+    // los datos se vuelven a pedir, y que la lista entera parpadee cada vez que
+    // se mueve un saber molestaría
+    const materiaEditor = Editor.estado.espacio_id + '|' + Editor.estado.anio;
+    if (estado.modo === 'catalogo' && Editor.estado.datos && materiaEditor !== previo.editor) {
+      if (app.querySelector('.ed-lista, .ed-vacio')) {
+        app.querySelectorAll('.ed-trimestre, .ed-vacio').forEach((el) => el.classList.add('t-entra'));
+        previo.editor = materiaEditor;
+      }
+    }
+    if (estado.modo !== 'catalogo') previo.editor = null;
+    if (!habiaPanel) app.querySelectorAll('.t-panel, .t-velo').forEach((el) => el.classList.add('t-panel--entra'));
+    previo.seccion = seccion;
+  }
+
   function render() {
     const fn = { ingreso: pantallaIngreso, 'sin-permiso': pantallaSinPermiso, inicio: pantallaInicio, panel: pantallaPanel }[estado.pantalla] || pantallaCargando;
+    const habiaPanel = !!app.querySelector('.t-panel');
     app.innerHTML = fn();
+    animarLoNuevo(habiaPanel);
     document.body.style.overflow = estado.exportar ? 'hidden' : '';
     // La primera vez que se entra a cada pantalla, el recorrido arranca solo
     if (estado.pantalla === 'panel' && !estado.cargandoDatos && !Editor.estado.cargando) {

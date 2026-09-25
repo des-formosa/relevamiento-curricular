@@ -467,6 +467,7 @@
   }
 
   function alternarEnLista(id) {
+    ui.tocado = id;
     const { fuera } = listaDelTramo();
     if (fuera.has(id)) fuera.delete(id); else fuera.add(id);
     render();
@@ -519,6 +520,7 @@
 
   // Tocar una sugerencia la agrega; tocarla de nuevo la saca
   function alternarSugerido(id) {
+    ui.tocado = id;
     const s = saberActual();
     const c = Catalogo.contenido(id);
     if (!s || !c) return;
@@ -1565,13 +1567,54 @@
     gracias: pantallaGracias,
   };
 
+  // Movimiento: solo lo que ayuda a ver qué cambió, y una sola vez. La
+  // pantalla se redibuja entera en cada toque, así que cada animación mira si
+  // de verdad hay algo nuevo (otra pantalla, otro saber, la hoja que se abre,
+  // la casilla recién tocada). Con «reducir movimiento» no se anima nada (CSS).
+  let vistaAnterior = null;
+  let hojaAnterior = false;
+
+  function claveVista() {
+    if (estado.pantalla === 'saber') return `saber|${estado.tramo}|${estado.indice}`;
+    if (estado.pantalla === 'tramo') return `tramo|${estado.tramo}`;
+    return estado.pantalla;
+  }
+
   function render() {
     const fn = PANTALLAS[estado.pantalla] || pantallaBienvenida;
     const html = fn();
     if (html === '') return; // la pantalla redirigió a otra
+    const anchos = [...app.querySelectorAll('.progreso__barra')].map((b) => b.style.width);
     app.innerHTML = html;
     document.body.style.overflow = ui.hojaAbierta ? 'hidden' : '';
     enlazarEntradas();
+
+    const clave = claveVista();
+    if (clave !== vistaAnterior) {
+      const objetivo = app.querySelector('.carga__principal .cuerpo') || app.querySelector('.pantalla');
+      if (objetivo) objetivo.classList.add('entra');
+    }
+    // La barra de progreso avanza desde donde estaba, en vez de saltar
+    app.querySelectorAll('.progreso__barra').forEach((b, i) => {
+      const destino = b.style.width;
+      if (anchos[i] && anchos[i] !== destino && vistaAnterior && clave.split('|')[0] === vistaAnterior.split('|')[0]) {
+        b.style.transition = 'none';
+        b.style.width = anchos[i];
+        void b.offsetWidth;
+        b.style.transition = '';
+        b.style.width = destino;
+      }
+    });
+    if (ui.hojaAbierta && !hojaAnterior) {
+      app.querySelectorAll('.hoja, .velo').forEach((el) => el.classList.add('entra-abajo'));
+    }
+    if (ui.tocado) {
+      const tocada = app.querySelector(`[data-id="${CSS.escape(ui.tocado)}"]`);
+      if (tocada) tocada.classList.add('casilla--tocada');
+      ui.tocado = null;
+    }
+    vistaAnterior = clave;
+    hojaAnterior = ui.hojaAbierta;
   }
 
   function enlazarEntradas() {

@@ -724,6 +724,14 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
   tipografía grande son el requisito de usarlo con sol en un celular viejo.
 - **Escribir para el docente, no para el sistema.** Los mensajes de error dicen qué pasó y
   cómo resolverlo.
+- **Movimiento: poco, corto y una sola vez** (24/09/2026). Una pantalla o sección nueva entra
+  con un fundido de ~220 ms; la barra de progreso avanza; la casilla que se toca hace un
+  «pop»; la hoja de «No trabajo» sube; en el panel las barras crecen cuando llegan datos
+  nuevos y los paneles aparecen con un leve desplazamiento. Como las dos pantallas se
+  redibujan enteras en cada toque, cada animación se agrega solo si hay algo nuevo
+  (`claveVista()` en el formulario, `animarLoNuevo()` en el panel): tocar una casilla, abrir
+  «ver los demás» o mover un saber no hace parpadear nada. Con «reducir movimiento» del
+  sistema operativo, no corre ninguna.
 
 ---
 

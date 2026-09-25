@@ -1623,3 +1623,36 @@ body.tour-abierto { overflow: hidden; }
   .t-select--anio { width: 130px; }
   .t-select--alcance { width: 270px; }
 }
+
+/* ============================================================================
+   Movimiento del panel (ver animarLoNuevo en dashboard.js)
+
+   Una sección nueva entra con un fundido; las barras crecen desde la izquierda
+   cuando llegan datos nuevos; los paneles aparecen con un leve desplazamiento.
+   Los botones responden al pasar el mouse. Nada más.
+   ============================================================================ */
+@keyframes t-entrar { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes t-aparecer { from { opacity: 0; } to { opacity: 1; } }
+@keyframes t-crecer { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes t-panel { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+.t-entra { animation: t-entrar 260ms cubic-bezier(.2, .7, .2, 1) both; }
+.t-barra--crece { transform-origin: left center; animation: t-crecer 650ms cubic-bezier(.2, .7, .2, 1) both; }
+.t-panel.t-panel--entra { animation: t-panel 220ms cubic-bezier(.2, .7, .2, 1) both; }
+.t-velo.t-panel--entra { animation: t-aparecer 180ms ease both; }
+
+.t-inicio__opcion { transition: border-color 160ms ease, box-shadow 160ms ease, transform 120ms ease; }
+.t-inicio__opcion:hover { box-shadow: inset 4px 0 0 var(--verde); }
+.t-inicio__opcion:active { transform: translateY(1px); }
+.t-inicio__flecha { transition: transform 200ms cubic-bezier(.2, .7, .2, 1); }
+.t-inicio__opcion:hover .t-inicio__flecha { transform: translateX(4px); }
+.t-enlace-cab { transition: text-decoration-color 150ms ease, color 150ms ease; }
+.t-exportar, .ed-boton, .t-interruptor, .t-descargar, .t-cancelar, .t-vista, .ed-icono, .t-opcion, .t-formato {
+  transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease, transform 100ms ease;
+}
+.t-exportar:active, .ed-boton:active, .t-descargar:active, .t-cancelar:active { transform: translateY(1px); }
+
+@media (prefers-reduced-motion: reduce) {
+  .t-entra, .t-barra--crece, .t-panel--entra { animation: none !important; }
+  .t-inicio__opcion:hover .t-inicio__flecha { transform: none; }
+}
