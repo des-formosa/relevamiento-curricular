@@ -1,6 +1,6 @@
-# Relevamiento Curricular — Ciclo Básico, Provincia de Formosa
+# ReSaP — Relevamiento y Sistematización de Saberes Prioritarios del Nivel Secundario · Formosa
 
-Plataforma para que los docentes de secundaria de Formosa declaren qué contenidos priorizan
+**ReSaP** es el nombre del programa y de la aplicación (ver «La marca»). Plataforma para que los docentes de secundaria de Formosa declaren qué contenidos priorizan
 de cada saber del diseño curricular, y para que el área de Planificación Curricular del
 Ministerio vea los resultados consolidados.
 
@@ -70,7 +70,9 @@ fijada, nunca por bundler.
 │   ├── tour.js             recorrido guiado del panel y del editor
 │   ├── tablero.css         estilos propios del panel (usa los tokens de estilos.css)
 │   ├── fuentes/            Kumbh Sans, Didact Gothic y Noto Serif Ahom en woff2, embebidas
-│   └── img/                logos oficiales, más los símbolos recortados que se usan en pantalla
+│   └── img/                logos oficiales, más los símbolos recortados que se usan en pantalla;
+│                           el logo de ReSaP (resap-original.png, la placa) y sus recortes, que
+│                           regenera recortar_resap.py
 ├── datos/
 │   ├── catalogo.json       848 saberes, 4.273 contenidos sugeridos
 │   ├── contenidos/         contenidos propuestos por materia + aplicar.py
@@ -298,6 +300,48 @@ Consecuencias que conviene tener presentes:
 
 ---
 
+## La marca: ReSaP
+
+Desde el 25/09/2026 la aplicación usa el logo y el eslogan oficiales del programa, que mandó
+la Dirección como una placa (`assets/img/resap-original.png`):
+
+- **Nombre:** «ReSaP — Relevamiento y Sistematización de Saberes Prioritarios del Nivel
+  Secundario». Es el título de las dos pestañas. Reemplaza a «Relevamiento y Sistematización
+  Curricular», que ya no aparece en ningún lado.
+- **Eslogan:** «Una herramienta para **Consolidar**, **Unificar** y **Fortalecer** los saberes
+  curriculares», con cada verbo en uno de los colores del logo.
+
+La placa no se muestra entera. `recortar_resap.py` saca dos piezas y les quita el fondo
+blanco: el **símbolo** (portapapeles y libro, con la hoja blanca) y la **palabra** «ReSaP».
+El nombre largo y el eslogan van **escritos en HTML**, no en imagen, así se leen a cualquier
+tamaño y los lee un lector de pantalla. Si llega un original nuevo, se reemplaza el .png y se
+corre el script (revisar las cajas de recorte si cambió la composición).
+
+Dónde va, armado siempre igual (`marcaResap()` en `formulario.js` y en `dashboard.js`):
+
+| Lugar | Qué lleva |
+|---|---|
+| Bienvenida del docente | símbolo + palabra + nombre, filete tricolor y eslogan, en la presentación en blanco. En un teléfono bajo (≤ 740 px de alto) el eslogan y la etiqueta se esconden para que «Comenzar» se vea sin bajar |
+| Ingreso y inicio del panel | lo mismo, más grande; el nombre es el `<h1>` |
+| Cabeceras (formulario y panel) | símbolo y palabra chicos (`resapChico()`), después de los logos del Ministerio y la DES |
+| PDF exportados | símbolo, palabra y nombre en una línea arriba de todo (`marcaDocumento()`) |
+| Pestaña del navegador | `resap-icono.png` (y `resap-icono-180.png` para el acceso directo del celular) |
+
+**El logo es para fondo claro.** Su azul marino es el mismo de los botones, así que sobre un
+bloque azul se pierde. Por eso la bienvenida y el ingreso, que antes eran un panel oscuro,
+ahora son blancos y se separan del resto con un filete. En la bienvenida de escritorio, el
+título «Contanos qué contenidos trabajás» pasó a la tarjeta de la derecha, junto a
+«Comenzar»; a la izquierda quedó la marca.
+
+**Los colores salen del logo.** El principal es el azul marino (`--azul: #003380`, antes un
+verde azulado) y los grises pasaron de cálidos a fríos para acompañarlo. Los otros tres
+(`--marca-celeste`, `--marca-verde`, `--marca-amarillo`) van tal cual **solo en el filete
+tricolor**. Para texto, como en el eslogan, se usan sus versiones oscuras (`-texto`): los
+originales no llegan a 4,5:1 sobre blanco. El ladrillo (lo que viene del diseño curricular) y
+el ocre (lo que agrega el docente) no cambiaron: marcan qué es cada cosa, no la marca.
+
+---
+
 ## Flujo del docente
 
 Nueve pantallas, una decisión por pantalla. **Sin login, sin registro, sin contraseñas.**
@@ -390,16 +434,14 @@ qué está pasando. Además se proyecta en reuniones con autoridades.
 Principio rector: la respuesta ya está calculada y escrita. Si algo necesita explicación,
 está mal.
 
-**El nombre del sistema** es «Aplicación web de Relevamiento y Sistematización Curricular de la
-Provincia de Formosa» (`NOMBRE_SISTEMA` en `dashboard.js`): va completo en el ingreso y en el
-inicio; en la cabecera y en el título de las pestañas, «Relevamiento y Sistematización
-Curricular».
+**El nombre del sistema** es «ReSaP — Relevamiento y Sistematización de Saberes Prioritarios
+del Nivel Secundario» (ver «La marca»): con el logo y el eslogan en el ingreso y en el inicio;
+en la cabecera, el logo chico.
 
 **Al entrar, un inicio** (24/09/2026, lo pidió el equipo: «algo más cómodo de recibir antes de
 usarlo»). La primera versión tenía de más —saludo enorme, estado del catálogo, cuatro consejos—
-y el equipo la sintió cargada. Quedó: «Hola, Ana» chico, el nombre del sistema como título
-(«Relevamiento y Sistematización Curricular» grande, con «Aplicación web de» arriba y «de la
-Provincia de Formosa» abajo), una línea de cómo va la carga y los dos caminos: «Ver los
+y el equipo la sintió cargada. Quedó: «Hola, Ana» chico, la marca ReSaP como título
+(logo, nombre completo, filete tricolor y eslogan), una línea de cómo va la carga y los dos caminos: «Ver los
 resultados» y «Editar el catálogo». Desde el panel se vuelve con «Inicio». **Un link
 compartido** (con `materia=` en el hash) no pasa por el inicio: va directo a lo que muestra.
 Salir borra el hash, así el que entra después arranca por el inicio.
@@ -845,6 +887,11 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
   en orden, el panel refleja lo movido
 - **«Volver» en todas las pantallas del docente** (24/09/2026): en escritorio la carga y el
   resumen lo escondían; la confirmación no tenía. Ahora vuelve a «Lo que enviaste»
+- **La marca ReSaP** (25/09/2026): logo, nombre y eslogan oficiales en el formulario, el panel
+  y los PDF, y la paleta pasada a los azules del logo (ver «La marca»). Revisado en capturas
+  de 320 a 1920 px: sin scroll horizontal en ningún ancho, la cabecera del panel en una fila
+  desde 1280, «Comenzar» a la vista en un teléfono de 360 × 640. De paso se arregló que en el
+  teléfono la cabecera del panel se saliera de la pantalla cuando la marca no entraba
 
 **Pendiente**
 - **Correr `sql/09_edicion_catalogo.sql`** otra vez (24/09/2026): trae el historial con materia,

@@ -13,6 +13,9 @@
   // en pantalla se usa el símbolo recortado, con el nombre escrito al lado.
   const RUTA_SIMBOLO_MINISTERIO = 'assets/img/simbolo-ministerio.png';
   const RUTA_SIMBOLO_SECUNDARIA = 'assets/img/simbolo-secundaria.png';
+  // La marca del programa, recortada de la placa oficial de ReSaP
+  const RUTA_RESAP_SIMBOLO = 'assets/img/resap-simbolo.png';
+  const RUTA_RESAP_PALABRA = 'assets/img/resap-palabra.png';
 
   const app = document.getElementById('app');
   const esEscritorio = () => window.matchMedia('(min-width: 1024px)').matches;
@@ -30,25 +33,25 @@
      Íconos (trazo, 24×24)
      ====================================================================== */
 
-  const svg = (contenido, { tam = 22, color = '#0B4F4A', grosor = 2.4, extra = '' } = {}) =>
+  const svg = (contenido, { tam = 22, color = '#003380', grosor = 2.4, extra = '' } = {}) =>
     `<svg width="${tam}" height="${tam}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="${grosor}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"${extra}>${contenido}</svg>`;
 
   const Icono = {
     chevron: (o) => svg('<path d="M9 5l7 7-7 7"/>', o),
     volver: svg('<path d="M15 5l-7 7 7 7"/>', { tam: 20 }),
     check: (o) => svg('<path d="M20 6L9 17l-5-5"/>', o),
-    mas: (o) => svg('<path d="M12 5v14"/><path d="M5 12h14"/>', Object.assign({ color: '#5C665F', grosor: 2.2 }, o)),
-    lupa: (o) => svg('<circle cx="11" cy="11" r="7"/><path d="M20 20l-4.2-4.2"/>', Object.assign({ color: '#5C665F', grosor: 2.2 }, o)),
-    cerrar: (o) => svg('<path d="M6 6l12 12"/><path d="M18 6L6 18"/>', Object.assign({ tam: 20, color: '#3B453F' }, o)),
+    mas: (o) => svg('<path d="M12 5v14"/><path d="M5 12h14"/>', Object.assign({ color: '#5A6377', grosor: 2.2 }, o)),
+    lupa: (o) => svg('<circle cx="11" cy="11" r="7"/><path d="M20 20l-4.2-4.2"/>', Object.assign({ color: '#5A6377', grosor: 2.2 }, o)),
+    cerrar: (o) => svg('<path d="M6 6l12 12"/><path d="M18 6L6 18"/>', Object.assign({ tam: 20, color: '#3A4356' }, o)),
     flecha: (o) => svg('<path d="M5 12h13"/><path d="M12 5l7 7-7 7"/>', Object.assign({ color: '#FFFFFF' }, o)),
-    menos: (o) => svg('<path d="M5 12h14"/>', Object.assign({ tam: 20, color: '#5C665F', grosor: 2.6 }, o)),
+    menos: (o) => svg('<path d="M5 12h14"/>', Object.assign({ tam: 20, color: '#5A6377', grosor: 2.6 }, o)),
     escuela: svg('<path d="M3 10.5L12 5l9 5.5"/><path d="M5.5 12v7h13v-7"/><path d="M9.5 19v-4h5v4"/>', { tam: 20, grosor: 2, extra: ' style="flex-shrink:0"' }),
     reloj: (o) => svg('<circle cx="12" cy="12" r="9"/><path d="M12 6.8v5.4l3.4 2"/>', Object.assign({ tam: 23, grosor: 2 }, o)),
     llave: (o) => svg('<circle cx="8.6" cy="15.4" r="3.4"/><path d="M11 13L18.5 5.5"/><path d="M15.6 8.4l2.2 2.2"/><path d="M3.5 3.5l17 17"/>', Object.assign({ tam: 23, grosor: 2 }, o)),
     wifi: (o) => svg('<path d="M4.4 9.2a13 13 0 0 1 15.2 0"/><path d="M7.8 13.1a8.4 8.4 0 0 1 8.4 0"/><circle cx="12" cy="17.8" r="1.3"/><path d="M3.5 3.5l17 17"/>', Object.assign({ tam: 23, grosor: 2 }, o)),
   };
 
-  const checkChico = Icono.check({ tam: 16, color: '#5C665F', grosor: 2.6 });
+  const checkChico = Icono.check({ tam: 16, color: '#5A6377', grosor: 2.6 });
 
   /* ======================================================================
      Utilidades
@@ -725,11 +728,31 @@
         <div class="cabecera__separador"></div>
         <img class="cabecera__simbolo cabecera__simbolo--des" src="${RUTA_SIMBOLO_SECUNDARIA}" alt="Dirección de Educación Secundaria">
         <div class="cabecera__nombre" aria-hidden="true"><span>Dirección de Educación Secundaria</span><span>Formosa</span></div>
+        <div class="cabecera__separador cabecera__separador--resap"></div>
+        ${resapChico()}
       </div>
-      <div class="cabecera__rotulo">Relevamiento curricular</div>
       <div class="cabecera__contexto">${esc(textoContexto())}</div>
     </header>`;
   }
+
+  // El logo del programa con su nombre completo, y abajo el filete tricolor y
+  // el eslogan, como en la placa oficial
+  function marcaResap() {
+    return `<div class="resap">
+        <img class="resap__simbolo" src="${RUTA_RESAP_SIMBOLO}" alt="">
+        <div class="resap__textos">
+          <img class="resap__palabra" src="${RUTA_RESAP_PALABRA}" alt="ReSaP">
+          <p class="resap__nombre">Relevamiento y Sistematización<br>de Saberes Prioritarios <span>del Nivel Secundario</span></p>
+        </div>
+      </div>
+      <div class="filete-marca" aria-hidden="true"><span></span><span></span><span></span></div>
+      <p class="eslogan">Una herramienta para <strong class="eslogan__celeste">Consolidar</strong>, <strong class="eslogan__verde">Unificar</strong> y <strong class="eslogan__amarillo">Fortalecer</strong> los saberes curriculares.</p>`;
+  }
+
+  const resapChico = () => `<span class="resap-chico">
+      <img class="resap-chico__simbolo" src="${RUTA_RESAP_SIMBOLO}" alt="">
+      <img class="resap-chico__palabra" src="${RUTA_RESAP_PALABRA}" alt="ReSaP">
+    </span>`;
 
   function subcabecera(paso, { conVolver = true } = {}) {
     return `<div class="subcabecera">
@@ -760,19 +783,18 @@
           <img class="marca-barra__simbolo marca-barra__simbolo--des" src="${RUTA_SIMBOLO_SECUNDARIA}" alt="Dirección de Educación Secundaria">
           <div class="marca-barra__nombre" aria-hidden="true"><span>Ministerio de Cultura y Educación</span><span>Educación Secundaria · Formosa</span></div>
         </div>
-        <div class="columna columna--12">
+        <div class="espaciador solo-escritorio"></div>
+        <div class="bienvenida__marca">${marcaResap()}</div>
+        <div class="columna columna--12 solo-movil">
           <div class="etiqueta bienvenida__etiqueta">Educación Secundaria · Resolución 672</div>
           <h1 class="bienvenida__titulo">Contanos qué contenidos trabajás</h1>
-          <p class="bajada bienvenida__bajada">
-            <span class="solo-movil">Un relevamiento del Ministerio para conocer qué se enseña en cada escuela de la provincia y acompañar mejor a los equipos.</span>
-            <span class="solo-escritorio">Un relevamiento provincial para conocer qué se enseña en cada escuela y acompañar mejor a los equipos docentes.</span>
-          </p>
+          <p class="bajada bienvenida__bajada">Un relevamiento del Ministerio para conocer qué se enseña en cada escuela de la provincia y acompañar mejor a los equipos.</p>
         </div>
         <div class="espaciador solo-escritorio"></div>
         <div class="bienvenida__items bienvenida__items--hero solo-escritorio">
-          <div class="bienvenida__item">${Icono.reloj({ tam: 24, color: '#9FC8BD' })}<div>Unos 10 minutos por materia</div></div>
-          <div class="bienvenida__item">${Icono.llave({ tam: 24, color: '#9FC8BD' })}<div>Sin usuario ni contraseña</div></div>
-          <div class="bienvenida__item">${Icono.wifi({ tam: 24, color: '#9FC8BD' })}<div>Si se corta internet, no se pierde nada</div></div>
+          <div class="bienvenida__item">${Icono.reloj({ tam: 24, color: '#003380' })}<div>Unos 10 minutos por materia</div></div>
+          <div class="bienvenida__item">${Icono.llave({ tam: 24, color: '#003380' })}<div>Sin usuario ni contraseña</div></div>
+          <div class="bienvenida__item">${Icono.wifi({ tam: 24, color: '#003380' })}<div>Si se corta internet, no se pierde nada</div></div>
         </div>
       </section>
       <section class="cuerpo bienvenida__cuerpo">
@@ -788,8 +810,12 @@
           <div class="ayuda ayuda--14 ayuda--centrada">No se usa para evaluar tu trabajo ni el de tu escuela.</div>
         </div>
         <div class="bienvenida__panel solo-escritorio">
-          <h2>Antes de empezar</h2>
+          <div class="columna columna--12">
+            <div class="etiqueta bienvenida__etiqueta">Educación Secundaria · Resolución 672</div>
+            <h1 class="bienvenida__titulo">Contanos qué contenidos trabajás</h1>
+          </div>
           <div class="columna columna--14">
+            <p class="bajada">Un relevamiento provincial para conocer qué se enseña en cada escuela y acompañar mejor a los equipos docentes.</p>
             <p class="bajada">Vas a elegir tu escuela, el año y tu espacio curricular. Después recorrés los saberes del diseño curricular de a uno.</p>
             <p class="bajada">En cada saber marcás qué contenidos trabajás. El trimestre ya viene asignado: no lo elegís vos.</p>
           </div>
@@ -883,7 +909,7 @@
         <div class="campo campo--10">
           <label class="campo__etiqueta" for="buscar-escuela">Buscá por número o por nombre</label>
           <div class="entrada-icono ${buscando ? 'entrada-icono--activa entrada-icono--con-borrar' : ''}">
-            ${Icono.lupa(buscando ? { color: '#0B4F4A' } : {})}
+            ${Icono.lupa(buscando ? { color: '#003380' } : {})}
             <input class="entrada-icono__input ${buscando ? 'entrada-icono__input--activa' : ''}" id="buscar-escuela" type="search" placeholder="41, Mbiguá, Clorinda…" autocomplete="off" autocorrect="off" value="${esc(ui.consultaEscuela)}">
             ${buscando ? `<button type="button" class="boton-icono boton-icono--relleno" data-accion="borrar-busqueda" aria-label="Borrar la búsqueda">${Icono.cerrar()}</button>` : ''}
           </div>
@@ -1174,7 +1200,7 @@
       : 'Sugerencias para este saber · sin coincidencias';
     const filas = disponibles.map((c, i) => `
       <button type="button" class="sugerencia ${ui.sugerenciaActiva === i ? 'sugerencia--activa' : ''}" data-accion="elegir-sugerencia" data-id="${esc(c.id)}" role="option" ${ui.sugerenciaActiva === i ? 'aria-selected="true"' : ''}>
-        ${Icono.mas({ color: '#0B4F4A' })}
+        ${Icono.mas({ color: '#003380' })}
         <span class="sugerencia__texto">${resaltarFuerte(c.texto, tokens)}</span>
       </button>`).join('');
     const indiceLibre = disponibles.length;
@@ -1228,11 +1254,11 @@
           <div class="chip-libre">Agregado por vos</div>
           <div class="ficha__texto">${esc(c.texto)}</div>
         </div>
-        <button type="button" class="boton-icono" data-accion="quitar-contenido" data-pos="${i}" aria-label="Quitar este contenido">${Icono.cerrar({ color: '#5C665F' })}</button>
+        <button type="button" class="boton-icono" data-accion="quitar-contenido" data-pos="${i}" aria-label="Quitar este contenido">${Icono.cerrar({ color: '#5A6377' })}</button>
       </div>` : `
       <div class="ficha">
         <div class="ficha__texto">${esc(c.texto)}</div>
-        <button type="button" class="boton-icono" data-accion="quitar-contenido" data-pos="${i}" aria-label="Quitar este contenido">${Icono.cerrar({ color: '#5C665F' })}</button>
+        <button type="button" class="boton-icono" data-accion="quitar-contenido" data-pos="${i}" aria-label="Quitar este contenido">${Icono.cerrar({ color: '#5A6377' })}</button>
       </div>`).join('')}</div>`;
   }
 
@@ -1272,7 +1298,7 @@
       `<div class="lateral__trimestre"><span>${ORDINAL[k]} TRIMESTRE</span><span>${tr[k].length} ${plural(tr[k].length, 'saber', 'saberes')}</span></div>`).join('');
     return `<aside class="lateral">
       <div class="progreso">
-        <div class="etiqueta etiqueta--verde etiqueta--tal-cual">${esc(etiquetaTramo(t))}</div>
+        <div class="etiqueta etiqueta--azul etiqueta--tal-cual">${esc(etiquetaTramo(t))}</div>
         <div class="progreso__fila"><div class="progreso__actual">Saber ${posicion} de ${recorrido.length}</div><div class="progreso__faltan">tramo ${t} de 3</div></div>
         <div class="progreso__pista"><div class="progreso__barra" style="width:${Math.round((posicion / Math.max(recorrido.length, 1)) * 100)}%"></div></div>
       </div>
@@ -1304,7 +1330,7 @@
 
     const progreso = `
       <div class="progreso">
-        <div class="etiqueta etiqueta--verde etiqueta--tal-cual">${esc(etiquetaTramo(t))}</div>
+        <div class="etiqueta etiqueta--azul etiqueta--tal-cual">${esc(etiquetaTramo(t))}</div>
         <div class="progreso__fila">
           <div class="progreso__actual">Saber ${n} de ${total}</div>
           <div class="progreso__faltan">${faltan > 0 ? `${faltan === 1 ? 'falta 1' : `faltan ${faltan}`} en este tramo` : 'último de este tramo'}</div>
@@ -1330,7 +1356,7 @@
       <div class="campo campo--10 campo-contenido">
         <label class="campo__etiqueta ${haySugeridos ? 'campo__etiqueta--otro' : 'campo__etiqueta--grande'} ${hayContenidos && !haySugeridos ? 'oculto-visual' : ''}" for="contenido">${etiquetaCampo}</label>
         <div class="entrada-icono ${escribiendo ? 'entrada-icono--activa' : ''} ${(hayContenidos || haySugeridos) && !escribiendo ? 'entrada-icono--60' : ''}">
-          ${Icono.mas(escribiendo ? { color: '#0B4F4A' } : {})}
+          ${Icono.mas(escribiendo ? { color: '#003380' } : {})}
           <input class="entrada-icono__input ${hayContenidos || haySugeridos ? 'entrada-icono__input--18' : 'entrada-icono__input--19'}" id="contenido" type="text" autocomplete="off" autocorrect="off" autocapitalize="sentences" enterkeyhint="done" role="combobox" aria-autocomplete="list" aria-expanded="${escribiendo ? 'true' : 'false'}" aria-controls="sugerencias" placeholder="${placeholder}" value="${esc(ui.textoContenido)}">
         </div>
       </div>

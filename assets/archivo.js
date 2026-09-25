@@ -593,7 +593,7 @@ const Archivo = (function () {
   }
 
   function svgCerrar() {
-    return '<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#55605A" '
+    return '<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#535D71" '
       + 'stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12"/><path d="M18 6L6 18"/></svg>';
   }
 

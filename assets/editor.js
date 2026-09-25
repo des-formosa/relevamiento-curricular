@@ -49,18 +49,18 @@ const Editor = (function () {
   const plural = (n, uno, varios) => (n === 1 ? uno : varios);
   const ORDINAL = { 1: '1er', 2: '2do', 3: '3er' };
 
-  const svg = (d, { tam = 18, color = '#0B4F4A', grosor = 2.2 } = {}) =>
+  const svg = (d, { tam = 18, color = '#003380', grosor = 2.2 } = {}) =>
     `<svg width="${tam}" height="${tam}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="${grosor}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
   const Icono = {
     lapiz: svg('<path d="M4 20h4l10-10-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/>'),
     archivar: svg('<path d="M3 7h18v3H3z"/><path d="M5 10v9h14v-9"/><path d="M10 14h4"/>', { color: '#7A4E00' }),
-    restaurar: svg('<path d="M4 12a8 8 0 1 0 2.3-5.6"/><path d="M4 4v5h5"/>', { color: '#0B4F4A' }),
+    restaurar: svg('<path d="M4 12a8 8 0 1 0 2.3-5.6"/><path d="M4 4v5h5"/>', { color: '#003380' }),
     mas: svg('<path d="M12 5v14"/><path d="M5 12h14"/>'),
-    reloj: svg('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>', { color: '#55605A' }),
-    planilla: svg('<rect x="4" y="4" width="16" height="16"/><path d="M4 10h16"/><path d="M4 15h16"/><path d="M10 4v16"/>', { color: '#55605A' }),
+    reloj: svg('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>', { color: '#535D71' }),
+    planilla: svg('<rect x="4" y="4" width="16" height="16"/><path d="M4 10h16"/><path d="M4 15h16"/><path d="M10 4v16"/>', { color: '#535D71' }),
     arriba: svg('<path d="M6 15l6-6 6 6"/>', { tam: 20, grosor: 2.4 }),
     abajo: svg('<path d="M6 9l6 6 6-6"/>', { tam: 20, grosor: 2.4 }),
-    bajar: svg('<path d="M12 4v11"/><path d="M7 11l5 5 5-5"/><path d="M4 20h16"/>', { color: '#55605A' }),
+    bajar: svg('<path d="M12 4v11"/><path d="M7 11l5 5 5-5"/><path d="M4 20h16"/>', { color: '#535D71' }),
     subir: svg('<path d="M12 20V9"/><path d="M7 13l5-5 5 5"/><path d="M4 4h16"/>', { tam: 19, color: '#FFFFFF', grosor: 2.4 }),
   };
 
@@ -267,7 +267,7 @@ const Editor = (function () {
     <div class="t-panel ed-panel ed-panel--historial" role="dialog" aria-modal="true">
       <div class="t-panel__cabecera">
         <h2 class="t-panel__titulo">Historial de cambios</h2>
-        <button type="button" class="t-panel__cerrar" data-accion="ed-cerrar-historial" aria-label="Cerrar">${svg('<path d="M6 6l12 12"/><path d="M18 6L6 18"/>', { tam: 21, color: '#55605A', grosor: 2.4 })}</button>
+        <button type="button" class="t-panel__cerrar" data-accion="ed-cerrar-historial" aria-label="Cerrar">${svg('<path d="M6 6l12 12"/><path d="M18 6L6 18"/>', { tam: 21, color: '#535D71', grosor: 2.4 })}</button>
       </div>
       ${filtros}
       <div class="ed-historial">${filas}</div>

@@ -10,13 +10,14 @@
 (function () {
   'use strict';
 
-  const NOMBRE_SISTEMA = 'Aplicación web de Relevamiento y Sistematización Curricular de la Provincia de Formosa';
-
   const app = document.getElementById('app');
   // Los logos oficiales traen el nombre incrustado y a escala chica no se lee:
   // en pantalla se usa el símbolo recortado, con el nombre escrito al lado.
   const RUTA_SIMBOLO_MINISTERIO = 'assets/img/simbolo-ministerio.png';
   const RUTA_SIMBOLO_SECUNDARIA = 'assets/img/simbolo-secundaria.png';
+  // La marca del programa, recortada de la placa oficial de ReSaP
+  const RUTA_RESAP_SIMBOLO = 'assets/img/resap-simbolo.png';
+  const RUTA_RESAP_PALABRA = 'assets/img/resap-palabra.png';
   const URL_SHEETJS = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
 
   const MUESTRA_MINIMA = 5;      // menos docentes que esto: «muestra insuficiente»
@@ -41,13 +42,13 @@
   const numero = (n) => Number(n || 0).toLocaleString('es-AR');
   const fechaLarga = (d) => d.toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' });
 
-  const svg = (contenido, { tam = 22, color = '#0B4F4A', grosor = 2.4 } = {}) =>
+  const svg = (contenido, { tam = 22, color = '#003380', grosor = 2.4 } = {}) =>
     `<svg width="${tam}" height="${tam}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="${grosor}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${contenido}</svg>`;
   const Icono = {
     descargar: svg('<path d="M12 4v11"/><path d="M7 11l5 5 5-5"/><path d="M4 20h16"/>', { tam: 21, color: '#FFFFFF' }),
     chevron: svg('<path d="M6 9l6 6 6-6"/>', { tam: 17, grosor: 2.6 }),
-    info: svg('<circle cx="12" cy="12" r="9.2"/><path d="M12 11v6"/><path d="M12 7.6v.2"/>', { color: '#66706A', grosor: 2.2 }),
-    cerrar: svg('<path d="M6 6l12 12"/><path d="M18 6L6 18"/>', { tam: 21, color: '#55605A' }),
+    info: svg('<circle cx="12" cy="12" r="9.2"/><path d="M12 11v6"/><path d="M12 7.6v.2"/>', { color: '#636C80', grosor: 2.2 }),
+    cerrar: svg('<path d="M6 6l12 12"/><path d="M18 6L6 18"/>', { tam: 21, color: '#535D71' }),
   };
 
   // «EJE II: LECTURA Y PRODUCCIÓN ESCRITA» → { rotulo: 'EJE II', nombre: 'Lectura y producción escrita' }
@@ -270,7 +271,8 @@
         <div class="t-cabecera__separador"></div>
         <img class="t-cabecera__simbolo t-cabecera__simbolo--des" src="${RUTA_SIMBOLO_SECUNDARIA}" alt="Dirección de Educación Secundaria">
         <div class="t-cabecera__nombre" aria-hidden="true"><span>Dirección de Educación Secundaria</span><span>Formosa</span></div>
-
+        <div class="t-cabecera__separador"></div>
+        ${resapChico()}
       </div>
       <div class="t-cabecera__derecha">
         <div class="t-cabecera__fecha">Datos al ${esc(fechaLarga(new Date()))}</div>
@@ -278,6 +280,27 @@
       </div>
     </header>`;
   }
+
+  // El logo del programa con su nombre completo, y abajo el filete tricolor y
+  // el eslogan, como en la placa oficial. En el ingreso y el inicio el nombre
+  // es el título de la página.
+  function marcaResap({ titulo = false } = {}) {
+    const nombre = 'Relevamiento y Sistematización<br>de Saberes Prioritarios <span>del Nivel Secundario</span>';
+    return `<div class="resap resap--grande">
+        <img class="resap__simbolo" src="${RUTA_RESAP_SIMBOLO}" alt="">
+        <div class="resap__textos">
+          <img class="resap__palabra" src="${RUTA_RESAP_PALABRA}" alt="ReSaP">
+          ${titulo ? `<h1 class="resap__nombre">${nombre}</h1>` : `<p class="resap__nombre">${nombre}</p>`}
+        </div>
+      </div>
+      <div class="filete-marca" aria-hidden="true"><span></span><span></span><span></span></div>
+      <p class="eslogan">Una herramienta para <strong class="eslogan__celeste">Consolidar</strong>, <strong class="eslogan__verde">Unificar</strong> y <strong class="eslogan__amarillo">Fortalecer</strong> los saberes curriculares.</p>`;
+  }
+
+  const resapChico = () => `<span class="resap-chico">
+      <img class="resap-chico__simbolo" src="${RUTA_RESAP_SIMBOLO}" alt="">
+      <img class="resap-chico__palabra" src="${RUTA_RESAP_PALABRA}" alt="ReSaP">
+    </span>`;
 
   // La cabecera solo lleva por dónde moverse: Inicio, Resultados y Catálogo,
   // con el lugar actual marcado, y la ayuda y la salida. Las acciones de cada
@@ -369,6 +392,13 @@
   // El PDF es un documento, no la pantalla impresa: la currícula de la materia
   // tal como queda con lo que eligieron los docentes, para leer en papel o
   // mandar a los profesores. En pantalla no se ve; al imprimir es lo único.
+  // Arriba de cada PDF, el logo chico y el nombre del programa
+  const marcaDocumento = () => `<div class="t-doc__marca">
+      <img class="t-doc__marca-simbolo" src="${RUTA_RESAP_SIMBOLO}" alt="">
+      <img class="t-doc__marca-palabra" src="${RUTA_RESAP_PALABRA}" alt="ReSaP">
+      <span class="t-doc__marca-nombre">Relevamiento y Sistematización de Saberes Prioritarios del Nivel Secundario</span>
+    </div>`;
+
   function documentoImpresion() {
     if (estado.docCurricula) return estado.docCurricula;
     const d = estado.datos;
@@ -405,6 +435,7 @@
       </section>`).join('');
     return `<article class="t-doc">
       <header class="t-doc__cabeza">
+        ${marcaDocumento()}
         <div class="t-doc__institucion">Ministerio de Cultura y Educación · Dirección de Educación Secundaria · Formosa</div>
         <h1 class="t-doc__titulo">${esc(nombreMateria())} · ${esc(textoAnio())}</h1>
         <div class="t-doc__sub">Contenidos que priorizan los docentes, trimestre por trimestre</div>
@@ -550,7 +581,7 @@
       <div class="t-mapa__pie">
         <div class="t-mapa__leyenda-texto">El número y el color dicen qué porcentaje de los docentes que trabajan ese saber eligió ese contenido${docentes ? ` (${numero(docentes)} docentes en total)` : ''}.</div>
         <div class="t-leyenda">
-          <div class="t-leyenda__grupo"><span>pocos</span><div class="t-leyenda__escala"><div style="background:#EDEBE3"></div><div style="background:#D3E5DF"></div><div style="background:#A9CFC4"></div><div style="background:#74B0A1"></div><div style="background:#34796B"></div><div style="background:#0B4F4A"></div></div><span>casi todos</span></div>
+          <div class="t-leyenda__grupo"><span>pocos</span><div class="t-leyenda__escala"><div style="background:#EDF0F5"></div><div style="background:#D3E0F2"></div><div style="background:#A6BFE4"></div><div style="background:#6E95CE"></div><div style="background:#2B5FA8"></div><div style="background:#003380"></div></div><span>casi todos</span></div>
           <div class="t-leyenda__grupo"><div class="t-leyenda__insuficiente"></div><span>muestra insuficiente</span></div>
         </div>
       </div>
@@ -745,6 +776,7 @@
       </section>`).join('');
     return `<article class="t-doc t-doc--curricula">
       <header class="t-doc__cabeza">
+        ${marcaDocumento()}
         <div class="t-doc__institucion">Ministerio de Cultura y Educación · Dirección de Educación Secundaria · Formosa</div>
         <h1 class="t-doc__titulo">${esc(nombreMateria())}</h1>
         <div class="t-doc__sub">Saberes y contenidos del diseño curricular</div>
@@ -875,16 +907,13 @@
         <img class="marca-barra__simbolo marca-barra__simbolo--des" src="${RUTA_SIMBOLO_SECUNDARIA}" alt="Dirección de Educación Secundaria">
         <div class="marca-barra__nombre" aria-hidden="true"><span>Ministerio de Cultura y Educación</span><span>Educación Secundaria · Formosa</span></div>
       </div>
-      <div class="t-hero__textos">
-        <div class="t-hero__etiqueta">Planificación Curricular · Ciclo Básico</div>
-        <h1 class="t-hero__titulo t-hero__titulo--sistema">${esc(NOMBRE_SISTEMA)}</h1>
-        <p class="t-hero__bajada">Qué contenidos priorizan los docentes de la provincia, materia por materia, escuela por escuela.</p>
-      </div>
+      <div class="espaciador"></div>
+      <div class="t-hero__marca">${marcaResap({ titulo: true })}</div>
       <div class="espaciador"></div>
       <div class="t-hero__items">
-        <div class="t-hero__item">${svg('<rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>', { tam: 24, color: '#9FC8BD', grosor: 2 })}<div>Solo para el equipo de Planificación</div></div>
-        <div class="t-hero__item">${svg('<path d="M4 14a8 8 0 0 1 14.5-4.6"/><path d="M18 5v5h-5"/><path d="M20 10a8 8 0 0 1-14.5 4.6"/><path d="M6 19v-5h5"/>', { tam: 24, color: '#9FC8BD', grosor: 2 })}<div>Se actualiza solo a medida que los docentes cargan</div></div>
-        <div class="t-hero__item">${svg('<path d="M12 4v11"/><path d="M7 11l5 5 5-5"/><path d="M4 20h16"/>', { tam: 24, color: '#9FC8BD', grosor: 2 })}<div>Se exporta a Excel para trabajar y a PDF para presentar</div></div>
+        <div class="t-hero__item">${svg('<rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>', { tam: 24, color: '#003380', grosor: 2 })}<div>Solo para el equipo de Planificación</div></div>
+        <div class="t-hero__item">${svg('<path d="M4 14a8 8 0 0 1 14.5-4.6"/><path d="M18 5v5h-5"/><path d="M20 10a8 8 0 0 1-14.5 4.6"/><path d="M6 19v-5h5"/>', { tam: 24, color: '#003380', grosor: 2 })}<div>Se actualiza solo a medida que los docentes cargan</div></div>
+        <div class="t-hero__item">${svg('<path d="M12 4v11"/><path d="M7 11l5 5 5-5"/><path d="M4 20h16"/>', { tam: 24, color: '#003380', grosor: 2 })}<div>Se exporta a Excel para trabajar y a PDF para presentar</div></div>
       </div>
     </section>`;
   }
@@ -896,6 +925,7 @@
       <section class="t-ingreso__cuerpo">
         <form class="t-ingreso__tarjeta" data-form="ingreso" novalidate>
           <div class="columna columna--10">
+            <div class="t-ingreso__etiqueta">Planificación Curricular · Ciclo Básico</div>
             <h2 class="t-ingreso__titulo">Ingresá</h2>
             <p class="bajada">Con el correo y la contraseña que te dio el administrador.</p>
           </div>
@@ -983,7 +1013,7 @@
   }
 
   function pantallaInicio() {
-    const flecha = svg('<path d="M5 12h14"/><path d="M13 6l6 6-6 6"/>', { tam: 22, color: '#0B4F4A', grosor: 2.4 });
+    const flecha = svg('<path d="M5 12h14"/><path d="M13 6l6 6-6 6"/>', { tam: 22, color: '#003380', grosor: 2.4 });
     const opcion = (accion, icono, titulo, texto) => `
       <button type="button" class="t-inicio__opcion" data-accion="${accion}">
         <span class="t-inicio__icono">${icono}</span>
@@ -998,19 +1028,15 @@
       <main class="t-inicio">
         <div class="t-inicio__marco">
           <div class="t-inicio__hola">${esc(saludo())}</div>
-          <h1 class="t-inicio__nombre" aria-label="${esc(NOMBRE_SISTEMA)}">
-            <span class="t-inicio__nombre-pre">Aplicación web de</span>
-            <span class="t-inicio__nombre-central">Relevamiento y Sistematización Curricular</span>
-            <span class="t-inicio__nombre-pos">de la Provincia de Formosa</span>
-          </h1>
+          <div class="t-inicio__marca">${marcaResap({ titulo: true })}</div>
           <div id="inicio-estado">${lineaEstadoInicio()}</div>
           <div class="t-inicio__opciones">
             ${opcion('ir-resultados',
-              svg('<path d="M4 20h16"/><rect x="5" y="11" width="3" height="6"/><rect x="10.5" y="7" width="3" height="10"/><rect x="16" y="4" width="3" height="13"/>', { tam: 28, color: '#0B4F4A', grosor: 2 }),
+              svg('<path d="M4 20h16"/><rect x="5" y="11" width="3" height="6"/><rect x="10.5" y="7" width="3" height="10"/><rect x="16" y="4" width="3" height="13"/>', { tam: 28, color: '#003380', grosor: 2 }),
               'Ver los resultados',
               'Qué contenidos eligen los docentes, materia por materia.')}
             ${opcion('ir-catalogo',
-              svg('<path d="M4 20h4l10-10-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/>', { tam: 28, color: '#0B4F4A', grosor: 2 }),
+              svg('<path d="M4 20h4l10-10-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/>', { tam: 28, color: '#003380', grosor: 2 }),
               'Editar el catálogo',
               'Los saberes y contenidos que ven los docentes.')}
           </div>
@@ -1031,7 +1057,7 @@
   function animarLoNuevo(habiaPanel) {
     const seccion = estado.pantalla + '|' + estado.modo;
     if (seccion !== previo.seccion) {
-      const t = app.querySelector('.t-inicio__marco, .t-hero__textos, .t-ingreso__tarjeta');
+      const t = app.querySelector('.t-inicio__marco, .t-hero__marca, .t-ingreso__tarjeta');
       if (t) t.classList.add('t-entra');
     }
     if (estado.pantalla === 'panel' && estado.modo !== 'catalogo' && estado.datos
