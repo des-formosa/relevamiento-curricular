@@ -993,27 +993,16 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
   botones principales se ven sin desplazar nada y todos los demás se alcanzan desplazando
   dentro de la ventana. A tamaño normal se ven igual que antes
 
-**Pendiente**
-- **Correr `sql/09_edicion_catalogo.sql`** otra vez (24/09/2026): trae el historial con materia,
-  año y trimestre, y sus filtros (sin eso, «Ver historial» da error), y el conteo de respuestas
-  del editor sin los datos de ejemplo: antes mostraba «66 respuestas» inventadas y confundía.
-  También `sql/10_publicar_catalogo.sql`: el historial y «lo publicó…» muestran el nombre cargado
-  en `equipo_planificacion.nombre` (si está vacío, el mail)
-- **El orden de los saberes en la base**, en el SQL Editor y en este orden (el `09` redefine
-  `panel_resultados()` del `04`, así que va después): `sql/04_vistas.sql`,
-  `sql/09_edicion_catalogo.sql`, `sql/11_importar_catalogo.sql`, `sql/12_reemplazar_materia.sql` y
-  después `sql/mantenimiento/2026-09-24_orden_de_los_saberes.sql`. El control del final muestra
-  una fila por materia y tiene que decir «sí» en todas. Después, **Publicar** desde el panel.
-  La primera versión del script dependía de que el `09` estuviera corrido: si no, fallaba el
-  último paso y la base deshacía todo en silencio. Ahora se puede correr en cualquier orden
-- **Poner al día la base y los datos de ejemplo**, en el SQL Editor y en este orden:
-  1. `sql/mantenimiento/2026-09-23_solo_priorizados.sql` (si no se corrió): tiene que dar
-     Lengua 132 activos y Matemática 52, todos priorizados
-  2. `sql/01_esquema.sql`, `sql/03_funciones.sql` y `sql/05_datos_ejemplo.sql`
-  3. `sql/06_cargar_escuelas.sql`: marca las 7 escuelas que ya no están (`no_vigentes: 7`)
-  4. `select public.generar_datos_ejemplo();` — borra los ejemplos viejos y arma los nuevos
-- Prueba real con 5 o 6 docentes cargando desde sus celulares antes del 26
+- **Base lista para la carga real** (25/09/2026): se borraron los 8 envíos de prueba de los
+  docentes (23 al 25/09) y sus docentes; quedan cero aportes reales. Se conservan los datos
+  de ejemplo (`es_ejemplo`) para la presentación. Verificado en Supabase: `mover_saber`
+  instalado, Lengua 132 y Matemática 52 activos y todos priorizados, 7 escuelas no vigentes,
+  ningún orden repetido, catálogo publicado (25/09 19:25 UTC) sin cambios pendientes.
+  Los datos de ejemplo se regeneraron contra los 772 saberes activos (1.500 docentes, 2.586
+  aportes, 89.320 selecciones, las 16 materias): cero respuestas en saberes o contenidos
+  archivados y cero en escuelas no vigentes
 
-**Orden sugerido**: la base está al día (SQL del `01` al `12` aplicado). Falta correr el script
-de mantenimiento, probar el formulario en celulares reales y seguir juntando lo que devuelvan
-los docentes.
+**Pendiente**
+- **Después de la presentación**, `select public.borrar_datos_ejemplo();`
+- El formulario escribe de verdad por defecto; `?demo` en el link es solo para mostrarlo sin
+  guardar. Repartir el link sin `?demo`
