@@ -87,7 +87,7 @@
     escuelasAgregadas: [],
     ingreso: { email: '', error: null, enviando: false },
     // Descargar: que = 'materia' (todos los años) | 'anio' (el que se mira) |
-    //   'control' (quién contestó, uso interno) | 'curricula' (sin resultados);
+    //   'control' (seguimiento de la carga, uso interno) | 'curricula' (sin resultados);
     //   formato = 'pdf' | 'excel'; vista del PDF = 'barras' | 'mapa'
     exportar: null,                   // { que, formato, vista, progreso, error, descargando }
     documento: null,                  // el HTML que se está imprimiendo
@@ -275,8 +275,7 @@
         <div class="t-cabecera__separador"></div>
         <img class="t-cabecera__simbolo t-cabecera__simbolo--des" src="${RUTA_SIMBOLO_SECUNDARIA}" alt="Dirección de Educación Secundaria">
         <div class="t-cabecera__nombre" aria-hidden="true"><span>Dirección de Educación Secundaria</span><span>Formosa</span></div>
-        <div class="t-cabecera__separador"></div>
-        ${resapChico()}
+        ${estado.pantalla === 'inicio' ? '' : `<div class="t-cabecera__separador"></div>${resapChico()}`}
       </div>
       <div class="t-cabecera__derecha">
         <div class="t-cabecera__fecha">Datos al ${esc(fechaLarga(new Date()))}</div>
@@ -729,7 +728,7 @@
         : 'Una hoja con año, trimestre, eje, saber y contenidos, y una columna de «Observaciones» para que el profesor anote.';
     }
     if (x.que === 'control') {
-      return 'Tres hojas: <strong>quién contestó</strong> (un envío por fila), <strong>por escuela</strong> (también las que todavía no tienen ninguna respuesta) y <strong>qué contestó</strong> cada docente, contenido por contenido. <strong>Trae nombre y apellido de cada docente: es de uso interno, no para repartir.</strong>';
+      return 'Tres hojas: los <strong>envíos</strong> (uno por fila), <strong>por escuela</strong> (también las que todavía no tienen ninguno) y el <strong>detalle</strong> de cada envío. <strong>Trae nombre y apellido de cada docente: es de uso interno, no para repartir.</strong>';
     }
     const porAnio = x.que === 'materia' && aniosDeLaMateria().length > 1;
     if (x.formato === 'excel') {
@@ -791,17 +790,17 @@
     </div>`;
   }
 
-  // Quién contestó (uso interno). Se abre desde el inicio, en la línea que dice
-  // cuántas cargas llegaron: no es un resultado, es para seguir la carga. Toda
-  // la provincia y todas las materias.
+  // Seguimiento de la carga (uso interno). Se abre desde un enlace discreto al
+  // pie del inicio: no es un resultado y el inicio se proyecta en reuniones, así
+  // que no se ofrece a la vista. Toda la provincia y todas las materias.
   function panelControl(x) {
     return `<div class="t-velo" data-accion="cerrar-exportar"></div>
     <div class="t-panel" role="dialog" aria-modal="true" aria-labelledby="control-titulo">
       <div class="t-panel__cabecera">
-        <h2 class="t-panel__titulo" id="control-titulo">Quién contestó</h2>
+        <h2 class="t-panel__titulo" id="control-titulo">Seguimiento de la carga</h2>
         <button type="button" class="t-panel__cerrar" data-accion="cerrar-exportar" aria-label="Cerrar">${Icono.cerrar}</button>
       </div>
-      <p class="t-panel__bajada">Un Excel para seguir la carga: qué docentes ya enviaron y de qué escuelas todavía no llegó nada. De toda la provincia y de todas las materias.</p>
+      <p class="t-panel__bajada">Un Excel para ver cómo avanza el relevamiento: los envíos que llegaron y las escuelas de las que todavía no llegó ninguno. De toda la provincia y de todas las materias.</p>
       <label class="t-opcion ${x.ejemplo ? 't-opcion--elegida' : ''}" for="ex-ejemplo">
         <input type="checkbox" id="ex-ejemplo" ${x.ejemplo ? 'checked' : ''} data-cambio="ex-ejemplo">
         <span><span class="t-opcion__titulo">Con los datos de ejemplo</span><span class="t-opcion__sub">Para ver cómo es la planilla antes de que lleguen cargas reales</span></span>
@@ -872,7 +871,7 @@
     try {
       if (x.que === 'control') {
         await cargarSheetJS();
-        window.XLSX.writeFile(await libroControl(x.ejemplo), `quien-contesto-${hoyArchivo()}${x.ejemplo ? '-ejemplo' : ''}.xlsx`);
+        window.XLSX.writeFile(await libroControl(x.ejemplo), `seguimiento-de-la-carga-${hoyArchivo()}${x.ejemplo ? '-ejemplo' : ''}.xlsx`);
         estado.exportar = null;
       } else {
         const reportes = await traerReportes(x.que === 'materia' ? aniosDeLaMateria() : [estado.anio]);
@@ -1083,8 +1082,8 @@
     return hoja;
   }
 
-  // Quién contestó (uso interno; antes era «Todo el relevamiento», dentro de
-  // Descargar resultados). Es para que el equipo vea qué docentes enviaron y de
+  // Seguimiento de la carga (uso interno; antes era «Todo el relevamiento»,
+  // dentro de Descargar resultados). Es para que el equipo vea qué docentes enviaron y de
   // qué escuelas falta respuesta; por eso trae nombres y no es para repartir.
   // Toda la provincia, todas las materias, sin mirar la selección del panel.
   async function libroControl(conEjemplo) {
@@ -1094,11 +1093,11 @@
 
     const aportes = await traerTodo('v_aportes',
       ['aporte_id', 'enviado_en', 'docente_id', 'apellido', 'nombre', 'escuela_id', 'escuela', 'localidad', 'departamento', 'espacio', 'anio'],
-      ['aporte_id'], 'Trayendo quién contestó', conEjemplo);
+      ['aporte_id'], 'Trayendo los envíos', conEjemplo);
     // Se piden las columnas de orden solo para ordenar; en el archivo van las que lee una persona
     const respuestas = await traerTodo('v_relevamiento',
       ['aporte_id', 'enviado_en', 'departamento', 'escuela', 'localidad', 'apellido', 'nombre', 'espacio', 'anio', 'trimestre', 'eje', 'saber', 'saber_id', 'estado', 'tipo', 'contenido'],
-      ['aporte_id', 'saber_id', 'contenido_orden'], 'Trayendo lo que contestó cada uno', conEjemplo);
+      ['aporte_id', 'saber_id', 'contenido_orden'], 'Trayendo el detalle de cada envío', conEjemplo);
     if (estado.exportar) { estado.exportar.progreso = 'Armando el Excel…'; render(); }
 
     // Cuánto contestó cada envío
@@ -1110,7 +1109,7 @@
       else { c.trabaja.add(f.saber_id); c.contenidos += 1; }
     }
 
-    // 1 · Quién contestó: un envío por fila
+    // 1 · Envíos: uno por fila
     const orden = (a, b) => ['departamento', 'escuela', 'apellido', 'nombre', 'espacio'].reduce((r, k) => r || String(a[k] || '').localeCompare(String(b[k] || ''), 'es'), 0) || (a.anio - b.anio);
     const quien = aportes.slice().sort(orden).map((a) => {
       const c = cuenta.get(a.aporte_id) || { trabaja: new Set(), noTrabaja: new Set(), contenidos: 0 };
@@ -1129,7 +1128,7 @@
     }
     const filaEscuela = (depto, nombre, localidad, e) => [depto, nombre, localidad || '',
       e ? e.docentes.size : 0, e ? e.envios : 0, e ? [...e.materias].sort((x, y) => x.localeCompare(y, 'es')).join(', ') : '',
-      e ? '' : 'Todavía no contestó nadie'];
+      e ? '' : 'Sin envíos todavía'];
     const escuelas = [];
     const oficiales = new Set();
     let sinRespuesta = 0;
@@ -1145,7 +1144,7 @@
       if (!oficiales.has(id)) escuelas.push(filaEscuela(e.departamento || '', `${e.escuela} (la agregó un docente)`, e.localidad, e));
     }
 
-    // 3 · Qué contestó: una fila por contenido elegido o saber que no trabaja
+    // 3 · Detalle: una fila por contenido elegido o saber que no trabaja
     const que = respuestas.map((f) => [
       f.enviado_en ? new Date(f.enviado_en).toLocaleString('es-AR') : '',
       f.departamento || '', f.escuela || '', f.localidad || '', f.apellido || '', f.nombre || '',
@@ -1156,18 +1155,18 @@
     ]);
 
     const libro = X.utils.book_new();
-    X.utils.book_append_sheet(libro, hojaConTitulo(X, 'Quién contestó — uso interno',
+    X.utils.book_append_sheet(libro, hojaConTitulo(X, 'Envíos — uso interno',
       [`${numero(aportes.length)} ${plural(aportes.length, 'envío', 'envíos')} de ${numero(docentes)} ${plural(docentes, 'docente', 'docentes')}. Un envío por fila: quien cargó dos materias aparece dos veces.`, fecha, ...ejemplo],
       ['Apellido', 'Nombre', 'Escuela', 'Localidad', 'Departamento', 'Materia', 'Año', 'Enviado', 'Saberes que trabaja', 'Saberes que no trabaja', 'Contenidos elegidos'],
-      quien, [18, 18, 34, 20, 16, 30, 6, 18, 12, 12, 12]), 'Quién contestó');
+      quien, [18, 18, 34, 20, 16, 30, 6, 18, 12, 12, 12]), 'Envíos');
     X.utils.book_append_sheet(libro, hojaConTitulo(X, 'Por escuela — uso interno',
-      [`${numero(oficiales.size)} escuelas de la nómina, en el orden oficial. ${numero(sinRespuesta)} ${plural(sinRespuesta, 'todavía no tiene', 'todavía no tienen')} ninguna respuesta: son las que dicen «Todavía no contestó nadie».`, fecha, ...ejemplo],
-      ['Departamento', 'Escuela', 'Localidad', 'Docentes que contestaron', 'Envíos', 'Materias cargadas', 'Estado'],
+      [`${numero(oficiales.size)} escuelas de la nómina, en el orden oficial. ${numero(sinRespuesta)} ${plural(sinRespuesta, 'todavía no tiene', 'todavía no tienen')} ningún envío: son las que dicen «Sin envíos todavía».`, fecha, ...ejemplo],
+      ['Departamento', 'Escuela', 'Localidad', 'Docentes que enviaron', 'Envíos', 'Materias cargadas', 'Estado'],
       escuelas, [16, 40, 22, 12, 9, 60, 24]), 'Por escuela');
-    X.utils.book_append_sheet(libro, hojaConTitulo(X, 'Qué contestó cada docente — uso interno',
+    X.utils.book_append_sheet(libro, hojaConTitulo(X, 'Detalle de cada envío — uso interno',
       ['Una fila por contenido elegido y por saber que el docente dijo que no trabaja.', fecha, ...ejemplo],
       ['Enviado', 'Departamento', 'Escuela', 'Localidad', 'Apellido', 'Nombre', 'Materia', 'Año', 'Trimestre', 'Eje', 'Saber', 'Lo trabaja', 'Contenido', 'Origen del contenido'],
-      que, [18, 16, 36, 20, 18, 18, 28, 5, 9, 40, 70, 10, 60, 22]), 'Qué contestó');
+      que, [18, 16, 36, 20, 18, 18, 28, 5, 9, 40, 70, 10, 60, 22]), 'Detalle');
     return libro;
   }
 
@@ -1281,11 +1280,10 @@
   function lineaEstadoInicio() {
     const i = estado.inicio;
     if (!i || i.cargas == null) return '';
-    const quien = ' <button type="button" class="t-enlace-linea" data-accion="abrir-control">Ver quién contestó</button>';
-    if (i.cargas > 0) return `<p class="t-inicio__estado">Los docentes ya enviaron <strong>${numero(i.cargas)} ${plural(i.cargas, 'carga', 'cargas')}</strong>.${quien}</p>`;
+    if (i.cargas > 0) return `<p class="t-inicio__estado">Los docentes ya enviaron <strong>${numero(i.cargas)} ${plural(i.cargas, 'carga', 'cargas')}</strong>.</p>`;
     return new Date() < new Date(2026, 8, 26)
-      ? `<p class="t-inicio__estado">La carga de los docentes abre el <strong>viernes 26 de septiembre</strong>.${quien}</p>`
-      : `<p class="t-inicio__estado">Todavía no llegó ninguna carga de docentes.${quien}</p>`;
+      ? '<p class="t-inicio__estado">La carga de los docentes abre el <strong>viernes 26 de septiembre</strong>.</p>'
+      : '<p class="t-inicio__estado">Todavía no llegó ninguna carga de docentes.</p>';
   }
 
   function pantallaInicio() {
@@ -1315,6 +1313,9 @@
               svg('<path d="M4 20h4l10-10-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/>', { tam: 28, color: '#003380', grosor: 2 }),
               'Editar el catálogo',
               'Los saberes y contenidos que ven los docentes.')}
+          </div>
+          <div class="t-inicio__pie">
+            <button type="button" class="t-enlace-discreto" data-accion="abrir-control">Seguimiento de la carga</button>
           </div>
         </div>
       </main>

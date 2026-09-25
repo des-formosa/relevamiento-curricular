@@ -677,7 +677,7 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
 }
 .t-panel__nota { font-family: var(--texto); font-size: 15px; line-height: 1.45; color: var(--t-gris); }
 .t-panel__nota strong { font-family: var(--ui); color: var(--t-tinta); }
-/* «Quién contestó» trae nombres: el aviso va marcado */
+/* El seguimiento de la carga trae nombres: el aviso va marcado */
 .t-panel__nota--interno { background: var(--ocre-fila); border-left: 3px solid var(--ocre-borde); padding: 10px 12px; }
 .t-panel__nota--error { color: var(--ladrillo); }
 
@@ -1672,14 +1672,17 @@ body.tour-abierto { overflow: hidden; }
 .t-inicio .eslogan { font-size: 19px; }
 .t-inicio__estado { font-family: var(--texto); font-size: 16.5px; color: var(--tinta-2); margin: 26px 0 0; }
 .t-inicio__estado strong { font-family: var(--ui); color: var(--t-tinta); }
-/* «Ver quién contestó», en la misma línea de cómo va la carga */
-.t-enlace-linea {
-  border: none; background: none; padding: 0; cursor: pointer;
-  font-family: var(--ui); font-size: inherit; font-weight: 700; color: var(--azul);
-  text-decoration: underline; text-underline-offset: 3px;
+/* «Seguimiento de la carga»: al pie del inicio, chico y en gris. Es de uso
+   interno y el inicio se proyecta en reuniones: tiene que estar, no llamar la
+   atención */
+.t-inicio__pie { margin-top: 28px; }
+.t-enlace-discreto {
+  border: none; background: none; padding: 4px 0; cursor: pointer;
+  font-family: var(--texto); font-size: 14px; color: var(--t-gris);
+  text-decoration: underline; text-decoration-color: var(--t-borde); text-underline-offset: 3px;
 }
-.t-enlace-linea:hover { color: var(--azul-profundo); }
-.t-enlace-linea:focus-visible { outline: 3px solid var(--azul); outline-offset: 2px; }
+.t-enlace-discreto:hover { color: var(--azul); text-decoration-color: currentColor; }
+.t-enlace-discreto:focus-visible { outline: 3px solid var(--azul); outline-offset: 2px; }
 .t-inicio__opciones { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 36px; }
 .t-inicio__opcion {
   display: flex; align-items: center; gap: 16px; text-align: left;

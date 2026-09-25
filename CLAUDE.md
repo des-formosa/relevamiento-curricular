@@ -323,7 +323,7 @@ Dónde va, armado siempre igual (`marcaResap()` en `formulario.js` y en `dashboa
 |---|---|
 | Bienvenida del docente | símbolo + palabra + nombre, filete tricolor y eslogan, en la presentación en blanco. En un teléfono bajo (≤ 740 px de alto) el eslogan y la etiqueta se esconden para que «Comenzar» se vea sin bajar |
 | Ingreso y inicio del panel | lo mismo, más grande; el nombre es el `<h1>` |
-| Cabeceras (formulario y panel) | símbolo y palabra chicos (`resapChico()`), después de los logos del Ministerio y la DES |
+| Cabeceras (formulario y panel) | símbolo y palabra chicos (`resapChico()`), después de los logos del Ministerio y la DES. **No en el inicio del panel**, que ya tiene el grande: dos veces el mismo logo en una pantalla sobra |
 | PDF exportados | símbolo, palabra y nombre en una línea arriba de todo (`marcaDocumento()`) |
 | Pestaña del navegador | `resap-icono.png` (y `resap-icono-180.png` para el acceso directo del celular) |
 
@@ -442,8 +442,8 @@ en la cabecera, el logo chico.
 usarlo»). La primera versión tenía de más —saludo enorme, estado del catálogo, cuatro consejos—
 y el equipo la sintió cargada. Quedó: «Hola, Ana» chico, la marca ReSaP como título
 (logo, nombre completo, filete tricolor y eslogan), una línea de cómo va la carga y los dos caminos: «Ver los
-resultados» y «Editar el catálogo». Al final de la línea de la carga, **«Ver quién contestó»**
-abre el control interno (ver «Exportar»). Desde el panel se vuelve con «Inicio». **Un link
+resultados» y «Editar el catálogo». Al pie, un enlace chico y gris, **«Seguimiento de la
+carga»**, abre la planilla de uso interno (ver «Exportar»). Desde el panel se vuelve con «Inicio». **Un link
 compartido** (con `materia=` en el hash) no pasa por el inicio: va directo a lo que muestra.
 Salir borra el hash, así el que entra después arranca por el inicio.
 
@@ -500,14 +500,17 @@ El recorrido guiado pasó a `v4`, con un paso para «Descargar para revisar», y
    saber una vez y debajo sus contenidos, sin conteos ni columnas técnicas, y «Observaciones»
    vacía para que anoten. La columna Año aparece solo con varios años.
 
-   **Quién contestó (uso interno)**, antes «Todo el relevamiento provincial» dentro de esta
-   misma ventana. Se sacó de «Descargar resultados» porque no es un resultado: es para seguir la
-   carga. Se abre desde el inicio («Ver quién contestó») y baja un Excel de toda la provincia y
-   todas las materias, con tres hojas: *Quién contestó* (un envío por fila, de `v_aportes`, con
-   cuántos saberes trabaja, cuántos no y cuántos contenidos eligió), *Por escuela* (las 288 de
-   la nómina en el orden oficial, más las que agregaron los docentes; las que no tienen envíos
-   dicen «Todavía no contestó nadie») y *Qué contestó* (lo de antes, de `v_relevamiento`, una
-   fila por contenido o saber no trabajado). Tiene su propia casilla de datos de ejemplo, así se
+   **Seguimiento de la carga (uso interno)**, antes «Todo el relevamiento provincial» dentro de
+   esta misma ventana. Se sacó de «Descargar resultados» porque no es un resultado: es para
+   seguir cómo avanza la carga. **Va discreto a propósito**: un enlace chico y gris al pie del
+   inicio. La primera versión decía «Ver quién contestó», a la vista en la línea de la carga, y
+   el equipo la sintió invasiva: el inicio se proyecta ante autoridades y eso sonaba a vigilar a
+   los docentes. Por lo mismo, ni el enlace, ni la ventana, ni el archivo ni sus hojas dicen
+   «quién contestó». Baja un Excel de toda la provincia y todas las materias, con tres hojas:
+   *Envíos* (uno por fila, de `v_aportes`, con cuántos saberes trabaja, cuántos no y cuántos
+   contenidos eligió), *Por escuela* (las 288 de la nómina en el orden oficial, más las que
+   agregaron los docentes; las que no tienen envíos dicen «Sin envíos todavía») y *Detalle* (lo
+   de antes, de `v_relevamiento`, una fila por contenido o saber no trabajado). Tiene su propia casilla de datos de ejemplo, así se
    puede mostrar antes de que lleguen cargas. **Trae nombre y apellido de cada docente: no es
    para repartir**, y la ventana lo dice.
 
@@ -929,8 +932,8 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
   teléfono la cabecera del panel se saliera de la pantalla cuando la marca no entraba
 - **El reporte por materia** (25/09/2026): «Descargar resultados» arma el reporte de toda la
   materia o de un año, en PDF (barras o mapa de calor) o Excel, y «Todo el relevamiento» pasó
-  al inicio como «Ver quién contestó», con hojas de quién contestó y por escuela (ver
-  «Exportar»). Probado con un Supabase simulado: Matemática de 1° a 3° en barras (13 páginas,
+  a un enlace discreto al pie del inicio, «Seguimiento de la carga», con hojas de envíos y por
+  escuela (ver «Exportar»). Probado con un Supabase simulado: Matemática de 1° a 3° en barras (13 páginas,
   52 saberes) y en mapa de calor (apaisado, 3 tablas), Tecnológica ofrece solo 1° y 2°, un
   solo año sale sin títulos de año, el Excel con columna Año, y el control con sus tres hojas
   (las 288 escuelas, la agregada por un docente al final). La ventana entra sin desplazarse en
