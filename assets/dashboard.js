@@ -70,7 +70,7 @@
   const estado = {
     pantalla: 'cargando',     // cargando | ingreso | sin-permiso | inicio | panel
     nombre: null,             // el de equipo_planificacion, para saludar
-    inicio: null,             // { cargas, publicacion } para la pantalla de inicio
+    inicio: null,             // { cargas } para la pantalla de inicio
     usuario: null,
     espacio_id: null,
     anio: 1,
@@ -184,8 +184,8 @@
     irAlInicio();
   }
 
-  // El inicio: dónde está el relevamiento y qué se puede hacer. Lo que trae
-  // es liviano (dos consultas) y si falla la pantalla igual se muestra.
+  // El inicio: el nombre del sistema, una línea de cómo va la carga y los dos
+  // caminos. Trae una sola consulta liviana; si falla, la pantalla igual se ve.
   async function irAlInicio() {
     estado.pantalla = 'inicio';
     estado.modo = 'resultados';
@@ -194,14 +194,8 @@
     history.replaceState(null, '', window.location.pathname + window.location.search);
     render();
     window.scrollTo(0, 0);
-    const [cargas, pub] = await Promise.all([
-      sb.from('aportes').select('id', { count: 'exact', head: true }).eq('es_ejemplo', false),
-      sb.rpc('estado_publicacion'),
-    ]);
-    estado.inicio = {
-      cargas: cargas && !cargas.error && typeof cargas.count === 'number' ? cargas.count : null,
-      publicacion: pub && !pub.error ? pub.data : null,
-    };
+    const cargas = await sb.from('aportes').select('id', { count: 'exact', head: true }).eq('es_ejemplo', false);
+    estado.inicio = { cargas: cargas && !cargas.error && typeof cargas.count === 'number' ? cargas.count : null };
     if (estado.pantalla === 'inicio') render();
   }
 
@@ -274,20 +268,19 @@
         <div class="t-cabecera__separador"></div>
         <img class="t-cabecera__simbolo t-cabecera__simbolo--des" src="${RUTA_SIMBOLO_SECUNDARIA}" alt="Dirección de Educación Secundaria">
         <div class="t-cabecera__nombre" aria-hidden="true"><span>Dirección de Educación Secundaria</span><span>Formosa</span></div>
-        <div class="t-cabecera__separador"></div>
-        <div class="t-cabecera__rotulo">Relevamiento y Sistematización Curricular</div>
+
       </div>
       <div class="t-cabecera__derecha">
         <div class="t-cabecera__fecha">Datos al ${esc(fechaLarga(new Date()))}</div>
-        ${estado.pantalla === 'inicio' ? '<button type="button" class="t-salir" data-accion="salir">Salir</button>' : ''}
+        ${estado.pantalla === 'inicio' ? '<button type="button" class="t-enlace-cab" data-accion="salir">Salir</button>' : ''}
         ${estado.pantalla === 'panel' ? `
-        <button type="button" class="t-salir" data-accion="ir-inicio">Inicio</button>
-        <button type="button" class="t-salir t-ayuda" data-accion="tour" title="Ver cómo se usa esta pantalla">¿Cómo se usa?</button>
+        <button type="button" class="t-enlace-cab" data-accion="ir-inicio">Inicio</button>
+        <button type="button" class="t-enlace-cab t-ayuda" data-accion="tour" title="Ver cómo se usa esta pantalla">¿Cómo se usa?</button>
         <button type="button" class="t-salir t-modo" data-accion="alternar-modo">${estado.modo === 'catalogo' ? 'Ver resultados' : 'Editar catálogo'}</button>
         <button type="button" class="t-interruptor ${estado.ejemplo ? 't-interruptor--activo' : ''} ${estado.modo === 'catalogo' ? 'oculto-visual' : ''}" data-accion="alternar-ejemplo" aria-pressed="${estado.ejemplo}">
           <span class="t-interruptor__pista"></span>Datos de ejemplo
         </button>
-        <button type="button" class="t-salir" data-accion="salir">Salir</button>` : ''}
+        <button type="button" class="t-enlace-cab" data-accion="salir">Salir</button>` : ''}
       </div>
     </header>`;
   }
@@ -957,32 +950,18 @@
   /* ---------- Inicio ---------- */
 
   function saludo() {
-    const h = new Date().getHours();
-    const parte = h < 6 ? 'Buenas noches' : h < 13 ? 'Buen día' : h < 20 ? 'Buenas tardes' : 'Buenas noches';
     const nombre = estado.nombre ? estado.nombre.split(/\s+/)[0] : '';
-    return nombre ? `${parte}, ${nombre}` : parte;
+    return nombre ? `Hola, ${nombre}` : 'Hola';
   }
 
+  // Una sola línea: lo único que cambia de un día a otro
   function lineaEstadoInicio() {
     const i = estado.inicio;
-    if (!i) return '<p class="t-inicio__estado">Trayendo cómo está el relevamiento…</p>';
-    const partes = [];
-    if (i.cargas != null) {
-      const abre = new Date(2026, 8, 26);
-      partes.push(i.cargas > 0
-        ? `Los docentes ya enviaron <strong>${numero(i.cargas)} ${plural(i.cargas, 'carga', 'cargas')}</strong>.`
-        : new Date() < abre
-          ? 'Todavía no hay cargas de docentes: <strong>la carga abre el viernes 26 de septiembre</strong>. Mientras tanto, los resultados se pueden mirar con datos de ejemplo.'
-          : 'Todavía no llegó ninguna carga de docentes.');
-    }
-    const p = i.publicacion;
-    if (p && p.publicado_en !== undefined) {
-      const n = Number(p.cambios_sin_publicar || 0);
-      if (!p.publicado_en) partes.push('El catálogo todavía no se publicó desde el panel.');
-      else if (n > 0) partes.push(`En el catálogo hay <strong>${n} ${plural(n, 'cambio sin publicar', 'cambios sin publicar')}</strong>: los docentes todavía no los ven.`);
-      else partes.push(`El catálogo está publicado y al día${p.publicado_por ? ` (lo publicó ${esc(p.publicado_por)})` : ''}.`);
-    }
-    return partes.length ? `<p class="t-inicio__estado">${partes.join(' ')}</p>` : '';
+    if (!i || i.cargas == null) return '';
+    if (i.cargas > 0) return `<p class="t-inicio__estado">Los docentes ya enviaron <strong>${numero(i.cargas)} ${plural(i.cargas, 'carga', 'cargas')}</strong>.</p>`;
+    return new Date() < new Date(2026, 8, 26)
+      ? '<p class="t-inicio__estado">La carga de los docentes abre el <strong>viernes 26 de septiembre</strong>.</p>'
+      : '<p class="t-inicio__estado">Todavía no llegó ninguna carga de docentes.</p>';
   }
 
   function pantallaInicio() {
@@ -1000,32 +979,23 @@
       ${cabecera()}
       <main class="t-inicio">
         <div class="t-inicio__marco">
-          <div class="t-inicio__sistema">${esc(NOMBRE_SISTEMA)}</div>
-          <h1 class="t-inicio__saludo">${esc(saludo())}</h1>
-          <p class="t-inicio__bajada">Desde acá se ve qué contenidos priorizan los docentes del Ciclo Básico y se mantiene al día el catálogo que ellos completan.</p>
+          <div class="t-inicio__hola">${esc(saludo())}</div>
+          <h1 class="t-inicio__nombre" aria-label="${esc(NOMBRE_SISTEMA)}">
+            <span class="t-inicio__nombre-pre">Aplicación web de</span>
+            <span class="t-inicio__nombre-central">Relevamiento y Sistematización Curricular</span>
+            <span class="t-inicio__nombre-pos">de la Provincia de Formosa</span>
+          </h1>
           ${lineaEstadoInicio()}
-
-          <h2 class="t-inicio__pregunta">¿Qué querés hacer?</h2>
           <div class="t-inicio__opciones">
             ${opcion('ir-resultados',
-              svg('<path d="M4 20h16"/><rect x="5" y="11" width="3" height="6"/><rect x="10.5" y="7" width="3" height="10"/><rect x="16" y="4" width="3" height="13"/>', { tam: 30, color: '#0B4F4A', grosor: 2 }),
+              svg('<path d="M4 20h16"/><rect x="5" y="11" width="3" height="6"/><rect x="10.5" y="7" width="3" height="10"/><rect x="16" y="4" width="3" height="13"/>', { tam: 28, color: '#0B4F4A', grosor: 2 }),
               'Ver los resultados',
-              'Qué contenidos eligen los docentes en cada saber, por materia y año, para toda la provincia, un departamento o una escuela. Para leer, proyectar y exportar.')}
+              'Qué contenidos eligen los docentes, materia por materia.')}
             ${opcion('ir-catalogo',
-              svg('<path d="M4 20h4l10-10-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/>', { tam: 30, color: '#0B4F4A', grosor: 2 }),
+              svg('<path d="M4 20h4l10-10-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/>', { tam: 28, color: '#0B4F4A', grosor: 2 }),
               'Editar el catálogo',
-              'Corregir saberes y contenidos, cambiar su orden, subir la planilla de una materia y publicar los cambios para que los vean los docentes.')}
+              'Los saberes y contenidos que ven los docentes.')}
           </div>
-
-          <section class="t-inicio__consejos">
-            <h2 class="t-inicio__consejos-titulo">Para tener en cuenta</h2>
-            <ul>
-              <li><strong>Editar no es publicar.</strong> Lo que cambies en el catálogo los docentes lo ven recién cuando tocás «Publicar».</li>
-              <li><strong>Nada se borra.</strong> Lo que se saca queda archivado con sus respuestas y se puede recuperar.</li>
-              <li><strong>Para revisar con un profesor,</strong> en los resultados: «Exportar» → «La currícula de la materia», en Excel o PDF.</li>
-              <li><strong>Si es la primera vez,</strong> cada pantalla tiene un recorrido guiado en «¿Cómo se usa?», arriba a la derecha.</li>
-            </ul>
-          </section>
         </div>
       </main>
     </div>`;

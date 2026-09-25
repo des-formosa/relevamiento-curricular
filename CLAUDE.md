@@ -396,13 +396,17 @@ inicio; en la cabecera y en el título de las pestañas, «Relevamiento y Sistem
 Curricular».
 
 **Al entrar, un inicio** (24/09/2026, lo pidió el equipo: «algo más cómodo de recibir antes de
-usarlo»). Saluda por el nombre cargado en `equipo_planificacion`, dice en una línea cómo está
-el relevamiento (cuántas cargas reales llegaron; antes del 26, que la carga abre ese día) y el
-catálogo (publicado o con cambios sin publicar), y ofrece los dos caminos: «Ver los
-resultados» y «Editar el catálogo». Abajo, cuatro cosas para tener en cuenta. Sin tarjetas de
-métricas. Desde el panel se vuelve con «Inicio». **Un link compartido** (con `materia=` en el
-hash) no pasa por el inicio: va directo a lo que muestra. Salir borra el hash, así el que entra
-después arranca por el inicio.
+usarlo»). La primera versión tenía de más —saludo enorme, estado del catálogo, cuatro consejos—
+y el equipo la sintió cargada. Quedó: «Hola, Ana» chico, el nombre del sistema como título
+(«Relevamiento y Sistematización Curricular» grande, con «Aplicación web de» arriba y «de la
+Provincia de Formosa» abajo), una línea de cómo va la carga y los dos caminos: «Ver los
+resultados» y «Editar el catálogo». Desde el panel se vuelve con «Inicio». **Un link
+compartido** (con `materia=` en el hash) no pasa por el inicio: va directo a lo que muestra.
+Salir borra el hash, así el que entra después arranca por el inicio.
+
+En la cabecera, «Inicio», «¿Cómo se usa?» y «Salir» son enlaces sin recuadro (`.t-enlace-cab`);
+solo «Editar catálogo» y «Datos de ejemplo» son botones. Con cinco controles con recuadro la
+cabecera se partía en dos filas a 1366 y 1920 px.
 
 **Después, es prácticamente una sola pantalla:**
 
