@@ -317,11 +317,53 @@
     </div>`;
   }
 
-  function bloqueImpresion() {
-    return `<div class="t-impresion">
-      <div class="t-impresion__titulo">Contenidos priorizados · ${esc(nombreMateria())} · ${esc(textoAnio())}</div>
-      <div class="t-impresion__sub">${esc(nombreAlcance())} · Datos al ${esc(fechaLarga(new Date()))}${estado.ejemplo ? ' · DATOS DE EJEMPLO, no son respuestas de docentes' : ''}</div>
-    </div>`;
+  // El PDF es un documento, no la pantalla impresa: la currícula de la materia
+  // tal como queda con lo que eligieron los docentes, para leer en papel o
+  // mandar a los profesores. En pantalla no se ve; al imprimir es lo único.
+  function documentoImpresion() {
+    const d = estado.datos;
+    if (!d) return '';
+    const c = d.contexto;
+    const pct = (v) => Math.round(Number(v) || 0);
+    const saber = (s) => {
+      let cuerpo;
+      if (!s.suficiente) {
+        cuerpo = `<p class="t-doc__nota">${s.trabajan
+          ? `Solo ${s.trabajan} ${plural(s.trabajan, 'docente lo trabaja', 'docentes lo trabajan')}: son muy pocos para dar porcentajes.`
+          : 'Todavía ningún docente informó que lo trabaja.'}</p>`;
+      } else if (!(s.contenidos || []).length) {
+        cuerpo = '<p class="t-doc__nota">Los docentes que lo trabajan no eligieron contenidos.</p>';
+      } else {
+        cuerpo = `<ul class="t-doc__contenidos">${s.contenidos.map((co) => `
+          <li class="t-doc__contenido">
+            <span class="t-doc__contenido-texto">${esc(co.texto)}${co.tipo === 'libre' ? ' <em>(agregado por docentes)</em>' : ''}</span>
+            <span class="t-doc__barra"><span style="width:${pct(co.porcentaje)}%"></span></span>
+            <span class="t-doc__pct">${pct(co.porcentaje)} %</span>
+          </li>`).join('')}</ul>`;
+      }
+      return `<div class="t-doc__saber">
+        <div class="t-doc__rotulo">Saber ${s.numero} · ${esc(s.ejeInfo.rotulo)} — ${esc(s.ejeInfo.nombre)}</div>
+        <div class="t-doc__texto">${esc(s.texto)}</div>
+        ${s.informan ? `<div class="t-doc__cuenta">Lo trabajan ${s.trabajan} de ${s.informan} docentes que lo informaron</div>` : ''}
+        ${cuerpo}
+      </div>`;
+    };
+    const trimestres = [1, 2, 3].filter((t) => d.porTrimestre[t].length).map((t) => `
+      <section class="t-doc__trimestre">
+        <h2 class="t-doc__trimestre-titulo">${ORDINAL[t]} trimestre <span>· ${d.porTrimestre[t].length} ${plural(d.porTrimestre[t].length, 'saber', 'saberes')}</span></h2>
+        ${d.porTrimestre[t].map(saber).join('')}
+      </section>`).join('');
+    return `<article class="t-doc">
+      <header class="t-doc__cabeza">
+        <div class="t-doc__institucion">Ministerio de Cultura y Educación · Dirección de Educación Secundaria · Formosa</div>
+        <h1 class="t-doc__titulo">${esc(nombreMateria())} · ${esc(textoAnio())}</h1>
+        <div class="t-doc__sub">Contenidos que priorizan los docentes, trimestre por trimestre</div>
+        <div class="t-doc__datos">${esc(estado.alcance.tipo === 'provincia' ? 'Toda la provincia' : nombreAlcance())} · ${numero(c.docentes)} ${plural(c.docentes, 'docente', 'docentes')} de ${numero(c.escuelas)} ${plural(c.escuelas, 'escuela', 'escuelas')} · Datos al ${esc(fechaLarga(new Date()))}</div>
+        ${estado.ejemplo ? '<div class="t-doc__ejemplo">DATOS DE EJEMPLO: inventados para mostrar cómo se ve. No son respuestas de docentes.</div>' : ''}
+        <p class="t-doc__lectura">Los saberes van en el orden del diseño curricular. Debajo de cada uno, los contenidos que eligieron los docentes que lo trabajan, de más a menos elegido; el porcentaje es sobre esos docentes.</p>
+      </header>
+      ${trimestres}
+    </article>`;
   }
 
   /* ---------- Vista Detalle ---------- */
@@ -520,8 +562,9 @@
           </label>
         </div>
       </div>
-      ${pdfConTodo ? '<div class="t-panel__nota">El PDF arma una presentación de lo que estás viendo. Para todo el relevamiento, usá Excel: son demasiadas páginas para un PDF.</div>' : ''}
-      ${x.formato === 'pdf' && !pdfConTodo ? '<div class="t-panel__nota">Se abre la ventana de impresión del navegador: elegí «Guardar como PDF».</div>' : ''}
+      ${pdfConTodo ? '<div class="t-panel__nota">El PDF arma la currícula de la materia que estás viendo. Para todo el relevamiento, usá Excel: son demasiadas páginas para un PDF.</div>' : ''}
+      ${x.formato === 'pdf' && !pdfConTodo ? '<div class="t-panel__nota">Arma la currícula de la materia: cada saber con los contenidos que eligieron los docentes. Se abre la ventana de impresión: elegí «Guardar como PDF».</div>' : ''}
+      ${x.formato === 'excel' && x.que === 'vista' ? '<div class="t-panel__nota">Una hoja con cada saber y sus contenidos priorizados, y una columna de «Observaciones» para que los profesores anoten.</div>' : ''}
       ${x.progreso ? `<div class="t-panel__nota">${esc(x.progreso)}</div>` : ''}
       ${x.error ? `<div class="t-panel__nota t-panel__nota--error">${esc(x.error)}</div>` : ''}
       <div class="t-panel__acciones">
@@ -576,45 +619,61 @@
     render();
   }
 
-  // «Lo que estoy viendo»: dos hojas, resumen y contenidos
+  // «Lo que estoy viendo»: una sola hoja que se lee como la currícula de la
+  // materia. El equipo la manda a los profesores para que confirmen o
+  // corrijan: solo lo que hace falta para eso, y una columna para anotar.
+  // El saber se escribe una vez, en su primera fila; debajo, sus contenidos.
   function libroVista() {
     const X = window.XLSX;
     const d = estado.datos;
-    const resumen = [
-      ['Relevamiento curricular · Contenidos priorizados'],
-      ['Materia', nombreMateria()],
-      ['Año', textoAnio()],
-      ['Alcance', nombreAlcance()],
-      ['Docentes', d.contexto.docentes],
-      ['Escuelas', d.contexto.escuelas],
-      ['Datos al', fechaLarga(new Date())],
-      ['Datos de ejemplo', estado.ejemplo ? 'SÍ — inventados para la demostración' : 'No'],
-      [],
-      ['Muestra insuficiente: menos de ' + MUESTRA_MINIMA + ' docentes trabajan el saber. En esos casos no se informan porcentajes.'],
+    const c = d.contexto;
+    const filas = [
+      [`${nombreMateria()} · ${textoAnio()} — Contenidos que priorizan los docentes`],
+      [`${estado.alcance.tipo === 'provincia' ? 'Toda la provincia' : nombreAlcance()} · ${c.docentes} ${plural(c.docentes, 'docente', 'docentes')} de ${c.escuelas} ${plural(c.escuelas, 'escuela', 'escuelas')} · Datos al ${fechaLarga(new Date())}`],
     ];
-    const filas = [['Trimestre', 'Eje', 'N° saber', 'Saber', 'Docentes que informaron', 'Lo trabajan', 'No lo trabajan', 'Contenido', 'Origen', 'Docentes que lo eligieron', 'Porcentaje']];
-    for (const s of d.saberes) {
-      const base = [s.trimestre, `${s.ejeInfo.rotulo} — ${s.ejeInfo.nombre}`, s.numero, s.texto, s.informan, s.trabajan, s.no_trabajan];
-      if (!s.suficiente) { filas.push(base.concat(['(muestra insuficiente)', '', '', ''])); continue; }
-      if (!(s.contenidos || []).length) { filas.push(base.concat(['', '', '', ''])); continue; }
-      for (const c of s.contenidos) filas.push(base.concat([c.texto, c.tipo === 'libre' ? 'agregado por docentes' : 'catálogo', c.docentes, Number(c.porcentaje) / 100]));
+    if (estado.ejemplo) filas.push(['DATOS DE EJEMPLO: inventados para mostrar cómo se ve. No son respuestas de docentes.']);
+    filas.push(['El porcentaje es sobre los docentes que trabajan ese saber. En «Observaciones» se puede anotar si falta, sobra o hay que corregir algo.']);
+    filas.push([]);
+    const cabecera = ['Trimestre', 'Saber', 'Eje', 'Contenido priorizado', '% de docentes', 'Observaciones'];
+    filas.push(cabecera);
+    const inicioDatos = filas.length;
+    for (const t of [1, 2, 3]) {
+      d.porTrimestre[t].forEach((s, i) => {
+        const trimestre = i === 0 ? `${ORDINAL[t]} trimestre` : '';
+        const base = [trimestre, `${s.numero}. ${s.texto}`, `${s.ejeInfo.rotulo} — ${s.ejeInfo.nombre}`];
+        const lista = s.suficiente ? (s.contenidos || []) : [];
+        if (!lista.length) {
+          const nota = !s.suficiente
+            ? (s.trabajan ? `Muestra insuficiente: solo ${s.trabajan} ${plural(s.trabajan, 'docente lo trabaja', 'docentes lo trabajan')}` : 'Ningún docente lo informó todavía')
+            : 'Sin contenidos elegidos';
+          filas.push(base.concat([nota, '', '']));
+          return;
+        }
+        lista.forEach((co, k) => {
+          const texto = co.texto + (co.tipo === 'libre' ? ' (agregado por docentes)' : '');
+          filas.push((k === 0 ? base : [trimestre && k === 0 ? trimestre : '', '', '']).concat([texto, Number(co.porcentaje) / 100, '']));
+        });
+      });
     }
+    const hoja = X.utils.aoa_to_sheet(filas);
+    hoja['!cols'] = [{ wch: 14 }, { wch: 70 }, { wch: 34 }, { wch: 60 }, { wch: 13 }, { wch: 40 }];
+    for (let r = inicioDatos; r < filas.length; r++) {
+      const celda = hoja[X.utils.encode_cell({ r, c: 4 })];
+      if (celda && typeof celda.v === 'number') celda.z = '0%';
+    }
+    hoja['!autofilter'] = { ref: X.utils.encode_range({ s: { r: inicioDatos - 1, c: 0 }, e: { r: filas.length - 1, c: cabecera.length - 1 } }) };
     const libro = X.utils.book_new();
-    const h1 = X.utils.aoa_to_sheet(resumen);
-    h1['!cols'] = [{ wch: 22 }, { wch: 60 }];
-    X.utils.book_append_sheet(libro, h1, 'Resumen');
-    const h2 = X.utils.aoa_to_sheet(filas);
-    h2['!cols'] = [{ wch: 10 }, { wch: 40 }, { wch: 9 }, { wch: 70 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 60 }, { wch: 20 }, { wch: 12 }, { wch: 11 }];
-    for (let r = 1; r < filas.length; r++) { const celda = h2[X.utils.encode_cell({ r, c: 10 })]; if (celda && typeof celda.v === 'number') celda.z = '0%'; }
-    X.utils.book_append_sheet(libro, h2, 'Contenidos');
+    X.utils.book_append_sheet(libro, hoja, 'Currícula');
     return libro;
   }
 
   // «Todo el relevamiento»: v_relevamiento completa, paginada
   async function libroCompleto() {
     const X = window.XLSX;
-    const columnas = ['aporte_id', 'enviado_en', 'departamento', 'escuela', 'localidad', 'apellido', 'nombre', 'area', 'espacio', 'anio', 'trimestre', 'eje_orden', 'eje', 'saber_orden', 'saber_id', 'saber', 'estado', 'tipo', 'contenido', 'contenido_orden'];
-    const filas = [['Aporte', 'Enviado', 'Departamento', 'Escuela', 'Localidad', 'Apellido', 'Nombre', 'Área', 'Materia', 'Año', 'Trimestre', 'Orden eje', 'Eje', 'Orden saber', 'Id saber', 'Saber', 'Estado', 'Origen del contenido', 'Contenido', 'Orden']];
+    // Se piden las columnas de orden solo para ordenar; en el archivo van las
+    // que lee una persona
+    const columnas = ['aporte_id', 'enviado_en', 'departamento', 'escuela', 'localidad', 'apellido', 'nombre', 'espacio', 'anio', 'trimestre', 'eje', 'saber', 'estado', 'tipo', 'contenido'];
+    const filas = [['Enviado', 'Departamento', 'Escuela', 'Localidad', 'Apellido', 'Nombre', 'Materia', 'Año', 'Trimestre', 'Eje', 'Saber', 'Lo trabaja', 'Contenido', 'Origen del contenido']];
     let desde = 0;
     for (;;) {
       const { data, error } = await sb.from('v_relevamiento').select(columnas.join(','))
@@ -622,12 +681,14 @@
         .order('aporte_id').order('saber_id').order('contenido_orden')
         .range(desde, desde + FILAS_POR_PAGINA - 1);
       if (error) throw new Error('La base de datos no respondió a mitad de la descarga. Volvé a intentar.');
-      for (const f of data) filas.push(columnas.map((c) => {
-        if (c === 'estado') return f.estado === 'no_trabaja' ? 'no trabaja el saber' : 'trabaja';
-        if (c === 'tipo') return f.tipo === 'libre' ? 'agregado por docente' : (f.tipo === 'catalogo' ? 'catálogo' : '');
-        if (c === 'enviado_en') return f.enviado_en ? new Date(f.enviado_en).toLocaleString('es-AR') : '';
-        return f[c] == null ? '' : f[c];
-      }));
+      for (const f of data) filas.push([
+        f.enviado_en ? new Date(f.enviado_en).toLocaleString('es-AR') : '',
+        f.departamento || '', f.escuela || '', f.localidad || '', f.apellido || '', f.nombre || '',
+        f.espacio || '', f.anio == null ? '' : f.anio, f.trimestre == null ? '' : f.trimestre, f.eje || '', f.saber || '',
+        f.estado === 'no_trabaja' ? 'no' : 'sí',
+        f.contenido || '',
+        f.tipo === 'libre' ? 'agregado por el docente' : (f.tipo === 'catalogo' ? 'sugerido' : ''),
+      ]);
       estado.exportar.progreso = `Descargando… ${numero(filas.length - 1)} filas`;
       render();
       if (data.length < FILAS_POR_PAGINA) break;
@@ -635,7 +696,7 @@
     }
     const libro = X.utils.book_new();
     const hoja = X.utils.aoa_to_sheet(filas);
-    hoja['!cols'] = [{ wch: 8 }, { wch: 18 }, { wch: 16 }, { wch: 40 }, { wch: 20 }, { wch: 18 }, { wch: 18 }, { wch: 28 }, { wch: 28 }, { wch: 5 }, { wch: 9 }, { wch: 9 }, { wch: 40 }, { wch: 11 }, { wch: 26 }, { wch: 70 }, { wch: 20 }, { wch: 20 }, { wch: 60 }, { wch: 6 }];
+    hoja['!cols'] = [{ wch: 18 }, { wch: 16 }, { wch: 36 }, { wch: 20 }, { wch: 18 }, { wch: 18 }, { wch: 28 }, { wch: 5 }, { wch: 9 }, { wch: 40 }, { wch: 70 }, { wch: 10 }, { wch: 60 }, { wch: 22 }];
     X.utils.book_append_sheet(libro, hoja, 'Relevamiento');
     return libro;
   }
@@ -732,10 +793,10 @@
       ${selectores()}
       ${lineaContexto()}
       <div class="t-cuerpo">
-        ${bloqueImpresion()}
         ${cuerpo()}
       </div>
       ${panelExportar()}
+      ${documentoImpresion()}
     </div>`;
   }
 

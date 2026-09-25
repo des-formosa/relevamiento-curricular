@@ -902,31 +902,51 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
 
 /* ---------- Impresión (PDF) ---------- */
 
+/* ============================================================================
+   El PDF: un documento propio (documentoImpresion en dashboard.js)
+
+   No se imprime la pantalla: se imprime la currícula de la materia, en A4
+   vertical, en registro de documento. Título, y por trimestre cada saber con
+   sus contenidos priorizados y una barra fina con el porcentaje.
+   ============================================================================ */
+.t-doc { display: none; }
+
 @media print {
-  @page { size: A4 landscape; margin: 14mm; }
-  body { background: var(--blanco); }
-  .t-cabecera, .t-selectores, .t-contexto .t-vistas, .t-velo, .t-panel, .t-ver, .t-banda-ejemplo, .t-salir, .t-interruptor { display: none !important; }
-  .t-impresion { display: block !important; }
-  .t-cuerpo { padding: 0; }
-  .t-columnas { display: block; }
-  .t-columna { margin-bottom: 18px; break-before: page; }
-  .t-columna:first-child { break-before: auto; }
-  .t-fila--oculta { display: flex !important; }
-  .t-saber, .t-mapa__fila { break-inside: avoid; }
-  .t-saber--abierto { box-shadow: none; }
-  .t-mapa { border: none; padding: 0; }
-  /* El navegador descarta los fondos al imprimir, y acá los fondos son el
-     dato: sin ellos las barras salen vacías y el rótulo del trimestre queda
-     en blanco sobre blanco. */
-  .t-barra, .t-pista, .t-columna__cabecera,
-  .t-celda, .t-chip-libre, .t-mapa__cabecera {
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
+  @page { size: A4 portrait; margin: 16mm 15mm; }
+  body { background: #FFFFFF; }
+  .tablero > :not(.t-doc) { display: none !important; }
+  .t-doc { display: block; font-family: var(--ui); color: var(--tinta); }
+
+  .t-doc__cabeza { border-bottom: 2px solid var(--verde); padding-bottom: 10px; margin-bottom: 14px; }
+  .t-doc__institucion { font-size: 9pt; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--verde); }
+  .t-doc__titulo { font-size: 22pt; font-weight: 800; letter-spacing: -0.01em; margin: 6px 0 2px; }
+  .t-doc__sub { font-size: 12pt; color: var(--tinta-2); }
+  .t-doc__datos { font-size: 9.5pt; color: var(--t-gris); margin-top: 4px; }
+  .t-doc__ejemplo { font-size: 10pt; font-weight: 800; color: var(--ocre); border: 1.5px dashed var(--ocre-borde); padding: 5px 8px; margin-top: 8px; }
+  .t-doc__lectura { font-family: var(--texto); font-size: 9.5pt; color: var(--t-gris); margin: 8px 0 0; line-height: 1.4; }
+
+  .t-doc__trimestre { margin-top: 16px; }
+  .t-doc__trimestre + .t-doc__trimestre { break-before: page; }
+  .t-doc__trimestre-titulo {
+    font-size: 13pt; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase;
+    color: var(--verde); border-bottom: 1px solid var(--t-borde); padding-bottom: 4px; margin: 0 0 6px;
+    break-after: avoid;
   }
+  .t-doc__trimestre-titulo span { font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--t-gris); font-size: 10pt; }
+
+  .t-doc__saber { padding: 9px 0 10px; border-bottom: 1px solid #E6E1D4; break-inside: avoid; }
+  .t-doc__rotulo { font-size: 8pt; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ladrillo); }
+  .t-doc__texto { font-family: var(--serif); font-size: 11.5pt; line-height: 1.35; margin-top: 2px; }
+  .t-doc__cuenta { font-size: 8.5pt; color: var(--t-gris); margin-top: 3px; }
+  .t-doc__nota { font-family: var(--texto); font-size: 9.5pt; color: var(--t-gris); font-style: italic; margin: 5px 0 0; }
+
+  .t-doc__contenidos { list-style: none; margin: 5px 0 0; padding: 0; }
+  .t-doc__contenido { display: grid; grid-template-columns: 1fr 90px 38px; align-items: center; gap: 10px; font-size: 10pt; line-height: 1.3; padding: 2px 0; }
+  .t-doc__contenido-texto em { font-style: normal; color: var(--ocre); font-size: 8.5pt; }
+  .t-doc__barra { height: 6px; background: #E6EFEC; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .t-doc__barra span { display: block; height: 100%; background: var(--verde); -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .t-doc__pct { text-align: right; font-weight: 800; font-variant-numeric: tabular-nums; }
 }
-.t-impresion { display: none; margin-bottom: 18px; }
-.t-impresion__titulo { font-size: 24px; font-weight: 800; letter-spacing: -0.015em; }
-.t-impresion__sub { font-size: 15px; color: var(--t-gris); margin-top: 4px; }
 
 /* ============================================================================
    Editor del catálogo (assets/editor.js)

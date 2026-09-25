@@ -405,6 +405,15 @@ está mal.
    presentar). Excel se arma con SheetJS por CDN; PDF abre la impresión del navegador con
    una hoja de estilos de impresión. «Todo el relevamiento» baja `v_relevamiento` paginada.
 
+   El equipo manda lo exportado a los profesores para que confirmen o corrijan, así que
+   **se exporta la currícula de la materia, no la pantalla**. El Excel de «lo que estoy
+   viendo» es una sola hoja, *Trimestre · Saber · Eje · Contenido priorizado · % de docentes ·
+   Observaciones*: el saber una vez y debajo sus contenidos, sin conteos ni columnas técnicas,
+   y «Observaciones» vacía para que anoten. El PDF es un documento aparte
+   (`documentoImpresion()`), invisible en pantalla: A4 vertical, un trimestre por página, cada
+   saber con sus contenidos, una barra fina y el porcentaje. «Todo el relevamiento» perdió los
+   ids y números de orden; ojo que trae nombre y apellido de cada docente: no es para repartir.
+
 Dos vistas de la misma información, no dos reportes: **Detalle** (contenidos con su barra)
 y **Mapa de calor** (los ejes del diseño por trimestre, con los contenidos más elegidos). La
 barra de 18 px es el único elemento gráfico: se lee proyectada desde el fondo de una sala.
