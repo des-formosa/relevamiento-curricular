@@ -404,9 +404,22 @@ resultados» y «Editar el catálogo». Desde el panel se vuelve con «Inicio».
 compartido** (con `materia=` en el hash) no pasa por el inicio: va directo a lo que muestra.
 Salir borra el hash, así el que entra después arranca por el inicio.
 
-En la cabecera, «Inicio», «¿Cómo se usa?» y «Salir» son enlaces sin recuadro (`.t-enlace-cab`);
-solo «Editar catálogo» y «Datos de ejemplo» son botones. Con cinco controles con recuadro la
-cabecera se partía en dos filas a 1366 y 1920 px.
+**Los botones, cada uno donde actúa** (24/09/2026). Había tres «exportar» con nombres
+parecidos y un botón «Editar catálogo» que cambiaba de texto según dónde estabas; el equipo se
+confundía. Quedó así:
+
+- **Cabecera: solo navegación.** «Inicio · Resultados · Catálogo», con el lugar actual
+  subrayado como solapa, y después «¿Cómo se usa?» y «Salir». Todos enlaces sin recuadro
+  (`.t-enlace-cab`), así entra en una fila.
+- **Resultados**, en la barra de selectores: «Datos de ejemplo» y **«Descargar resultados»**
+  (lo que estoy viendo, o todo el relevamiento). Si no entran al lado de los selectores, bajan
+  juntos a una segunda línea.
+- **Catálogo**, en la barra del editor: «Historial», **«Descargar para revisar»** (la currícula
+  de la materia, sin resultados, en Excel o PDF, para un profesor), **«Cambiar con una
+  planilla»** (1 · bajá la planilla, 2 · subila corregida; el JSON quedó como enlace chico para
+  quien mantiene el sistema) y **«Publicar»**.
+
+El recorrido guiado pasó a `v4`, con un paso para «Descargar para revisar».
 
 **Después, es prácticamente una sola pantalla:**
 
@@ -432,7 +445,7 @@ cabecera se partía en dos filas a 1366 y 1920 px.
    saber con sus contenidos, una barra fina y el porcentaje. «Todo el relevamiento» perdió los
    ids y números de orden; ojo que trae nombre y apellido de cada docente: no es para repartir.
 
-   Una tercera opción, **«La currícula de [materia]»**, exporta el catálogo sin resultados:
+   **«Descargar para revisar»**, en el catálogo, exporta la currícula sin resultados:
    todos los años, *Año · Trimestre · Eje · Saber · Contenido · Observaciones*, para que el
    equipo lo revise con un profesor. Sale de la base (`catalogo_filas`), así que incluye lo
    editado aunque no esté publicado. En PDF, un año por página y los contenidos como lista.

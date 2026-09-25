@@ -1594,3 +1594,32 @@ body.tour-abierto { overflow: hidden; }
   .t-inicio__opcion-titulo { font-size: 19px; }
   .t-hero__titulo--sistema { font-size: 26px; }
 }
+
+/* Navegación de la cabecera: Inicio · Resultados · Catálogo, con el lugar
+   actual subrayado como una solapa */
+.t-nav { display: flex; align-items: center; gap: 2px; }
+.t-enlace-cab--actual { color: var(--t-tinta); text-decoration-color: var(--verde); text-decoration-thickness: 3px; text-underline-offset: 8px; }
+.t-nav__separador { width: 1px; height: 26px; background: var(--t-borde); margin: 0 6px; }
+.t-panel__bajada { font-family: var(--texto); font-size: 15.5px; line-height: 1.5; color: var(--tinta-2); margin: 0; }
+.ar-respaldo { margin-top: 18px; }
+.ar-enlace { border: none; background: none; padding: 0; font: inherit; color: var(--verde); text-decoration: underline; cursor: pointer; }
+@media (max-width: 899px) {
+  .t-nav__separador { display: none; }
+  .t-selectores .t-interruptor { justify-content: center; height: 52px; }
+}
+
+/* Datos de ejemplo y Descargar van juntos: si no entran al lado de los
+   selectores, bajan los dos a una segunda línea, a la derecha */
+.t-selectores { flex-wrap: wrap; row-gap: 10px; }
+.t-selectores__acciones { display: flex; align-items: center; gap: 14px; margin-left: auto; }
+.t-selectores__acciones .t-interruptor { height: 46px; }
+@media (max-width: 899px) {
+  .t-selectores__acciones { flex-direction: column; align-items: stretch; margin-left: 0; gap: 10px; }
+}
+/* Entre 1280 y 1599 los selectores se achican un poco para que Datos de
+   ejemplo y Descargar entren en la misma línea */
+@media (min-width: 1280px) and (max-width: 1599px) {
+  .t-select--materia { width: 250px; }
+  .t-select--anio { width: 130px; }
+  .t-select--alcance { width: 270px; }
+}

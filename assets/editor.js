@@ -57,6 +57,7 @@ const Editor = (function () {
     restaurar: svg('<path d="M4 12a8 8 0 1 0 2.3-5.6"/><path d="M4 4v5h5"/>', { color: '#0B4F4A' }),
     mas: svg('<path d="M12 5v14"/><path d="M5 12h14"/>'),
     reloj: svg('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>', { color: '#55605A' }),
+    planilla: svg('<rect x="4" y="4" width="16" height="16"/><path d="M4 10h16"/><path d="M4 15h16"/><path d="M10 4v16"/>', { color: '#55605A' }),
     arriba: svg('<path d="M6 15l6-6 6 6"/>', { tam: 20, grosor: 2.4 }),
     abajo: svg('<path d="M6 9l6 6 6-6"/>', { tam: 20, grosor: 2.4 }),
     bajar: svg('<path d="M12 4v11"/><path d="M7 11l5 5 5-5"/><path d="M4 20h16"/>', { color: '#55605A' }),
@@ -342,8 +343,9 @@ const Editor = (function () {
           ${activos.length} ${plural(activos.length, 'saber', 'saberes')} y ${contenidos} contenidos activos
         </div>
         <div class="ed-barra__botones">
-          <button type="button" class="ed-boton" data-accion="ed-historial">${Icono.reloj} Ver historial</button>
-          <button type="button" class="ed-boton" data-accion="ar-abrir">${Icono.bajar} Exportar e importar</button>
+          <button type="button" class="ed-boton" data-accion="ed-historial">${Icono.reloj} Historial</button>
+          <button type="button" class="ed-boton" data-accion="abrir-revisar" title="La currícula de la materia en Excel o PDF, para revisar con un profesor">${Icono.bajar} Descargar para revisar</button>
+          <button type="button" class="ed-boton" data-accion="ar-abrir" title="Bajar la planilla de la materia, corregirla en Excel y subirla">${Icono.planilla} Cambiar con una planilla</button>
           <button type="button" class="ed-boton ed-boton--publicar" data-accion="ed-publicar"${estado.publicando ? ' disabled' : ''}>${Icono.subir} ${estado.publicando ? 'Publicando…' : 'Publicar'}</button>
         </div>
       </div>

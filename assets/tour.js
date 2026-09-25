@@ -19,7 +19,7 @@ const Tour = (function () {
   const CLAVE = 'relevamiento.tour.';
   // Subir la versión hace que el recorrido vuelva a aparecer solo una vez a
   // todos: se usa cuando cambia algo que el equipo ya había visto explicado.
-  const VERSION = 'v3';
+  const VERSION = 'v4';
 
   let capa = null;
   let pasos = [];
@@ -77,13 +77,13 @@ const Tour = (function () {
       },
       {
         objetivo: '.t-exportar',
-        titulo: 'Para llevarte lo que ves',
-        texto: 'Excel para seguir trabajando los datos, PDF para presentar. Podés exportar solo lo que estás viendo o todo el relevamiento provincial.',
+        titulo: 'Para llevarte los resultados',
+        texto: '«Descargar resultados» baja lo que estás viendo, en Excel para trabajar o en PDF para presentar, o todo el relevamiento provincial en Excel.',
       },
       {
-        objetivo: '.t-modo',
+        objetivo: '[data-accion="ir-catalogo"]',
         titulo: 'Y si hay algo mal en el catálogo',
-        texto: 'Desde «Editar catálogo» se corrige un saber, se agrega un contenido que falta o se saca uno que no va. También se puede rehacer una materia entera con una planilla de Excel. Cuando entres, te muestro cómo.',
+        texto: 'En «Catálogo», arriba, se corrige un saber, se agrega un contenido que falta o se saca uno que no va. También se puede rehacer una materia entera con una planilla de Excel. Cuando entres, te muestro cómo.',
       },
     ],
 
@@ -135,12 +135,17 @@ const Tour = (function () {
       {
         objetivo: '[data-accion="ar-abrir"]',
         titulo: 'Muchos cambios juntos: la planilla',
-        texto: 'Si hay que cambiar muchas cosas o rehacer la materia, es más fácil en Excel. Acá bajás la planilla de la materia, ya completa: una fila por saber y los contenidos al lado. El orden de las filas es el orden de los saberes: para cambiarlo, movés la fila. La corregís y la subís acá mismo.',
+        texto: '«Cambiar con una planilla»: si hay que cambiar muchas cosas o rehacer la materia, es más fácil en Excel. Bajás la planilla de la materia, ya completa, la corregís y la subís acá mismo. El orden de las filas es el orden de los saberes.',
       },
       {
         objetivo: '[data-accion="ar-abrir"]',
         titulo: 'Antes de subirla',
         texto: 'La planilla reemplaza la materia. Si en un año falta un saber, ese saber se saca. Así que si querés corregir solo algunos, dejá los demás como están. Antes de aplicar, el panel te muestra cómo va a quedar.',
+      },
+      {
+        objetivo: '[data-accion="abrir-revisar"]',
+        titulo: 'Para revisar con un profesor',
+        texto: '«Descargar para revisar» baja la currícula de la materia, todos los años, en Excel (con una columna para observaciones) o en PDF. Es para leer, no se vuelve a subir.',
       },
       {
         objetivo: '[data-accion="ed-publicar"]',

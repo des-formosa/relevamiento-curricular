@@ -272,17 +272,26 @@
       </div>
       <div class="t-cabecera__derecha">
         <div class="t-cabecera__fecha">Datos al ${esc(fechaLarga(new Date()))}</div>
-        ${estado.pantalla === 'inicio' ? '<button type="button" class="t-enlace-cab" data-accion="salir">Salir</button>' : ''}
-        ${estado.pantalla === 'panel' ? `
-        <button type="button" class="t-enlace-cab" data-accion="ir-inicio">Inicio</button>
-        <button type="button" class="t-enlace-cab t-ayuda" data-accion="tour" title="Ver cómo se usa esta pantalla">¿Cómo se usa?</button>
-        <button type="button" class="t-salir t-modo" data-accion="alternar-modo">${estado.modo === 'catalogo' ? 'Ver resultados' : 'Editar catálogo'}</button>
-        <button type="button" class="t-interruptor ${estado.ejemplo ? 't-interruptor--activo' : ''} ${estado.modo === 'catalogo' ? 'oculto-visual' : ''}" data-accion="alternar-ejemplo" aria-pressed="${estado.ejemplo}">
-          <span class="t-interruptor__pista"></span>Datos de ejemplo
-        </button>
-        <button type="button" class="t-enlace-cab" data-accion="salir">Salir</button>` : ''}
+        ${['inicio', 'panel'].includes(estado.pantalla) ? navegacion() : ''}
       </div>
     </header>`;
+  }
+
+  // La cabecera solo lleva por dónde moverse: Inicio, Resultados y Catálogo,
+  // con el lugar actual marcado, y la ayuda y la salida. Las acciones de cada
+  // pantalla van en su propia barra, al lado de lo que afectan.
+  function navegacion() {
+    const actual = estado.pantalla === 'inicio' ? 'inicio' : estado.modo === 'catalogo' ? 'catalogo' : 'resultados';
+    const enlace = (id, accion, texto) =>
+      `<button type="button" class="t-enlace-cab ${actual === id ? 't-enlace-cab--actual' : ''}" data-accion="${accion}" ${actual === id ? 'aria-current="page"' : ''}>${texto}</button>`;
+    return `<nav class="t-nav" aria-label="Secciones">
+        ${enlace('inicio', 'ir-inicio', 'Inicio')}
+        ${enlace('resultados', 'ir-resultados', 'Resultados')}
+        ${enlace('catalogo', 'ir-catalogo', 'Catálogo')}
+      </nav>
+      <span class="t-nav__separador" aria-hidden="true"></span>
+      ${estado.pantalla === 'panel' ? '<button type="button" class="t-enlace-cab t-ayuda" data-accion="tour" title="Ver cómo se usa esta pantalla">¿Cómo se usa?</button>' : ''}
+      <button type="button" class="t-enlace-cab" data-accion="salir">Salir</button>`;
   }
 
   function bandaEjemplo() {
@@ -328,7 +337,13 @@
         <select class="t-select t-select--alcance" id="s-alcance" data-cambio="alcance">${opcionesAlcance}</select>
       </div>`}
       <div class="espaciador"></div>
-      ${estado.modo === 'catalogo' ? '' : `<button type="button" class="t-exportar" data-accion="abrir-exportar">${Icono.descargar}Exportar</button>`}
+      ${estado.modo === 'catalogo' ? '' : `
+      <div class="t-selectores__acciones">
+        <button type="button" class="t-interruptor ${estado.ejemplo ? 't-interruptor--activo' : ''}" data-accion="alternar-ejemplo" aria-pressed="${estado.ejemplo}">
+          <span class="t-interruptor__pista"></span>Datos de ejemplo
+        </button>
+        <button type="button" class="t-exportar" data-accion="abrir-exportar">${Icono.descargar}Descargar resultados</button>
+      </div>`}
     </div>`;
   }
 
@@ -567,25 +582,24 @@
     return `<div class="t-velo" data-accion="cerrar-exportar"></div>
     <div class="t-panel" role="dialog" aria-modal="true" aria-labelledby="exportar-titulo">
       <div class="t-panel__cabecera">
-        <h2 class="t-panel__titulo" id="exportar-titulo">Exportar</h2>
+        <h2 class="t-panel__titulo" id="exportar-titulo">${x.que === 'curricula' ? 'Descargar para revisar' : 'Descargar resultados'}</h2>
         <button type="button" class="t-panel__cerrar" data-accion="cerrar-exportar" aria-label="Cerrar">${Icono.cerrar}</button>
       </div>
+      ${x.que === 'curricula' ? `
+      <p class="t-panel__bajada">La currícula de <strong>${esc(nombreMateria())}</strong> tal como está hoy en el catálogo: todos los años, con sus saberes y contenidos. Sin respuestas de docentes. Es para mandarle a un profesor y que la revise.</p>
+      <div class="t-panel__separador"></div>` : `
       <div class="t-panel__grupo">
-        <div class="t-panel__etiqueta">Qué exportar</div>
+        <div class="t-panel__etiqueta">Qué descargar</div>
         <label class="t-opcion ${x.que === 'vista' ? 't-opcion--elegida' : ''}" for="ex-vista">
           <input type="radio" id="ex-vista" name="ex-que" value="vista" ${x.que === 'vista' ? 'checked' : ''} data-cambio="ex-que">
           <span><span class="t-opcion__titulo">Lo que estoy viendo</span><span class="t-opcion__sub">${esc(nombreMateria())} · ${esc(textoAnio())} · los tres trimestres · ${esc(estado.alcance.tipo === 'provincia' ? 'toda la provincia' : nombreAlcance())}</span></span>
-        </label>
-        <label class="t-opcion ${x.que === 'curricula' ? 't-opcion--elegida' : ''}" for="ex-curricula">
-          <input type="radio" id="ex-curricula" name="ex-que" value="curricula" ${x.que === 'curricula' ? 'checked' : ''} data-cambio="ex-que">
-          <span><span class="t-opcion__titulo">La currícula de ${esc(nombreMateria())}</span><span class="t-opcion__sub">Todos los años · saberes y contenidos, sin resultados · para revisar con un profesor</span></span>
         </label>
         <label class="t-opcion ${x.que === 'todo' ? 't-opcion--elegida' : ''}" for="ex-todo">
           <input type="radio" id="ex-todo" name="ex-que" value="todo" ${x.que === 'todo' ? 'checked' : ''} data-cambio="ex-que">
           <span><span class="t-opcion__titulo">Todo el relevamiento provincial</span><span class="t-opcion__sub">Todas las materias · 1° a 3° año · una fila por contenido elegido${estado.ejemplo ? ' · datos de ejemplo' : ''}</span></span>
         </label>
       </div>
-      <div class="t-panel__separador"></div>
+      <div class="t-panel__separador"></div>`}
       <div class="t-panel__grupo">
         <div class="t-panel__etiqueta">En qué formato</div>
         <div class="t-formatos">
@@ -600,8 +614,8 @@
         </div>
       </div>
       ${pdfConTodo ? '<div class="t-panel__nota">El PDF arma la currícula de la materia que estás viendo. Para todo el relevamiento, usá Excel: son demasiadas páginas para un PDF.</div>' : ''}
-      ${x.formato === 'pdf' && !pdfConTodo ? '<div class="t-panel__nota">Arma la currícula de la materia: cada saber con los contenidos que eligieron los docentes. Se abre la ventana de impresión: elegí «Guardar como PDF».</div>' : ''}
-      ${x.que === 'curricula' ? '<div class="t-panel__nota">Tal como está hoy en el catálogo: año, trimestre, eje, saber y sus contenidos. Sin respuestas de docentes. El Excel trae una columna de «Observaciones» para anotar.</div>' : ''}
+      ${x.que === 'curricula' ? `<div class="t-panel__nota">${x.formato === 'pdf' ? 'Un año por página, cada saber con sus contenidos. Se abre la ventana de impresión: elegí «Guardar como PDF».' : 'Una hoja con año, trimestre, eje, saber y contenidos, y una columna de «Observaciones» para que el profesor anote.'}</div>` : ''}
+      ${x.formato === 'pdf' && !pdfConTodo && x.que !== 'curricula' ? '<div class="t-panel__nota">Arma la currícula de la materia: cada saber con los contenidos que eligieron los docentes. Se abre la ventana de impresión: elegí «Guardar como PDF».</div>' : ''}
       ${x.formato === 'excel' && x.que === 'vista' ? '<div class="t-panel__nota">Una hoja con cada saber y sus contenidos priorizados, y una columna de «Observaciones» para que los profesores anoten.</div>' : ''}
       ${x.progreso ? `<div class="t-panel__nota">${esc(x.progreso)}</div>` : ''}
       ${x.error ? `<div class="t-panel__nota t-panel__nota--error">${esc(x.error)}</div>` : ''}
@@ -932,6 +946,8 @@
         <div class="t-cuerpo ed-cuerpo">
           ${Editor.pantalla({ nombreMateria: nombreMateria(), textoAnio: textoAnio() })}
         </div>
+        ${panelExportar()}
+        ${estado.docCurricula || ''}
       </div>`;
     }
     return `<div class="tablero">
@@ -1044,6 +1060,7 @@
         if (estado.abiertos.has(d.id)) estado.abiertos.delete(d.id); else estado.abiertos.add(d.id);
         render();
         break;
+      case 'abrir-revisar': estado.exportar = { que: 'curricula', formato: 'excel', progreso: null, error: null, descargando: false }; render(); break;
       case 'abrir-exportar': estado.exportar = { que: 'vista', formato: 'excel', progreso: null, error: null, descargando: false }; render(); break;
       case 'cerrar-exportar': if (!(estado.exportar && estado.exportar.descargando)) { estado.exportar = null; render(); } break;
       case 'descargar': descargar(); break;

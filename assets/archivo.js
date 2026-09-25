@@ -559,7 +559,7 @@ const Archivo = (function () {
     return `<div class="t-velo" data-accion="ar-cerrar"></div>
     <div class="t-panel ed-panel ar-panel" role="dialog" aria-modal="true">
       <div class="t-panel__cabecera">
-        <h2 class="t-panel__titulo">Exportar e importar</h2>
+        <h2 class="t-panel__titulo">Cambiar con una planilla</h2>
         <button type="button" class="t-panel__cerrar" data-accion="ar-cerrar" aria-label="Cerrar">${svgCerrar()}</button>
       </div>
 
@@ -569,26 +569,26 @@ const Archivo = (function () {
 
       ${estado.importe ? bloqueImporte() : `
         <section class="ar-seccion">
-          <div class="ar-seccion__titulo">Bajar</div>
+          <div class="ar-seccion__titulo">1 · Bajá la planilla</div>
           <p class="bajada">La planilla de ${esc(m.nombre)}, con todos sus años: una fila por saber y sus
-            contenidos en columnas. Es para corregir en Excel y volver a subir.</p>
+            contenidos en columnas. Corregila en Excel.</p>
           <div class="ar-botones">
             <button type="button" class="t-descargar" data-accion="ar-planilla" ${estado.trabajando ? 'disabled' : ''}>Bajar la planilla de ${esc(m.nombre)}</button>
-            <button type="button" class="t-cancelar" data-accion="ar-json" ${estado.trabajando ? 'disabled' : ''}>Bajar el JSON</button>
           </div>
-          <p class="ar-ayuda">El JSON es el respaldo del repositorio (<code>datos/catalogo.json</code>), no se corrige a mano.</p>
         </section>
 
         <section class="ar-seccion ar-seccion--importar">
-          <div class="ar-seccion__titulo">Subir</div>
-          <p class="bajada">Subí la planilla corregida de ${esc(m.nombre)}. Antes de cambiar nada te mostramos
-            cómo va a quedar.</p>
+          <div class="ar-seccion__titulo">2 · Subila corregida</div>
+          <p class="bajada">Antes de cambiar nada te mostramos cómo va a quedar ${esc(m.nombre)}.</p>
           <label class="ar-subir">
             <input type="file" accept=".xlsx,.xls,.json" data-accion="ar-elegir" ${estado.trabajando ? 'disabled' : ''}>
             <span>Elegir el archivo</span>
           </label>
           <p class="ar-ayuda">Solo cambian los años que vengan en la planilla. Lo que no cambió conserva sus respuestas.</p>
-        </section>`}
+        </section>
+        <p class="ar-ayuda ar-respaldo">Para quien mantiene el sistema:
+          <button type="button" class="ar-enlace" data-accion="ar-json" ${estado.trabajando ? 'disabled' : ''}>bajar el catálogo completo en JSON</button>
+          (el respaldo del repositorio, <code>datos/catalogo.json</code>).</p>`}
     </div>`;
   }
 
