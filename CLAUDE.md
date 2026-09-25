@@ -414,6 +414,11 @@ está mal.
    saber con sus contenidos, una barra fina y el porcentaje. «Todo el relevamiento» perdió los
    ids y números de orden; ojo que trae nombre y apellido de cada docente: no es para repartir.
 
+   Una tercera opción, **«La currícula de [materia]»**, exporta el catálogo sin resultados:
+   todos los años, *Año · Trimestre · Eje · Saber · Contenido · Observaciones*, para que el
+   equipo lo revise con un profesor. Sale de la base (`catalogo_filas`), así que incluye lo
+   editado aunque no esté publicado. En PDF, un año por página y los contenidos como lista.
+
 Dos vistas de la misma información, no dos reportes: **Detalle** (contenidos con su barra)
 y **Mapa de calor** (los ejes del diseño por trimestre, con los contenidos más elegidos). La
 barra de 18 px es el único elemento gráfico: se lee proyectada desde el fondo de una sala.

@@ -321,6 +321,7 @@
   // tal como queda con lo que eligieron los docentes, para leer en papel o
   // mandar a los profesores. En pantalla no se ve; al imprimir es lo único.
   function documentoImpresion() {
+    if (estado.docCurricula) return estado.docCurricula;
     const d = estado.datos;
     if (!d) return '';
     const c = d.contexto;
@@ -543,6 +544,10 @@
           <input type="radio" id="ex-vista" name="ex-que" value="vista" ${x.que === 'vista' ? 'checked' : ''} data-cambio="ex-que">
           <span><span class="t-opcion__titulo">Lo que estoy viendo</span><span class="t-opcion__sub">${esc(nombreMateria())} · ${esc(textoAnio())} · los tres trimestres · ${esc(estado.alcance.tipo === 'provincia' ? 'toda la provincia' : nombreAlcance())}</span></span>
         </label>
+        <label class="t-opcion ${x.que === 'curricula' ? 't-opcion--elegida' : ''}" for="ex-curricula">
+          <input type="radio" id="ex-curricula" name="ex-que" value="curricula" ${x.que === 'curricula' ? 'checked' : ''} data-cambio="ex-que">
+          <span><span class="t-opcion__titulo">La currícula de ${esc(nombreMateria())}</span><span class="t-opcion__sub">Todos los años · saberes y contenidos, sin resultados · para revisar con un profesor</span></span>
+        </label>
         <label class="t-opcion ${x.que === 'todo' ? 't-opcion--elegida' : ''}" for="ex-todo">
           <input type="radio" id="ex-todo" name="ex-que" value="todo" ${x.que === 'todo' ? 'checked' : ''} data-cambio="ex-que">
           <span><span class="t-opcion__titulo">Todo el relevamiento provincial</span><span class="t-opcion__sub">Todas las materias · 1° a 3° año · una fila por contenido elegido${estado.ejemplo ? ' · datos de ejemplo' : ''}</span></span>
@@ -564,6 +569,7 @@
       </div>
       ${pdfConTodo ? '<div class="t-panel__nota">El PDF arma la currícula de la materia que estás viendo. Para todo el relevamiento, usá Excel: son demasiadas páginas para un PDF.</div>' : ''}
       ${x.formato === 'pdf' && !pdfConTodo ? '<div class="t-panel__nota">Arma la currícula de la materia: cada saber con los contenidos que eligieron los docentes. Se abre la ventana de impresión: elegí «Guardar como PDF».</div>' : ''}
+      ${x.que === 'curricula' ? '<div class="t-panel__nota">Tal como está hoy en el catálogo: año, trimestre, eje, saber y sus contenidos. Sin respuestas de docentes. El Excel trae una columna de «Observaciones» para anotar.</div>' : ''}
       ${x.formato === 'excel' && x.que === 'vista' ? '<div class="t-panel__nota">Una hoja con cada saber y sus contenidos priorizados, y una columna de «Observaciones» para que los profesores anoten.</div>' : ''}
       ${x.progreso ? `<div class="t-panel__nota">${esc(x.progreso)}</div>` : ''}
       ${x.error ? `<div class="t-panel__nota t-panel__nota--error">${esc(x.error)}</div>` : ''}
@@ -596,6 +602,7 @@
     const x = estado.exportar;
     if (!x || x.descargando) return;
     x.error = null;
+    if (x.que === 'curricula') { await descargarCurricula(x); return; }
     if (x.formato === 'pdf') {
       if (x.que === 'todo') return;
       estado.exportar = null;
@@ -610,6 +617,114 @@
       await cargarSheetJS();
       const libro = x.que === 'todo' ? await libroCompleto() : libroVista();
       window.XLSX.writeFile(libro, nombreArchivo(x.que));
+      estado.exportar = null;
+    } catch (e) {
+      x.descargando = false;
+      x.progreso = null;
+      x.error = (e && e.message) || 'No pudimos armar el archivo. Volvé a intentar.';
+    }
+    render();
+  }
+
+  /* ---------- La currícula de la materia (sin resultados) ---------- */
+
+  // Lo que hay hoy en el catálogo de la materia, todos los años: para que el
+  // equipo lo revise con un profesor. Sale de la base (catalogo_filas), así
+  // incluye lo editado aunque todavía no se haya publicado.
+  async function traerCurricula() {
+    const { data, error } = await sb.rpc('catalogo_filas', { p_espacio_id: estado.espacio_id, p_anio: null });
+    if (error || (data && data.error)) throw new Error('No pudimos traer el catálogo de la materia. Volvé a intentar.');
+    const saberes = new Map();
+    for (const f of data || []) {
+      if (f.saber_estado !== 'activo') continue;
+      if (!saberes.has(f.saber_id)) {
+        saberes.set(f.saber_id, { anio: f.anio, trimestre: f.trimestre, eje: partirEje(f.eje, f.eje_orden), texto: f.saber, contenidos: [] });
+      }
+      if (f.contenido && f.contenido_estado === 'activo') saberes.get(f.saber_id).contenidos.push(f.contenido);
+    }
+    // catalogo_filas ya viene por año, trimestre y orden del equipo
+    const grupos = [];
+    for (const s of saberes.values()) {
+      const clave = `${s.anio == null ? 0 : s.anio}|${s.trimestre}`;
+      let g = grupos[grupos.length - 1];
+      if (!g || g.clave !== clave) { g = { clave, anio: s.anio, trimestre: s.trimestre, saberes: [] }; grupos.push(g); }
+      g.saberes.push(s);
+    }
+    return grupos;
+  }
+
+  const textoAnioCurricula = (a) => (a == null ? 'Todo el ciclo' : `${a}° año`);
+
+  function libroCurricula(grupos) {
+    const X = window.XLSX;
+    const filas = [
+      [`${nombreMateria()} — Saberes y contenidos del diseño curricular`],
+      [`Como está hoy en el catálogo · ${fechaLarga(new Date())}`],
+      ['Los saberes van en el orden en que se enseñan. En «Observaciones» se puede anotar si falta, sobra o hay que corregir algo.'],
+      [],
+    ];
+    const cabecera = ['Año', 'Trimestre', 'Eje', 'Saber', 'Contenido', 'Observaciones'];
+    filas.push(cabecera);
+    const inicio = filas.length;
+    for (const g of grupos) {
+      g.saberes.forEach((s, i) => {
+        const base = [textoAnioCurricula(g.anio), `${ORDINAL[g.trimestre]} trimestre`, `${s.eje.rotulo} — ${s.eje.nombre}`, `${i + 1}. ${s.texto}`];
+        if (!s.contenidos.length) { filas.push(base.concat(['(sin contenidos)', ''])); return; }
+        s.contenidos.forEach((c, k) => filas.push((k === 0 ? base : ['', '', '', '']).concat([c, ''])));
+      });
+    }
+    const hoja = X.utils.aoa_to_sheet(filas);
+    hoja['!cols'] = [{ wch: 12 }, { wch: 13 }, { wch: 34 }, { wch: 70 }, { wch: 60 }, { wch: 40 }];
+    hoja['!autofilter'] = { ref: X.utils.encode_range({ s: { r: inicio - 1, c: 0 }, e: { r: filas.length - 1, c: cabecera.length - 1 } }) };
+    const libro = X.utils.book_new();
+    X.utils.book_append_sheet(libro, hoja, 'Currícula');
+    return libro;
+  }
+
+  function documentoCurricula(grupos) {
+    // Un año por página; los trimestres del mismo año, seguidos
+    const bloques = grupos.map((g, i) => `
+      <section class="t-doc__trimestre ${i > 0 && grupos[i - 1].anio !== g.anio ? 't-doc__trimestre--anio' : ''}">
+        <h2 class="t-doc__trimestre-titulo">${esc(textoAnioCurricula(g.anio))} · ${ORDINAL[g.trimestre]} trimestre <span>· ${g.saberes.length} ${plural(g.saberes.length, 'saber', 'saberes')}</span></h2>
+        ${g.saberes.map((s, i) => `
+          <div class="t-doc__saber">
+            <div class="t-doc__rotulo">Saber ${i + 1} · ${esc(s.eje.rotulo)} — ${esc(s.eje.nombre)}</div>
+            <div class="t-doc__texto">${esc(s.texto)}</div>
+            ${s.contenidos.length
+              ? `<ul class="t-doc__lista">${s.contenidos.map((c) => `<li>${esc(c)}</li>`).join('')}</ul>`
+              : '<p class="t-doc__nota">Sin contenidos cargados.</p>'}
+          </div>`).join('')}
+      </section>`).join('');
+    return `<article class="t-doc t-doc--curricula">
+      <header class="t-doc__cabeza">
+        <div class="t-doc__institucion">Ministerio de Cultura y Educación · Dirección de Educación Secundaria · Formosa</div>
+        <h1 class="t-doc__titulo">${esc(nombreMateria())}</h1>
+        <div class="t-doc__sub">Saberes y contenidos del diseño curricular</div>
+        <div class="t-doc__datos">Como está hoy en el catálogo · ${esc(fechaLarga(new Date()))}</div>
+        <p class="t-doc__lectura">Por año y trimestre, los saberes en el orden en que se enseñan y, debajo de cada uno, sus contenidos.</p>
+      </header>
+      ${bloques}
+    </article>`;
+  }
+
+  async function descargarCurricula(x) {
+    x.descargando = true;
+    x.progreso = 'Trayendo el catálogo de la materia…';
+    render();
+    try {
+      const grupos = await traerCurricula();
+      if (!grupos.length) throw new Error('La materia no tiene saberes activos.');
+      if (x.formato === 'pdf') {
+        estado.docCurricula = documentoCurricula(grupos);
+        estado.exportar = null;
+        render();
+        window.addEventListener('afterprint', () => { estado.docCurricula = null; render(); }, { once: true });
+        setTimeout(() => window.print(), 150);
+        return;
+      }
+      await cargarSheetJS();
+      const limpio = normalizarTexto(nombreMateria()).replace(/\s+/g, '-');
+      window.XLSX.writeFile(libroCurricula(grupos), `curricula-${limpio}-${new Date().toISOString().slice(0, 10)}.xlsx`);
       estado.exportar = null;
     } catch (e) {
       x.descargando = false;
