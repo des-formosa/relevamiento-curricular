@@ -1104,15 +1104,22 @@ mark.coincidencia {
   background: var(--velo);
   z-index: 20;
 }
+/* Nunca más alta que la pantalla: con zoom grande o el teléfono acostado, el
+   texto se desplaza y los dos botones quedan pegados abajo, a la vista */
 .hoja {
+  --relleno-abajo: calc(28px + env(safe-area-inset-bottom, 0px));
   position: fixed;
   left: 0;
   right: 0;
   bottom: 0;
   z-index: 21;
+  max-height: 100vh;
+  max-height: 100dvh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   background: var(--blanco);
   border-top: 3px solid var(--azul);
-  padding: 26px 24px calc(28px + env(safe-area-inset-bottom, 0px));
+  padding: 26px 24px 0;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -1121,7 +1128,11 @@ mark.coincidencia {
 }
 .hoja__asa { width: 48px; height: 5px; border-radius: 3px; background: var(--borde); align-self: center; }
 .hoja__titulo { font-size: 25.5px; font-weight: 800; line-height: 1.15; letter-spacing: -0.015em; }
-.hoja__botones { display: flex; flex-direction: column; gap: 12px; margin-top: 2px; }
+.hoja__botones {
+  display: flex; flex-direction: column; gap: 12px;
+  position: sticky; bottom: 0; background: var(--blanco);
+  margin-top: -10px; padding: 12px 0 var(--relleno-abajo);
+}
 
 /* ---------- Resumen ---------- */
 

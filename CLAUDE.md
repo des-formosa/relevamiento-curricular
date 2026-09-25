@@ -442,7 +442,8 @@ en la cabecera, el logo chico.
 usarlo»). La primera versión tenía de más —saludo enorme, estado del catálogo, cuatro consejos—
 y el equipo la sintió cargada. Quedó: «Hola, Ana» chico, la marca ReSaP como título
 (logo, nombre completo, filete tricolor y eslogan), una línea de cómo va la carga y los dos caminos: «Ver los
-resultados» y «Editar el catálogo». Desde el panel se vuelve con «Inicio». **Un link
+resultados» y «Editar el catálogo». Al final de la línea de la carga, **«Ver quién contestó»**
+abre el control interno (ver «Exportar»). Desde el panel se vuelve con «Inicio». **Un link
 compartido** (con `materia=` en el hash) no pasa por el inicio: va directo a lo que muestra.
 Salir borra el hash, así el que entra después arranca por el inicio.
 
@@ -454,14 +455,15 @@ confundía. Quedó así:
   subrayado como solapa, y después «¿Cómo se usa?» y «Salir». Todos enlaces sin recuadro
   (`.t-enlace-cab`), así entra en una fila.
 - **Resultados**, en la barra de selectores: «Datos de ejemplo» y **«Descargar resultados»**
-  (lo que estoy viendo, o todo el relevamiento). Si no entran al lado de los selectores, bajan
-  juntos a una segunda línea.
+  (el reporte de la materia). Si no entran al lado de los selectores, bajan juntos a una
+  segunda línea.
 - **Catálogo**, en la barra del editor: «Historial», **«Descargar para revisar»** (la currícula
   de la materia, sin resultados, en Excel o PDF, para un profesor), **«Cambiar con una
   planilla»** (1 · bajá la planilla, 2 · subila corregida; el JSON quedó como enlace chico para
   quien mantiene el sistema) y **«Publicar»**.
 
-El recorrido guiado pasó a `v4`, con un paso para «Descargar para revisar».
+El recorrido guiado pasó a `v4`, con un paso para «Descargar para revisar», y a `v5` cuando
+«Descargar resultados» pasó a ser el reporte de la materia (25/09/2026).
 
 **Después, es prácticamente una sola pantalla:**
 
@@ -473,19 +475,41 @@ El recorrido guiado pasó a `v4`, con un paso para «Descargar para revisar».
 3. **Cuerpo**: los saberes de esa combinación, uno debajo del otro. Para cada saber, su texto
    completo y debajo los contenidos más elegidos, ordenados de mayor a menor, con barra
    horizontal y porcentaje. Mostrar 3 por saber y un enlace "ver los demás" que expande.
-4. **Exportar**: un botón que abre un panel chico con dos opciones — lo que estoy viendo, o
-   todo el relevamiento provincial — y elección de formato (Excel para trabajar, PDF para
-   presentar). Excel se arma con SheetJS por CDN; PDF abre la impresión del navegador con
-   una hoja de estilos de impresión. «Todo el relevamiento» baja `v_relevamiento` paginada.
+4. **Exportar: el reporte de la materia** (25/09/2026). «Descargar resultados» abre una
+   ventana con tres decisiones, lado a lado para que entre sin desplazarse:
+   - **Qué:** *Toda la materia* (sus años, según `anios_dictados`: 1°, 2° y 3°, o 1° y 2° en
+     Tecnológica), que es lo que viene elegido, o *Solo el año* que se está mirando. Siempre con
+     los tres trimestres y el alcance de la barra (provincia, departamento o escuela).
+   - **Formato:** PDF para imprimir y presentar, o Excel para seguir trabajando.
+   - **Cómo se ve el PDF:** *gráficos de barras* (el Detalle: cada saber con sus contenidos, una
+     barra fina y el porcentaje, un trimestre por página, A4 vertical) o *mapa de calor* (una
+     tabla por año, ejes en filas y trimestres en columnas, los contenidos más elegidos de cada
+     celda con su tono, **A4 apaisado**; si un año no entra en una hoja, el encabezado se repite
+     con el año). Con varios años, cada uno arranca en página nueva y dice sobre cuántos
+     docentes se basa. Viene elegida la vista que se está mirando en pantalla.
+
+   El año que se mira ya está calculado; los otros se piden a `panel_resultados()` uno por
+   uno (`traerReportes()`). Un año sin saberes en el diseño no va al reporte. El PDF es un
+   documento aparte (`documentoReporte()`), invisible en pantalla, que se pone en la página, se
+   imprime y se saca (`imprimir()`); el mapa impreso sale de los mismos números que el de
+   pantalla (`datosMapa()`). Excel se arma con SheetJS por CDN.
 
    El equipo manda lo exportado a los profesores para que confirmen o corrijan, así que
-   **se exporta la currícula de la materia, no la pantalla**. El Excel de «lo que estoy
-   viendo» es una sola hoja, *Trimestre · Saber · Eje · Contenido priorizado · % de docentes ·
-   Observaciones*: el saber una vez y debajo sus contenidos, sin conteos ni columnas técnicas,
-   y «Observaciones» vacía para que anoten. El PDF es un documento aparte
-   (`documentoImpresion()`), invisible en pantalla: A4 vertical, un trimestre por página, cada
-   saber con sus contenidos, una barra fina y el porcentaje. «Todo el relevamiento» perdió los
-   ids y números de orden; ojo que trae nombre y apellido de cada docente: no es para repartir.
+   **se exporta la currícula de la materia, no la pantalla**. El Excel es una sola hoja,
+   *(Año ·) Trimestre · Saber · Eje · Contenido priorizado · % de docentes · Observaciones*: el
+   saber una vez y debajo sus contenidos, sin conteos ni columnas técnicas, y «Observaciones»
+   vacía para que anoten. La columna Año aparece solo con varios años.
+
+   **Quién contestó (uso interno)**, antes «Todo el relevamiento provincial» dentro de esta
+   misma ventana. Se sacó de «Descargar resultados» porque no es un resultado: es para seguir la
+   carga. Se abre desde el inicio («Ver quién contestó») y baja un Excel de toda la provincia y
+   todas las materias, con tres hojas: *Quién contestó* (un envío por fila, de `v_aportes`, con
+   cuántos saberes trabaja, cuántos no y cuántos contenidos eligió), *Por escuela* (las 288 de
+   la nómina en el orden oficial, más las que agregaron los docentes; las que no tienen envíos
+   dicen «Todavía no contestó nadie») y *Qué contestó* (lo de antes, de `v_relevamiento`, una
+   fila por contenido o saber no trabajado). Tiene su propia casilla de datos de ejemplo, así se
+   puede mostrar antes de que lleguen cargas. **Trae nombre y apellido de cada docente: no es
+   para repartir**, y la ventana lo dice.
 
    **«Descargar para revisar»**, en el catálogo, exporta la currícula sin resultados:
    todos los años, *Año · Trimestre · Eje · Saber · Contenido · Observaciones*, para que el
@@ -766,6 +790,17 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
   tipografía grande son el requisito de usarlo con sol en un celular viejo.
 - **Escribir para el docente, no para el sistema.** Los mensajes de error dicen qué pasó y
   cómo resolverlo.
+- **Ninguna ventana se sale de la pantalla** (25/09/2026). Las ventanas flotantes —descargar,
+  los diálogos del editor, el historial, la planilla (todas `.t-panel`), la tarjeta del
+  recorrido y la hoja «No trabajo»— nunca son más altas que la pantalla: lo que no entra se
+  desplaza por dentro, y **los botones de abajo quedan pegados, siempre a la vista** (el título
+  con la cruz también, salvo en pantallas de menos de 520 px de alto). Antes, con zoom, los
+  botones quedaban fuera de la pantalla, y la de descargar en PDF ya se cortaba sin zoom en
+  una notebook de 1366 × 768. Dos detalles para una ventana nueva: la caja que se desplaza
+  **no lleva relleno arriba ni abajo** (lo ponen el título y los botones: con relleno, el
+  navegador los pega por dentro de él y el contenido se ve pasar por debajo), y los botones
+  van como último hijo directo, en `.t-panel__acciones`. El recorrido ubica la tarjeta
+  midiendo su alto real, no uno supuesto.
 - **Movimiento: poco, corto y una sola vez** (24/09/2026). En el formulario **no hay
   transición entre pantallas**: se probó un fundido al tocar «Siguiente» y molestaba. Sí: la
   barra de progreso avanza; la casilla que se toca hace un
@@ -892,6 +927,19 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
   de 320 a 1920 px: sin scroll horizontal en ningún ancho, la cabecera del panel en una fila
   desde 1280, «Comenzar» a la vista en un teléfono de 360 × 640. De paso se arregló que en el
   teléfono la cabecera del panel se saliera de la pantalla cuando la marca no entraba
+- **El reporte por materia** (25/09/2026): «Descargar resultados» arma el reporte de toda la
+  materia o de un año, en PDF (barras o mapa de calor) o Excel, y «Todo el relevamiento» pasó
+  al inicio como «Ver quién contestó», con hojas de quién contestó y por escuela (ver
+  «Exportar»). Probado con un Supabase simulado: Matemática de 1° a 3° en barras (13 páginas,
+  52 saberes) y en mapa de calor (apaisado, 3 tablas), Tecnológica ofrece solo 1° y 2°, un
+  solo año sale sin títulos de año, el Excel con columna Año, y el control con sus tres hojas
+  (las 288 escuelas, la agregada por un docente al final). La ventana entra sin desplazarse en
+  1280, 1366, 1440 y 1920 px, y pasa la prueba de zoom del 100 al 400 %
+- **Ventanas con zoom** (25/09/2026): ver «Ninguna ventana se sale de la pantalla» en
+  Convenciones. Probado con zoom del 100 al 400 % en 1366 × 768, 1440 × 900 y 1920 × 1080, y en
+  teléfonos parados y acostados: en las cinco ventanas y los nueve pasos del recorrido, los
+  botones principales se ven sin desplazar nada y todos los demás se alcanzan desplazando
+  dentro de la ventana. A tamaño normal se ven igual que antes
 
 **Pendiente**
 - **Correr `sql/09_edicion_catalogo.sql`** otra vez (24/09/2026): trae el historial con materia,

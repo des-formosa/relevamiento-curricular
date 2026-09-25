@@ -542,21 +542,49 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
 
 .t-velo { position: fixed; inset: 0; background: var(--t-velo); z-index: 30; }
 .t-panel {
+  /* Nunca más alta que la pantalla. Con zoom o en una notebook baja, lo que no
+     entra se desplaza por dentro, y el título y los botones quedan a la vista.
+     Baja hasta su lugar (--tope, debajo de los selectores) solo si entra. */
+  --tope: 218px;
+  --arriba: clamp(16px, calc(100vh - 682px), var(--tope));
+  --relleno-arriba: 26px;
+  --relleno-abajo: 24px;
   position: fixed;
   right: 32px;
-  top: 218px;
+  top: var(--arriba);
   width: 580px;
+  max-width: calc(100vw - 32px);
+  max-height: calc(100vh - var(--arriba) - 16px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
   z-index: 31;
   background: var(--blanco);
   border-radius: 3px;
   border: 1px solid var(--t-tinta);
   box-shadow: 0 6px 0 rgba(12, 20, 38, 0.10);
-  padding: 26px 28px 24px;
+  padding: 0 28px;
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
-.t-panel__cabecera { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+@supports (height: 100dvh) {
+  .t-panel {
+    --arriba: clamp(16px, calc(100dvh - 682px), var(--tope));
+    max-height: calc(100dvh - var(--arriba) - 16px);
+  }
+}
+/* Título y botones pegados arriba y abajo mientras el resto se desplaza. La
+   caja no tiene relleno arriba ni abajo: lo ponen ellos, así quedan al ras del
+   borde (con relleno, el navegador los pega por dentro del relleno y el
+   contenido se ve pasar por debajo de los botones). Sin desplazamiento se ven
+   igual que siempre. */
+.t-panel__cabecera {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 16px;
+  position: sticky; top: 0; z-index: 2; background: var(--blanco);
+  padding: var(--relleno-arriba) 0 8px; margin-bottom: -8px;
+}
+.t-panel > :first-child:not(.t-panel__cabecera) { margin-top: var(--relleno-arriba); }
+.t-panel > :last-child:not(.t-panel__acciones) { margin-bottom: var(--relleno-abajo); }
 .t-panel__titulo { font-size: 28px; font-weight: 800; line-height: 1.1; letter-spacing: -0.015em; }
 .t-panel__cerrar {
   width: 40px;
@@ -572,6 +600,8 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
 }
 .t-panel__cerrar:hover { background: var(--gris-claro-4); }
 .t-panel__grupo { display: flex; flex-direction: column; gap: 12px; }
+/* Al lado de «Qué descargar», de qué materia y alcance se trata */
+.t-panel__contexto { font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--t-gris); margin-left: 6px; }
 .t-panel__etiqueta {
   font-size: 13px;
   font-weight: 800;
@@ -611,7 +641,11 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
 .t-formato__titulo { font-size: 19px; font-weight: 700; }
 .t-formato__sub { font-size: 15px; color: var(--t-gris); }
 .t-panel__separador { height: 1px; background: var(--t-borde); }
-.t-panel__acciones { display: flex; align-items: center; gap: 12px; margin-top: 2px; }
+.t-panel__acciones {
+  display: flex; align-items: center; gap: 12px;
+  position: sticky; bottom: 0; z-index: 2; background: var(--blanco);
+  margin-top: -10px; padding: 12px 0 var(--relleno-abajo);
+}
 .t-descargar {
   flex-grow: 1;
   height: 58px;
@@ -642,6 +676,9 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
   cursor: pointer;
 }
 .t-panel__nota { font-family: var(--texto); font-size: 15px; line-height: 1.45; color: var(--t-gris); }
+.t-panel__nota strong { font-family: var(--ui); color: var(--t-tinta); }
+/* «Quién contestó» trae nombres: el aviso va marcado */
+.t-panel__nota--interno { background: var(--ocre-fila); border-left: 3px solid var(--ocre-borde); padding: 10px 12px; }
 .t-panel__nota--error { color: var(--ladrillo); }
 
 /* ---------- Ingreso: presentación en blanco con la marca + tarjeta, como la bienvenida de escritorio ---------- */
@@ -873,11 +910,14 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
     top: auto;
     bottom: 0;
     width: 100%;
+    max-width: none;
     max-height: 92vh;
-    overflow-y: auto;
+    max-height: 92dvh;
     border-radius: 0;
     border-top: 3px solid var(--azul);
-    padding: 20px 18px calc(20px + env(safe-area-inset-bottom, 0px));
+    --relleno-arriba: 20px;
+    --relleno-abajo: calc(20px + env(safe-area-inset-bottom, 0px));
+    padding: 0 18px;
     gap: 16px;
   }
   .t-panel__titulo { font-size: 24px; }
@@ -897,6 +937,16 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
 @media (max-width: 400px) {
   .t-cabecera__nombre span:first-child { font-size: 11px; }
   .t-interruptor, .t-salir { font-size: 13.5px; }
+}
+
+/* Pantalla baja (zoom grande, teléfono acostado): los botones de las ventanas
+   van en fila para dejarle lugar al contenido, y el título deja de estar pegado
+   salvo en el historial, donde la cruz es la única salida */
+@media (max-height: 520px) {
+  .t-panel__cabecera { position: static; }
+  .ed-panel--historial .t-panel__cabecera { position: sticky; }
+  .t-panel__acciones { flex-direction: row; }
+  .t-descargar, .t-cancelar { width: auto; height: 48px; }
 }
 
 /* ---------- Impresión (PDF) ---------- */
@@ -954,7 +1004,51 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
   .t-doc__lista li { padding: 1px 0; }
   .t-doc--curricula .t-doc__trimestre + .t-doc__trimestre { break-before: auto; }
   .t-doc--curricula .t-doc__trimestre--anio { break-before: page !important; }
+
+  /* El reporte de varios años: cada año arranca en una página nueva */
+  .t-doc__anio { margin-top: 14px; }
+  .t-doc__anio--nueva { break-before: page; }
+  .t-doc__anio-titulo { font-size: 17pt; font-weight: 800; color: var(--azul); margin: 0 0 4px; break-after: avoid; }
+  .t-doc__anio-titulo span { font-size: 10pt; font-weight: 600; color: var(--t-gris); }
+  .t-doc__anio .t-doc__trimestre:first-of-type { margin-top: 8px; }
+
+  /* Mapa de calor: apaisado, los ejes en filas y los trimestres en columnas */
+  .t-doc--mapa { page: mapa; }
+  .t-doc__mapa { width: 100%; border-collapse: collapse; table-layout: fixed; margin-top: 8px; }
+  .t-doc__mapa th, .t-doc__mapa td { vertical-align: top; text-align: left; border-bottom: 1px solid var(--t-borde); padding: 6px 5px; }
+  .t-doc__mapa thead th { width: 26%; font-size: 9pt; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; color: var(--azul); border-bottom: 1.5px solid var(--azul); }
+  .t-doc__mapa thead th:first-child { width: 22%; }
+  .t-doc__mapa thead th span { display: block; font-size: 8pt; font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--t-gris); }
+  .t-doc__mapa thead { display: table-header-group; }
+  .t-doc__mapa tr { break-inside: avoid; }
+  .t-doc__mapa-eje span { display: block; }
+  .t-doc__mapa-eje-rotulo { font-size: 8pt; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ladrillo); }
+  .t-doc__mapa-eje-nombre { font-family: var(--serif); font-size: 10.5pt; font-weight: 400; line-height: 1.25; margin-top: 1px; }
+  .t-doc__mapa-eje-cuenta { font-size: 8pt; font-weight: 400; color: var(--t-gris); margin-top: 3px; }
+  .t-doc__mapa-vacia { font-family: var(--texto); font-size: 8.5pt; font-style: italic; color: var(--t-gris); margin: 0; }
+  .t-doc__mapa-mas { font-size: 8pt; color: var(--t-gris); margin: 2px 0 0; }
+  .t-doc__tile { padding: 4px 6px 3px; margin-bottom: 3px; border-radius: 2px; }
+  .t-doc__tile-fila { display: flex; align-items: flex-start; justify-content: space-between; gap: 6px; }
+  .t-doc__tile-nombre { font-size: 8.5pt; line-height: 1.25; }
+  .t-doc__tile-pct { font-size: 9.5pt; font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .t-doc__tile-saber { font-size: 7pt; letter-spacing: 0.05em; opacity: 0.72; margin-top: 1px; }
+  .t-doc__tile--1, .t-doc__tile--2, .t-doc__tile--3, .t-doc__tile--4, .t-doc__tile--5, .t-doc__tile--6,
+  .t-doc__tile--insuficiente { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .t-doc__tile--6 { background: var(--t-tono-6); color: #FFFFFF; }
+  .t-doc__tile--5 { background: var(--t-tono-5); color: #FFFFFF; }
+  .t-doc__tile--4 { background: var(--t-tono-4); }
+  .t-doc__tile--3 { background: var(--t-tono-3); }
+  .t-doc__tile--2 { background: var(--t-tono-2); }
+  .t-doc__tile--1 { background: var(--t-tono-1); }
+  .t-doc__tile--insuficiente { background: #F3F5F9; border: 1px dashed #C3CAD6; color: var(--t-gris); }
+  .t-doc__leyenda { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 8.5pt; color: var(--t-gris); margin-top: 8px; }
+  .t-doc__leyenda-escala { display: inline-flex; }
+  .t-doc__leyenda-escala span { width: 18px; height: 10px; display: block; }
+  .t-doc__leyenda-insuficiente { width: 18px; height: 10px; margin-left: 14px; background: #F3F5F9; border: 1px dashed #C3CAD6; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .t-doc--mapa .t-doc__cabeza { padding-bottom: 8px; margin-bottom: 8px; }
+  .t-doc--mapa .t-doc__titulo { font-size: 19pt; }
 }
+@page mapa { size: A4 landscape; margin: 12mm 12mm; }
 
 /* ============================================================================
    Editor del catálogo (assets/editor.js)
@@ -1215,7 +1309,7 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
 .ed-vacio { font-family: var(--texto); font-size: 16px; color: var(--t-gris); padding: 16px 0; }
 
 /* Paneles */
-.ed-panel { top: 120px; max-height: 78vh; overflow-y: auto; }
+.ed-panel { --tope: 120px; }
 .ed-panel--historial { width: 680px; }
 .ed-historial { display: flex; flex-direction: column; gap: 12px; }
 .ed-historial__fila {
@@ -1431,13 +1525,28 @@ body.tour-abierto { overflow: hidden; }
 /* Con foco, el velo plano sobra */
 .tour__foco ~ .tour__velo, .tour:has(.tour__foco) .tour__velo { display: none; }
 
+/* Como las ventanas: nunca más alta que la pantalla, y los botones pegados
+   abajo aunque el texto se desplace (tour.js la ubica según su alto real).
+   Lo que se desplaza es la caja de adentro: la flecha sale por fuera de la
+   tarjeta y con el desplazamiento en la tarjeta quedaría recortada. */
 .tour__tarjeta {
   position: absolute;
+  max-height: calc(100vh - 32px);
+  max-height: calc(100dvh - 32px);
   background: var(--blanco);
   border-radius: 3px;
   border: 1px solid var(--t-tinta);
   box-shadow: 0 6px 0 rgba(12, 20, 38, 0.12);
-  padding: 20px 22px 18px;
+  display: flex;
+  flex-direction: column;
+}
+.tour__desplazable {
+  --relleno-abajo: 18px;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border-radius: 3px;
+  padding: 20px 22px 0;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -1494,8 +1603,11 @@ body.tour-abierto { overflow: hidden; }
   align-items: center;
   justify-content: space-between;
   gap: 14px;
-  margin-top: 6px;
   flex-wrap: wrap;
+  position: sticky;
+  bottom: 0;
+  background: var(--blanco);
+  padding: 6px 0 var(--relleno-abajo);
 }
 .tour__puntos { display: flex; gap: 6px; }
 .tour__punto {
@@ -1528,7 +1640,7 @@ body.tour-abierto { overflow: hidden; }
 .tour__boton--principal:hover { background: var(--azul-profundo); color: var(--blanco); }
 
 @media (max-width: 899px) {
-  .tour__tarjeta { padding: 18px 18px 16px; }
+  .tour__desplazable { --relleno-abajo: 16px; padding: 18px 18px 0; }
   .tour__titulo { font-size: 20px; }
   .tour__texto { font-size: 16px; }
   .tour__botones { width: 100%; margin-left: 0; }
@@ -1560,6 +1672,14 @@ body.tour-abierto { overflow: hidden; }
 .t-inicio .eslogan { font-size: 19px; }
 .t-inicio__estado { font-family: var(--texto); font-size: 16.5px; color: var(--tinta-2); margin: 26px 0 0; }
 .t-inicio__estado strong { font-family: var(--ui); color: var(--t-tinta); }
+/* «Ver quién contestó», en la misma línea de cómo va la carga */
+.t-enlace-linea {
+  border: none; background: none; padding: 0; cursor: pointer;
+  font-family: var(--ui); font-size: inherit; font-weight: 700; color: var(--azul);
+  text-decoration: underline; text-underline-offset: 3px;
+}
+.t-enlace-linea:hover { color: var(--azul-profundo); }
+.t-enlace-linea:focus-visible { outline: 3px solid var(--azul); outline-offset: 2px; }
 .t-inicio__opciones { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 36px; }
 .t-inicio__opcion {
   display: flex; align-items: center; gap: 16px; text-align: left;

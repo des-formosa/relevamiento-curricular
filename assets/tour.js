@@ -19,7 +19,7 @@ const Tour = (function () {
   const CLAVE = 'relevamiento.tour.';
   // Subir la versión hace que el recorrido vuelva a aparecer solo una vez a
   // todos: se usa cuando cambia algo que el equipo ya había visto explicado.
-  const VERSION = 'v4';
+  const VERSION = 'v5';
 
   let capa = null;
   let pasos = [];
@@ -78,7 +78,7 @@ const Tour = (function () {
       {
         objetivo: '.t-exportar',
         titulo: 'Para llevarte los resultados',
-        texto: '«Descargar resultados» baja lo que estás viendo, en Excel para trabajar o en PDF para presentar, o todo el relevamiento provincial en Excel.',
+        texto: '«Descargar resultados» arma el reporte de la materia: todos sus años o solo el que estás viendo. En PDF para imprimir, con gráficos de barras o mapa de calor, o en Excel para seguir trabajando.',
       },
       {
         objetivo: '[data-accion="ir-catalogo"]',
@@ -247,18 +247,22 @@ const Tour = (function () {
       <div class="tour__velo"></div>
       ${foco}
       <div class="${clase}" style="${estilo}">
-        <div class="tour__paso">Paso ${indice + 1} de ${pasos.length}</div>
-        <h2 class="tour__titulo">${esc(paso.titulo)}</h2>
-        <p class="tour__texto">${esc(paso.texto)}</p>
-        <div class="tour__pie">
-          <div class="tour__puntos" aria-hidden="true">${puntos}</div>
-          <div class="tour__botones">
-            ${ultimo ? '' : '<button type="button" class="tour__boton" data-tour="saltar">Saltar</button>'}
-            ${indice > 0 ? '<button type="button" class="tour__boton" data-tour="anterior">Anterior</button>' : ''}
-            <button type="button" class="tour__boton tour__boton--principal" data-tour="siguiente">${ultimo ? 'Listo' : 'Siguiente'}</button>
+        <div class="tour__desplazable">
+          <div class="tour__paso">Paso ${indice + 1} de ${pasos.length}</div>
+          <h2 class="tour__titulo">${esc(paso.titulo)}</h2>
+          <p class="tour__texto">${esc(paso.texto)}</p>
+          <div class="tour__pie">
+            <div class="tour__puntos" aria-hidden="true">${puntos}</div>
+            <div class="tour__botones">
+              ${ultimo ? '' : '<button type="button" class="tour__boton" data-tour="saltar">Saltar</button>'}
+              ${indice > 0 ? '<button type="button" class="tour__boton" data-tour="anterior">Anterior</button>' : ''}
+              <button type="button" class="tour__boton tour__boton--principal" data-tour="siguiente">${ultimo ? 'Listo' : 'Siguiente'}</button>
+            </div>
           </div>
         </div>
       </div>`;
+
+    if (el && !esAngosto()) ubicarJunto(el, m);
 
     if (el) {
       const r = el.getBoundingClientRect();
@@ -266,6 +270,41 @@ const Tour = (function () {
         el.scrollIntoView({ block: 'center', behavior: 'smooth' });
       }
     }
+  }
+
+  // El primer lugar se calcula con un alto supuesto; ya dibujada, la tarjeta se
+  // mide y se corrige. Con zoom el texto crece, y con el alto supuesto los
+  // botones quedaban fuera de la pantalla. Va debajo del elemento si entra,
+  // encima si no; si no entra de ningún lado, del lado con más lugar y con lo
+  // que sobre desplazándose por dentro (los botones siguen a la vista).
+  function ubicarJunto(el, m) {
+    const tarjeta = capa.querySelector('.tour__tarjeta');
+    if (!tarjeta) return;
+    const r = el.getBoundingClientRect();
+    const alto = window.innerHeight;
+    const borde = 16;
+    const separacion = m + 14;
+    const lugarAbajo = alto - (r.bottom + separacion) - borde;
+    const lugarArriba = r.top - separacion - borde;
+    const h = tarjeta.offsetHeight;
+    let top;
+    let debajo;
+    if (h <= lugarAbajo) { debajo = true; top = r.bottom + separacion; }
+    else if (h <= lugarArriba) { debajo = false; top = r.top - separacion - h; }
+    else if (Math.max(lugarAbajo, lugarArriba) >= 160) {
+      debajo = lugarAbajo >= lugarArriba;
+      const lugar = Math.max(lugarAbajo, lugarArriba);
+      tarjeta.style.maxHeight = `${lugar}px`;
+      top = debajo ? r.bottom + separacion : r.top - separacion - Math.min(h, lugar);
+    } else {
+      // Ni arriba ni abajo hay lugar: la tarjeta tapa el elemento, pero entera
+      // y sin flecha, que no tendría a qué apuntar
+      debajo = null;
+      top = Math.max(borde, alto - h - borde);
+    }
+    tarjeta.style.top = `${Math.max(borde, top)}px`;
+    tarjeta.classList.toggle('tour__tarjeta--flecha-arriba', debajo === true);
+    tarjeta.classList.toggle('tour__tarjeta--flecha-abajo', debajo === false);
   }
 
   function mover(paso) {
