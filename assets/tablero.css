@@ -1544,3 +1544,46 @@ body.tour-abierto { overflow: hidden; }
 .ed-historial__filtros { display: flex; flex-wrap: wrap; gap: 10px 18px; margin-bottom: 14px; }
 .ed-historial__alcance { font-family: var(--texto); font-size: 14.5px; color: var(--t-gris); margin: 0 0 12px; }
 .ed-historial__donde { font-size: 12.5px; font-weight: 700; color: var(--verde); margin-top: 2px; }
+
+/* ============================================================================
+   Inicio: lo primero que se ve al entrar. Un saludo, cómo está el relevamiento,
+   los dos caminos del panel y lo que conviene saber. Registro de documento:
+   papel, filetes, sin tarjetas de métricas.
+   ============================================================================ */
+.t-inicio { flex-grow: 1; padding: 44px 40px 64px; }
+.t-inicio__marco { max-width: 980px; margin: 0 auto; display: flex; flex-direction: column; }
+.t-inicio__sistema { font-size: 13px; font-weight: 800; letter-spacing: 0.07em; text-transform: uppercase; color: var(--ladrillo); line-height: 1.4; max-width: 640px; }
+.t-inicio__saludo { font-size: 40px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.1; margin: 10px 0 0; }
+.t-inicio__bajada { font-family: var(--texto); font-size: 19px; line-height: 1.5; color: var(--tinta-2); margin: 12px 0 0; max-width: 720px; }
+.t-inicio__estado { font-family: var(--texto); font-size: 16px; line-height: 1.55; color: var(--tinta-2); margin: 14px 0 0; max-width: 760px; }
+.t-inicio__estado strong { font-family: var(--ui); color: var(--tinta); }
+.t-inicio__pregunta { font-size: 14px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--verde); margin: 40px 0 14px; }
+.t-inicio__opciones { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.t-inicio__opcion {
+  display: flex; align-items: flex-start; gap: 18px; text-align: left;
+  background: var(--blanco); border: 1.5px solid var(--t-borde); border-radius: 3px;
+  padding: 24px 22px; cursor: pointer; font: inherit; color: inherit;
+}
+.t-inicio__opcion:hover { border-color: var(--verde); }
+.t-inicio__opcion:focus-visible { outline: 3px solid var(--verde); outline-offset: 2px; }
+.t-inicio__icono { flex-shrink: 0; width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; background: #E9F0ED; border-radius: 3px; }
+.t-inicio__opcion-textos { display: flex; flex-direction: column; gap: 6px; flex-grow: 1; min-width: 0; }
+.t-inicio__opcion-titulo { font-size: 22px; font-weight: 800; color: var(--verde); }
+.t-inicio__opcion-texto { font-family: var(--texto); font-size: 15.5px; line-height: 1.5; color: var(--tinta-2); }
+.t-inicio__flecha { flex-shrink: 0; align-self: center; }
+.t-inicio__consejos { margin-top: 44px; border-top: 1px solid var(--t-borde); padding-top: 22px; }
+.t-inicio__consejos-titulo { font-size: 14px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--t-gris); margin: 0 0 10px; }
+.t-inicio__consejos ul { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 8px; }
+.t-inicio__consejos li { font-family: var(--texto); font-size: 16px; line-height: 1.5; color: var(--tinta-2); }
+.t-inicio__consejos li strong { font-family: var(--ui); color: var(--tinta); }
+.t-hero__titulo--sistema { font-size: 34px; line-height: 1.15; }
+
+@media (max-width: 899px) {
+  .t-inicio { padding: 28px 16px 48px; }
+  .t-inicio__saludo { font-size: 32px; }
+  .t-inicio__bajada { font-size: 17px; }
+  .t-inicio__opciones { grid-template-columns: 1fr; }
+  .t-inicio__opcion { padding: 18px 16px; gap: 14px; }
+  .t-inicio__opcion-titulo { font-size: 20px; }
+  .t-hero__titulo--sistema { font-size: 26px; }
+}

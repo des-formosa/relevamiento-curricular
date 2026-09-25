@@ -390,7 +390,21 @@ qué está pasando. Además se proyecta en reuniones con autoridades.
 Principio rector: la respuesta ya está calculada y escrita. Si algo necesita explicación,
 está mal.
 
-**Es prácticamente una sola pantalla:**
+**El nombre del sistema** es «Aplicación web de Relevamiento y Sistematización Curricular de la
+Provincia de Formosa» (`NOMBRE_SISTEMA` en `dashboard.js`): va completo en el ingreso y en el
+inicio; en la cabecera y en el título de las pestañas, «Relevamiento y Sistematización
+Curricular».
+
+**Al entrar, un inicio** (24/09/2026, lo pidió el equipo: «algo más cómodo de recibir antes de
+usarlo»). Saluda por el nombre cargado en `equipo_planificacion`, dice en una línea cómo está
+el relevamiento (cuántas cargas reales llegaron; antes del 26, que la carga abre ese día) y el
+catálogo (publicado o con cambios sin publicar), y ofrece los dos caminos: «Ver los
+resultados» y «Editar el catálogo». Abajo, cuatro cosas para tener en cuenta. Sin tarjetas de
+métricas. Desde el panel se vuelve con «Inicio». **Un link compartido** (con `materia=` en el
+hash) no pasa por el inicio: va directo a lo que muestra. Salir borra el hash, así el que entra
+después arranca por el inicio.
+
+**Después, es prácticamente una sola pantalla:**
 
 1. **Barra de selección** siempre visible: Materia · Año · Alcance (toda la provincia / un
    departamento / una escuela). No hay filtro de trimestre: se ve el año entero, con los tres
