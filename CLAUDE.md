@@ -482,11 +482,22 @@ El recorrido guiado pasó a `v4`, con un paso para «Descargar para revisar», y
      los tres trimestres y el alcance de la barra (provincia, departamento o escuela).
    - **Formato:** PDF para imprimir y presentar, o Excel para seguir trabajando.
    - **Cómo se ve el PDF:** *gráficos de barras* (el Detalle: cada saber con sus contenidos, una
-     barra fina y el porcentaje, un trimestre por página, A4 vertical) o *mapa de calor* (una
+     barra fina y el porcentaje, A4 vertical, los trimestres de corrido) o *mapa de calor* (una
      tabla por año, ejes en filas y trimestres en columnas, los contenidos más elegidos de cada
      celda con su tono, **A4 apaisado**; si un año no entra en una hoja, el encabezado se repite
      con el año). Con varios años, cada uno arranca en página nueva y dice sobre cuántos
      docentes se basa. Viene elegida la vista que se está mirando en pantalla.
+
+   **El PDF de barras aprovecha la hoja** (25/09/2026). Al principio cada trimestre arrancaba en
+   una página nueva y cada saber se pasaba entero a la siguiente si no entraba: quedaba media
+   hoja en blanco y el equipo lo vio tosco. Ahora los trimestres van de corrido y un saber largo
+   puede seguir en la hoja siguiente, con tres cuidados: el encabezado del saber (eje, texto,
+   cuántos lo trabajan) va en un bloque con su primer contenido que no se parte
+   (`.t-doc__saber-cabeza`), el título del trimestre va adentro del bloque del primer saber, y
+   un contenido no se parte. Así nada queda solo al pie. Se hizo con la estructura y no con
+   `break-after: avoid`, porque Chrome no lo respeta cuando lo que sigue es una lista: el
+   encabezado quedaba al pie y su contenido en la otra hoja. Página nueva, solo para cada año.
+   La currícula de «Descargar para revisar» no cambió: sigue con cada saber entero.
 
    El año que se mira ya está calculado; los otros se piden a `panel_resultados()` uno por
    uno (`traerReportes()`). Un año sin saberes en el diseño no va al reporte. El PDF es un
@@ -930,6 +941,11 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
   de 320 a 1920 px: sin scroll horizontal en ningún ancho, la cabecera del panel en una fila
   desde 1280, «Comenzar» a la vista en un teléfono de 360 × 640. De paso se arregló que en el
   teléfono la cabecera del panel se saliera de la pantalla cuando la marca no entraba
+- **PDF de barras sin huecos** (25/09/2026): los trimestres van de corrido y los saberes largos
+  siguen en la hoja siguiente sin dejar encabezados sueltos (ver «Exportar»). Medido sobre los
+  PDF generados con un Supabase simulado: Lengua completa pasó de 36 a 34 hojas y Matemática de
+  13 a 12; el blanco al pie de cada hoja, descontado el margen, quedó casi siempre entre 5 y
+  80 pt, y ningún título de trimestre ni encabezado de saber queda solo al pie
 - **El reporte por materia** (25/09/2026): «Descargar resultados» arma el reporte de toda la
   materia o de un año, en PDF (barras o mapa de calor) o Excel, y «Todo el relevamiento» pasó
   a un enlace discreto al pie del inicio, «Seguimiento de la carga», con hojas de envíos y por

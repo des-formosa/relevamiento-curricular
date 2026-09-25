@@ -416,39 +416,52 @@
 
   /* ---------- El reporte de la materia para imprimir (PDF) ---------- */
 
-  // Barras: un saber, y debajo sus contenidos con una barra fina y el porcentaje
-  function saberDocumento(s) {
+  // Barras: un saber, y debajo sus contenidos con una barra fina y el porcentaje.
+  // El encabezado del saber y su primer contenido van en un bloque que no se
+  // parte: un saber largo puede seguir en la hoja siguiente, pero su encabezado
+  // nunca queda solo al pie. «antes» es lo que va pegado arriba del saber (el
+  // título del trimestre, en el primero), por lo mismo.
+  function saberDocumento(s, antes = '') {
     const pct = (v) => Math.round(Number(v) || 0);
-    let cuerpo;
-    if (!s.suficiente) {
-      cuerpo = `<p class="t-doc__nota">${s.trabajan
-        ? `Solo ${s.trabajan} ${plural(s.trabajan, 'docente lo trabaja', 'docentes lo trabajan')}: son muy pocos para dar porcentajes.`
-        : 'Todavía ningún docente informó que lo trabaja.'}</p>`;
-    } else if (!(s.contenidos || []).length) {
-      cuerpo = '<p class="t-doc__nota">Los docentes que lo trabajan no eligieron contenidos.</p>';
-    } else {
-      cuerpo = `<ul class="t-doc__contenidos">${s.contenidos.map((co) => `
+    const contenido = (co) => `
         <li class="t-doc__contenido">
           <span class="t-doc__contenido-texto">${esc(co.texto)}${co.tipo === 'libre' ? ' <em>(agregado por docentes)</em>' : ''}</span>
           <span class="t-doc__barra"><span style="width:${pct(co.porcentaje)}%"></span></span>
           <span class="t-doc__pct">${pct(co.porcentaje)} %</span>
-        </li>`).join('')}</ul>`;
+        </li>`;
+    let primero;
+    let resto = '';
+    if (!s.suficiente) {
+      primero = `<p class="t-doc__nota">${s.trabajan
+        ? `Solo ${s.trabajan} ${plural(s.trabajan, 'docente lo trabaja', 'docentes lo trabajan')}: son muy pocos para dar porcentajes.`
+        : 'Todavía ningún docente informó que lo trabaja.'}</p>`;
+    } else if (!(s.contenidos || []).length) {
+      primero = '<p class="t-doc__nota">Los docentes que lo trabajan no eligieron contenidos.</p>';
+    } else {
+      primero = `<ul class="t-doc__contenidos">${contenido(s.contenidos[0])}</ul>`;
+      if (s.contenidos.length > 1) resto = `<ul class="t-doc__contenidos t-doc__contenidos--sigue">${s.contenidos.slice(1).map(contenido).join('')}</ul>`;
     }
     return `<div class="t-doc__saber">
-      <div class="t-doc__rotulo">Saber ${s.numero} · ${esc(s.ejeInfo.rotulo)} — ${esc(s.ejeInfo.nombre)}</div>
-      <div class="t-doc__texto">${esc(s.texto)}</div>
-      ${s.informan ? `<div class="t-doc__cuenta">Lo trabajan ${s.trabajan} de ${s.informan} docentes que lo informaron</div>` : ''}
-      ${cuerpo}
+      <div class="t-doc__saber-cabeza">
+        ${antes}
+        <div class="t-doc__rotulo">Saber ${s.numero} · ${esc(s.ejeInfo.rotulo)} — ${esc(s.ejeInfo.nombre)}</div>
+        <div class="t-doc__texto">${esc(s.texto)}</div>
+        ${s.informan ? `<div class="t-doc__cuenta">Lo trabajan ${s.trabajan} de ${s.informan} docentes que lo informaron</div>` : ''}
+        ${primero}
+      </div>
+      ${resto}
     </div>`;
   }
 
-  // Barras: un año, un trimestre por página
+  // Barras: un año, los trimestres de corrido
   function barrasDocumento(d, anio) {
-    return [1, 2, 3].filter((t) => d.porTrimestre[t].length).map((t) => `
+    return [1, 2, 3].filter((t) => d.porTrimestre[t].length).map((t) => {
+      const titulo = `<h2 class="t-doc__trimestre-titulo">${anio ? `${anio}° año · ` : ''}${ORDINAL[t]} trimestre <span>· ${d.porTrimestre[t].length} ${plural(d.porTrimestre[t].length, 'saber', 'saberes')}</span></h2>`;
+      return `
       <section class="t-doc__trimestre">
-        <h2 class="t-doc__trimestre-titulo">${anio ? `${anio}° año · ` : ''}${ORDINAL[t]} trimestre <span>· ${d.porTrimestre[t].length} ${plural(d.porTrimestre[t].length, 'saber', 'saberes')}</span></h2>
-        ${d.porTrimestre[t].map(saberDocumento).join('')}
-      </section>`).join('');
+        ${d.porTrimestre[t].map((s, i) => saberDocumento(s, i === 0 ? titulo : '')).join('')}
+      </section>`;
+    }).join('');
   }
 
   // Mapa de calor: un año en una tabla, los ejes en filas y los trimestres en
@@ -736,7 +749,7 @@
     }
     const paginas = x.vista === 'mapa'
       ? (porAnio ? 'Un año por página: los ejes en filas y los trimestres en columnas.' : 'Los ejes en filas y los trimestres en columnas.')
-      : (porAnio ? 'Cada año con sus tres trimestres, un trimestre por página.' : 'Un trimestre por página.');
+      : (porAnio ? 'Cada año arranca en una hoja nueva, con sus tres trimestres de corrido.' : 'Los tres trimestres de corrido.');
     return `${paginas} Se abre la ventana de impresión: imprimilo directo o elegí «Guardar como PDF».`;
   }
 
