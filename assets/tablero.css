@@ -1799,7 +1799,6 @@ body.tour-abierto { overflow: hidden; }
 .t-seg-localidad { color: var(--tinta-2); }
 .t-seg-tabla .t-seg-sin { font-weight: 700; color: var(--t-tinta); }
 .t-seg-extra { font-size: 14.5px; font-weight: 400; color: var(--t-gris-2); }
-.t-seg-vacia { margin: 0; font-family: var(--texto); font-size: 16px; color: var(--t-gris); }
 
 /* Por departamento: la barra es la parte de sus escuelas que ya cargó */
 .t-seg-tabla--deptos td, .t-seg-tabla--deptos tbody th { vertical-align: middle; }
