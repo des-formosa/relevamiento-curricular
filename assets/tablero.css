@@ -101,57 +101,6 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
 }
 .t-salir:hover { border-color: var(--azul); color: var(--azul); }
 
-/* Interruptor de datos de ejemplo */
-.t-interruptor {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  height: 40px;
-  padding: 0 14px 0 12px;
-  border: 1.5px solid var(--t-borde);
-  border-radius: 3px;
-  background: var(--blanco);
-  font-family: var(--ui);
-  font-size: 14.5px;
-  font-weight: 700;
-  color: var(--t-gris);
-  cursor: pointer;
-  white-space: nowrap;
-}
-.t-interruptor__pista {
-  width: 18px;
-  height: 18px;
-  border: 2px solid #9AA3B2;
-  border-radius: 2px;
-  background: var(--blanco);
-  position: relative;
-  flex-shrink: 0;
-  transition: background .15s, border-color .15s;
-}
-.t-interruptor--activo { border-color: var(--ocre-borde); background: var(--ocre-fondo); color: var(--ocre); }
-/* El tilde va como trazo SVG: a 14 px, dos bordes girados se empastan y sale
-   un romboide en vez de una tilde. */
-.t-interruptor--activo .t-interruptor__pista {
-  border-color: var(--ocre);
-  background: var(--ocre) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.4 8.4l3.1 3.1 6.1-6.6' fill='none' stroke='white' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 12px 12px no-repeat;
-}
-
-.t-banda-ejemplo {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  padding: 12px 32px;
-  background: var(--ocre-fondo);
-  border-bottom: 1.5px solid var(--ocre-borde);
-  font-family: var(--ui);
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--ocre);
-  text-align: center;
-}
-.t-banda-ejemplo strong { font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; }
-
 /* ---------- Barra de selección ---------- */
 
 .t-selectores {
@@ -827,10 +776,8 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
     justify-content: flex-start;
   }
   .t-cabecera__usuario { flex-basis: 100%; }
-  .t-interruptor { height: 44px; }
   .t-salir { height: 44px; padding: 0 18px; }
 
-  .t-banda-ejemplo { padding: 10px 16px; font-size: 14.5px; line-height: 1.35; }
 
   /* Selectores: uno debajo del otro, a todo el ancho */
   .t-selectores {
@@ -936,7 +883,7 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
 /* Teléfonos angostos: que el nombre del Ministerio no empuje a los botones */
 @media (max-width: 400px) {
   .t-cabecera__nombre span:first-child { font-size: 11px; }
-  .t-interruptor, .t-salir { font-size: 13.5px; }
+  .t-salir { font-size: 13.5px; }
   /* Las cuatro solapas entran en un renglón desde 360 px; «Salir» baja al de abajo */
   .t-cabecera .t-enlace-cab { padding: 0 4px; font-size: 14.5px; }
 }
@@ -977,7 +924,6 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
   .t-doc__titulo { font-size: 22pt; font-weight: 800; letter-spacing: -0.01em; margin: 6px 0 2px; }
   .t-doc__sub { font-size: 12pt; color: var(--tinta-2); }
   .t-doc__datos { font-size: 9.5pt; color: var(--t-gris); margin-top: 4px; }
-  .t-doc__ejemplo { font-size: 10pt; font-weight: 800; color: var(--ocre); border: 1.5px dashed var(--ocre-borde); padding: 5px 8px; margin-top: 8px; }
   .t-doc__lectura { font-family: var(--texto); font-size: 9.5pt; color: var(--t-gris); margin: 8px 0 0; line-height: 1.4; }
 
   /* Los trimestres van de corrido: antes cada uno arrancaba en una página nueva
@@ -1697,7 +1643,7 @@ body.tour-abierto { overflow: hidden; }
 .t-inicio__flecha { flex-shrink: 0; }
 
 /* Enlaces de la cabecera (Inicio, ¿Cómo se usa?, Salir): sin recuadro, para
-   que los controles de verdad —editar, datos de ejemplo— entren en una fila */
+   que entren en una fila con la marca */
 .t-enlace-cab {
   height: 44px; padding: 0 8px; border: none; background: transparent; border-radius: 3px;
   font: inherit; font-size: 15.5px; font-weight: 700; color: var(--azul); cursor: pointer;
@@ -1732,19 +1678,17 @@ body.tour-abierto { overflow: hidden; }
   .t-nav__separador { display: none; }
   /* Con cuatro solapas, en el teléfono más angosto pueden no entrar: que bajen */
   .t-nav { flex-wrap: wrap; }
-  .t-selectores .t-interruptor { justify-content: center; height: 52px; }
 }
 
-/* Datos de ejemplo y Descargar van juntos: si no entran al lado de los
-   selectores, bajan los dos a una segunda línea, a la derecha */
+/* El botón de descargar va a la derecha; si no entra al lado de los
+   selectores, baja a una segunda línea */
 .t-selectores { flex-wrap: wrap; row-gap: 10px; }
 .t-selectores__acciones { display: flex; align-items: center; gap: 14px; margin-left: auto; }
-.t-selectores__acciones .t-interruptor { height: 46px; }
 @media (max-width: 899px) {
   .t-selectores__acciones { flex-direction: column; align-items: stretch; margin-left: 0; gap: 10px; }
 }
-/* Entre 1280 y 1599 los selectores se achican un poco para que Datos de
-   ejemplo y Descargar entren en la misma línea */
+/* Entre 1280 y 1599 los selectores se achican un poco para que Descargar
+   entre en la misma línea */
 @media (min-width: 1280px) and (max-width: 1599px) {
   .t-select--materia { width: 250px; }
   .t-select--anio { width: 130px; }
@@ -1962,7 +1906,7 @@ body.tour-abierto { overflow: hidden; }
 .t-inicio__flecha { transition: transform 200ms cubic-bezier(.2, .7, .2, 1); }
 .t-inicio__opcion:hover .t-inicio__flecha { transform: translateX(4px); }
 .t-enlace-cab { transition: text-decoration-color 150ms ease, color 150ms ease; }
-.t-exportar, .ed-boton, .t-interruptor, .t-descargar, .t-cancelar, .t-vista, .ed-icono, .t-opcion, .t-formato {
+.t-exportar, .ed-boton, .t-descargar, .t-cancelar, .t-vista, .ed-icono, .t-opcion, .t-formato {
   transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease, transform 100ms ease;
 }
 .t-exportar:active, .ed-boton:active, .t-descargar:active, .t-cancelar:active { transform: translateY(1px); }

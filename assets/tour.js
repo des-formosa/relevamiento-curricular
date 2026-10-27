@@ -71,11 +71,6 @@ const Tour = (function () {
         texto: 'Con menos de cinco docentes no mostramos porcentajes: un 67 % sobre tres respuestas engaña más de lo que informa. En su lugar dice cuántos informaron.',
       },
       {
-        objetivo: '.t-interruptor',
-        titulo: 'Datos de ejemplo',
-        texto: 'Para mostrar el panel antes de que haya cargas reales. Son inventados y aparecen con una banda que lo aclara, así nadie los confunde con respuestas de docentes.',
-      },
-      {
         objetivo: '.t-exportar',
         titulo: 'Para llevarte los resultados',
         texto: '«Descargar resultados» arma el reporte de la materia: todos sus años o solo el que estás viendo. En PDF para imprimir, con gráficos de barras o mapa de calor, o en Excel para seguir trabajando.',

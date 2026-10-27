@@ -18,6 +18,8 @@ docentes y se presenta el dashboard a las autoridades.
 
 Como la carga arranca ese mismo día, el dashboard va a estar vacío en la presentación.
 **Debe poder mostrarse con datos de ejemplo verosímiles**, claramente marcados como tales.
+(Se hizo, y el 27/10/2026, con la carga real avanzada, los datos de ejemplo y su interruptor
+se sacaron: ver «Sin datos de ejemplo» en Estado.)
 
 Volumen esperado: entre 5.000 y 10.000 docentes, unas 81 escuelas, carga distribuida a lo
 largo de varios días a partir del 26.
@@ -87,7 +89,7 @@ fijada, nunca por bundler.
     ├── 02_rls.sql          RLS, permisos, es_equipo()
     ├── 03_funciones.sql    normalizar_texto, registrar_aporte, cargar_catalogo, cargar_contenidos, cargar_escuelas
     ├── 04_vistas.sql       vistas para exportar y panel_resultados() para el dashboard
-    ├── 05_datos_ejemplo.sql  generar_datos_ejemplo() / borrar_datos_ejemplo()
+    ├── (05 era datos_ejemplo.sql: se sacó el 27/10/2026; queda en el historial de git)
     ├── 06_cargar_escuelas.sql  generado: datos/escuelas.json → base
     ├── 07_cargar_catalogo.sql  generado: el catálogo sin los contenidos
     ├── 08_cargar_contenidos_N.sql  generado: los contenidos, en lotes
@@ -486,15 +488,14 @@ confundía. Quedó así:
   actual subrayado como solapa, y después «¿Cómo se usa?» y «Salir». Todos enlaces sin recuadro
   (`.t-enlace-cab`), así entra en una fila desde 1280 px; en el teléfono, desde 360 px las
   cuatro solapas van en un renglón y «Salir» en el de abajo.
-- **Resultados**, en la barra de selectores: «Datos de ejemplo» y **«Descargar resultados»**
-  (el reporte de la materia). Si no entran al lado de los selectores, bajan juntos a una
-  segunda línea.
+- **Resultados**, en la barra de selectores: **«Descargar resultados»** (el reporte de la
+  materia). Si no entra al lado de los selectores, baja a una segunda línea.
 - **Catálogo**, en la barra del editor: «Historial», **«Descargar para revisar»** (la currícula
   de la materia, sin resultados, en Excel o PDF, para un profesor), **«Cambiar con una
   planilla»** (1 · bajá la planilla, 2 · subila corregida; el JSON quedó como enlace chico para
   quien mantiene el sistema) y **«Publicar»**.
-- **Seguimiento**, en su barra: el alcance, «Datos de ejemplo» y **«Descargar el Excel»** (la
-  planilla de uso interno, con nombres).
+- **Seguimiento**, en su barra: el alcance y **«Descargar el Excel»** (la planilla de uso
+  interno, con nombres).
 
 El recorrido guiado pasó a `v4`, con un paso para «Descargar para revisar», y a `v5` cuando
 «Descargar resultados» pasó a ser el reporte de la materia (25/09/2026).
@@ -504,7 +505,7 @@ El recorrido guiado pasó a `v4`, con un paso para «Descargar para revisar», y
 1. **Barra de selección** siempre visible: Materia · Año · Alcance (toda la provincia / un
    departamento / una escuela). No hay filtro de trimestre: se ve el año entero, con los tres
    trimestres en columnas. Arranca con una selección puesta y datos a la vista, nunca vacío;
-   si la selección real todavía está vacía, lo dice y ofrece ver los datos de ejemplo.
+   si la selección todavía no tiene cargas, lo dice y sugiere probar con otra.
 2. **Línea de contexto**: "Basado en 147 docentes de 62 escuelas." Nada más.
 3. **Cuerpo**: los saberes de esa combinación, uno debajo del otro. Para cada saber, su texto
    completo y debajo los contenidos más elegidos, ordenados de mayor a menor, con barra
@@ -556,8 +557,7 @@ El recorrido guiado pasó a `v4`, con un paso para «Descargar para revisar», y
    *Envíos* (uno por fila, de `v_aportes`, con cuántos saberes trabaja, cuántos no y cuántos
    contenidos eligió), *Por escuela* (las 288 de la nómina en el orden oficial, más las que
    agregaron los docentes; las que no tienen envíos dicen «Sin envíos todavía») y *Detalle* (lo
-   de antes, de `v_relevamiento`, una fila por contenido o saber no trabajado). Tiene su propia casilla de datos de ejemplo, así se
-   puede mostrar antes de que lleguen cargas. **Trae nombre y apellido de cada docente: no es
+   de antes, de `v_relevamiento`, una fila por contenido o saber no trabajado). **Trae nombre y apellido de cada docente: no es
    para repartir**, y la ventana lo dice.
 
    **«Descargar para revisar»**, en el catálogo, exporta la currícula sin resultados:
@@ -577,9 +577,9 @@ selectores dejan de tener ancho fijo. Ningún ancho produce scroll horizontal.
 Cuando un saber tiene pocas respuestas (menos de 5 docentes lo trabajan), en vez de
 porcentajes engañosos mostrar "Solo 3 docentes informaron este saber. Muestra insuficiente."
 
-Los datos de ejemplo (`es_ejemplo = true`) se activan con un interruptor en la cabecera o con
-`#ejemplo=1` en la URL, y aparecen con una banda que dice que son inventados. La selección
-completa vive en el hash de la URL, así una vista se puede marcar y compartir.
+La selección completa vive en el hash de la URL, así una vista se puede marcar y compartir.
+(Hasta el 27/10/2026 había además un interruptor «Datos de ejemplo», con `#ejemplo=1`; se sacó
+con los datos.)
 
 **Lo que NO va:** índices de divergencia, comparación entre escuelas lado a lado, pantalla de
 normalización de textos libres, gráficos de torta, tarjetas de métricas grandes, pestañas ni
@@ -598,8 +598,7 @@ eso es lo que el Ministerio necesita mirar. Los nombres siguen solo en el Excel,
 desde acá con su aviso de uso interno. El enlace del pie se sacó: la solapa ya está a la vista.
 
 - **Barra:** Alcance (toda la provincia, un departamento o una escuela, agrupadas por
-  departamento como en Resultados, más las que agregaron los docentes), «Datos de ejemplo» y
-  «Descargar el Excel».
+  departamento como en Resultados, más las que agregaron los docentes) y «Descargar el Excel».
 - **Línea de contexto con la respuesta:** «Cargaron 487 docentes de 135 de las 288 escuelas.
   153 escuelas todavía no cargaron.» Nunca «Faltan 153» a secas: el equipo preguntó «¿faltan
   qué?». Lo mismo en la tabla («Escuelas sin cargas») y en cada departamento («20 sin cargas
@@ -635,8 +634,8 @@ desde acá con su aviso de uso interno. El enlace del pie se sacó: la solapa ya
   más que docentes.
 
 Un docente que carga en dos escuelas cuenta en las dos, pero una sola vez en el total de su
-departamento y de la provincia. Se cuentan los aportes (`es_ejemplo` según el interruptor), no
-los nombres.
+departamento y de la provincia. Se cuentan los aportes reales (`es_ejemplo = false`), no los
+nombres.
 
 **No necesita nada nuevo en la base.** Lee la tabla `aportes` con los permisos que el equipo ya
 tiene (solo `escuela_id`, `docente_id`, `espacio_id` y `enviado_en`) y cuenta en el navegador.
@@ -806,7 +805,8 @@ formulario solo entra por `registrar_aporte`.
 
 Son veinte personas que entran cada tanto, no todos los días. En vez de un instructivo que
 nadie lee, el panel se explica solo: ilumina una parte de la pantalla y dice qué mira, con
-«Saltar», «Anterior» y «Siguiente». Diez pasos para leer los resultados y once para editar el
+«Saltar», «Anterior» y «Siguiente». Nueve pasos para leer los resultados (eran diez: el de
+«Datos de ejemplo» se sacó con el interruptor) y once para editar el
 catálogo (el último agregado: el orden de los saberes).
 
 Arranca solo la primera vez que se entra a cada pantalla (queda anotado en `localStorage`,
@@ -874,7 +874,9 @@ Agregados al implementar (sql/01_esquema.sql):
 - `docentes.clave uuid`: si el navegador genera un `crypto.randomUUID()` al empezar y lo manda
   en `payload.docente.clave`, todas las materias de esa persona quedan bajo un solo docente, y
   reenviar la misma materia/año/escuela reemplaza el envío anterior. Es opcional.
-- `aportes.es_ejemplo`: marca los datos inventados para la demo. El formulario nunca lo pone.
+- `aportes.es_ejemplo`: marcaba los datos inventados para la demo. El formulario nunca lo pone.
+  Desde el 27/10/2026 no hay ninguno, pero la columna queda: la usan las vistas,
+  `panel_resultados()` y los filtros del panel, que siguen pidiendo solo `false`.
 - `equipo_planificacion(usuario_id)`: además de existir en Supabase Auth, el usuario del
   dashboard tiene que estar en esta tabla para ver algo.
 
@@ -1040,7 +1042,7 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
   saberes, 4.716 contenidos): reimportar el archivo entero sin tocarlo da cero cambios y no
   archiva nada; un saber corregido en sus cinco filas genera una sola edición y una sola
   entrada de auditoría; corregido en una sola fila, se rechaza por contradictorio
-- **Recorrido guiado del panel** (`assets/tour.js`): diez pasos para leer los resultados y
+- **Recorrido guiado del panel** (`assets/tour.js`): nueve pasos para leer los resultados y
   once para editar el catálogo. Arranca solo la primera vez y se repite desde «¿Cómo se usa?»
 - Dashboard completo (`dashboard.html` + `assets/dashboard.js` + `assets/tablero.css`):
   ingreso con Supabase Auth, chequeo de `equipo_planificacion`, Detalle, Mapa de calor,
@@ -1137,11 +1139,21 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
   actualiza, en el teléfono es una hoja de lado a lado que no navega, y sin la tabla avisa y
   muestra las cargas
 
+- **Contactos cargados en Supabase** (27/10/2026): el equipo corrió `sql/13_contactos_escuelas.sql`
+  y el SQL privado con las planillas de directivos. Si llega una planilla nueva, se vuelve a
+  generar con `datos/generar_contactos.py` y se corre otra vez
+- **Sin datos de ejemplo** (27/10/2026): con la carga real avanzada ya no tenían sentido. El
+  panel dejó de ofrecerlos (el interruptor en Resultados y Seguimiento, la banda, el botón «Ver
+  datos de ejemplo» cuando una selección está vacía, la casilla del Excel de seguimiento, el
+  `#ejemplo=1`, los avisos en PDF y Excel, el paso del recorrido y sus estilos) y
+  `sql/05_datos_ejemplo.sql` salió de la instalación.
+  `sql/mantenimiento/2026-10-27_sin_datos_de_ejemplo.sql` borra los docentes inventados (con
+  sus aportes, en cascada) y las dos funciones; probado contra PostgreSQL 16: con 300 docentes
+  de ejemplo y uno real, borra los 300, deja el real y repetirlo no hace nada
+
 **Pendiente**
-- **Correr en el SQL Editor de Supabase `sql/13_contactos_escuelas.sql` y después
-  `sql/privado/14_cargar_contactos.sql`** (este último no está en el repositorio: se genera con
-  `datos/generar_contactos.py` o se pide a quien lo armó). Hasta entonces la ficha dice que los
-  contactos no están cargados
-- **Después de la presentación**, `select public.borrar_datos_ejemplo();`
+- **Correr en el SQL Editor `sql/mantenimiento/2026-10-27_sin_datos_de_ejemplo.sql`**: hasta
+  entonces los datos inventados siguen en la base, aunque el panel ya no los muestra en ningún
+  lado
 - El formulario escribe de verdad por defecto; `?demo` en el link es solo para mostrarlo sin
   guardar. Repartir el link sin `?demo`
