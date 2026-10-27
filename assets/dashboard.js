@@ -74,8 +74,9 @@
     inicio: null,             // { cargas } para la pantalla de inicio
     // Seguimiento de la carga: cuántos docentes cargaron en cada escuela, de
     // todas las materias. lugar = null (toda la provincia), el id de un
-    // departamento o el de una escuela (no hay ids repetidos entre los dos)
-    seguimiento: { lugar: null, datos: null, cargando: false, error: null },
+    // departamento o el de una escuela (no hay ids repetidos entre los dos).
+    // soloFaltan: mostrar solo las escuelas que todavía no cargaron
+    seguimiento: { lugar: null, soloFaltan: false, datos: null, cargando: false, error: null },
     usuario: null,
     espacio_id: null,
     anio: 1,
@@ -124,6 +125,7 @@
   function escribirHashSeguimiento() {
     const h = new URLSearchParams();
     h.set('seguimiento', estado.seguimiento.lugar || '');
+    if (estado.seguimiento.soloFaltan) h.set('faltan', '1');
     if (estado.ejemplo) h.set('ejemplo', '1');
     history.replaceState(null, '', '#' + h.toString());
   }
@@ -315,7 +317,11 @@
     // Un link compartido (con la selección en el hash) va directo a lo que
     // muestra; entrar al panel a secas, al inicio
     const hash = new URLSearchParams(window.location.hash.replace(/^#/, ''));
-    if (hash.has('seguimiento')) { irAlSeguimiento(hash.get('seguimiento')); return; }
+    if (hash.has('seguimiento')) {
+      estado.seguimiento.soloFaltan = hash.get('faltan') === '1';
+      irAlSeguimiento(hash.get('seguimiento'));
+      return;
+    }
     if (hash.has('materia')) { irAlPanel('resultados'); return; }
     irAlInicio();
   }
@@ -387,7 +393,7 @@
     // mano: el que entra después tiene que ver los resultados, no el editor
     estado.modo = 'resultados';
     Editor.limpiar();
-    estado.seguimiento = { lugar: null, datos: null, cargando: false, error: null };
+    estado.seguimiento = { lugar: null, soloFaltan: false, datos: null, cargando: false, error: null };
     history.replaceState(null, '', window.location.pathname + window.location.search);
     estado.pantalla = 'ingreso';
     render();
@@ -1536,7 +1542,33 @@
           ? `<strong>${numero(c.faltan)} ${plural(c.faltan, 'escuela todavía no cargó', 'escuelas todavía no cargaron')}</strong>.`
           : 'Ya cargaron todas las escuelas.');
     }
-    return `<div class="t-contexto"><div class="t-contexto__texto">${texto}</div></div>`;
+    // Dos formas de ver la misma lista, como Detalle y Mapa de calor
+    const solapa = (solo, titulo) =>
+      `<button type="button" class="t-vista ${estado.seguimiento.soloFaltan === solo ? 't-vista--activa' : ''}" data-accion="seg-solo" data-solo="${solo ? '1' : ''}" aria-pressed="${estado.seguimiento.soloFaltan === solo}">${titulo}</button>`;
+    return `<div class="t-contexto">
+      <div class="t-contexto__texto">${texto}</div>
+      <div class="t-vistas">
+        ${solapa(false, 'Todas las escuelas')}
+        ${solapa(true, `Solo las que no cargaron (${numero(c.faltan)})`)}
+      </div>
+    </div>`;
+  }
+
+  // Solo las que todavía no cargaron: el nombre y la localidad, nada más. Que
+  // no tienen cargas ya lo dice el título; repetirlo en cada fila sobraba.
+  function tablaFaltan(g) {
+    const lista = g.escuelas.filter((e) => !e.docentes);
+    return `<section class="t-seg-bloque">
+      <h2 class="t-seg-titulo">Departamento ${esc(g.nombre)} <span>${numero(lista.length)} de sus ${numero(g.total)} escuelas todavía no ${plural(lista.length, 'cargó', 'cargaron')}</span></h2>
+      <table class="t-seg-tabla t-seg-tabla--faltan">
+        <thead><tr><th scope="col">Escuela</th><th scope="col">Localidad</th></tr></thead>
+        <tbody>${lista.map((e) => `
+          <tr>
+            <th scope="row" class="t-seg-escuela"><button type="button" class="t-seg-enlace" data-accion="seg-lugar" data-id="${esc(e.id)}">${esc(e.nombre)}</button></th>
+            <td class="t-seg-localidad">${esc(e.localidad)}</td>
+          </tr>`).join('')}</tbody>
+      </table>
+    </section>`;
   }
 
   // Un renglón por departamento, en el orden de la nómina: la barra es la
@@ -1647,8 +1679,10 @@
       contenido = `<div class="t-seg-marco">
         ${escuela ? vistaEscuela(escuela, suGrupo) : `${contextoSeguimiento(d, g)}
         <div class="t-cuerpo t-seg">
-          ${g ? '' : tablaDepartamentos(d)}
-          ${grupos.map(tablaEscuelas).join('')}
+          ${s.soloFaltan
+            ? (grupos.filter((x) => x.faltan).map(tablaFaltan).join('')
+              || `<p class="t-seg-vacia">Ya cargaron todas las escuelas${g ? ` del departamento ${esc(g.nombre)}` : ''}.</p>`)
+            : `${g ? '' : tablaDepartamentos(d)}${grupos.map(tablaEscuelas).join('')}`}
         </div>`}
       </div>`;
     }
@@ -1700,7 +1734,7 @@
     // En el seguimiento, al llegar las cuentas y al cambiar de departamento;
     // abrir la ventana del Excel no hace parpadear la lista
     const seg = estado.seguimiento;
-    const vistaSeg = estado.pantalla === 'seguimiento' && seg.datos ? [seg.datos, seg.lugar] : null;
+    const vistaSeg = estado.pantalla === 'seguimiento' && seg.datos ? [seg.datos, seg.lugar, seg.soloFaltan] : null;
     if (vistaSeg && !(previo.seguimiento && vistaSeg.every((v, i) => v === previo.seguimiento[i]))) {
       const cuerpo = app.querySelector('.t-seg');
       if (cuerpo) {
@@ -1750,6 +1784,11 @@
       case 'ir-catalogo': irAlPanel('catalogo'); break;
       case 'ir-seguimiento': irAlSeguimiento(); break;
       case 'seg-reintentar': cargarSeguimiento(); break;
+      case 'seg-solo': {
+        const solo = d.solo === '1';
+        if (estado.seguimiento.soloFaltan !== solo) { estado.seguimiento.soloFaltan = solo; escribirHashSeguimiento(); render(); }
+        break;
+      }
       case 'seg-lugar':
         estado.seguimiento.lugar = d.id || null;
         escribirHashSeguimiento();
