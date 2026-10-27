@@ -64,7 +64,7 @@ fijada, nunca por bundler.
 │   ├── catalogo.js         carga los JSON y arma los índices en memoria
 │   ├── supabase.js         configuración del proyecto y enviarAporte()
 │   ├── formulario.js       estado, navegación y pantallas del flujo del docente
-│   ├── dashboard.js        panel: sesión, selectores, Detalle, Mapa de calor, exportar
+│   ├── dashboard.js        panel: sesión, selectores, Detalle, Mapa de calor, exportar, Seguimiento
 │   ├── editor.js           edición del catálogo desde el panel, con historial
 │   ├── archivo.js          exportar el catálogo a Excel/JSON e importarlo corregido
 │   ├── tour.js             recorrido guiado del panel y del editor
@@ -471,18 +471,18 @@ en la cabecera, el logo chico.
 usarlo»). La primera versión tenía de más —saludo enorme, estado del catálogo, cuatro consejos—
 y el equipo la sintió cargada. Quedó: «Hola, Ana» chico, la marca ReSaP como título
 (logo, nombre completo, filete tricolor y eslogan), una línea de cómo va la carga y los dos caminos: «Ver los
-resultados» y «Editar el catálogo». Al pie, un enlace chico y gris, **«Seguimiento de la
-carga»**, abre la planilla de uso interno (ver «Exportar»). Desde el panel se vuelve con «Inicio». **Un link
-compartido** (con `materia=` en el hash) no pasa por el inicio: va directo a lo que muestra.
-Salir borra el hash, así el que entra después arranca por el inicio.
+resultados» y «Editar el catálogo». Desde el panel se vuelve con «Inicio». **Un link
+compartido** (con `materia=` o `seguimiento=` en el hash) no pasa por el inicio: va directo a
+lo que muestra. Salir borra el hash, así el que entra después arranca por el inicio.
 
 **Los botones, cada uno donde actúa** (24/09/2026). Había tres «exportar» con nombres
 parecidos y un botón «Editar catálogo» que cambiaba de texto según dónde estabas; el equipo se
 confundía. Quedó así:
 
-- **Cabecera: solo navegación.** «Inicio · Resultados · Catálogo», con el lugar actual
-  subrayado como solapa, y después «¿Cómo se usa?» y «Salir». Todos enlaces sin recuadro
-  (`.t-enlace-cab`), así entra en una fila.
+- **Cabecera: solo navegación.** «Inicio · Resultados · Catálogo · Seguimiento», con el lugar
+  actual subrayado como solapa, y después «¿Cómo se usa?» y «Salir». Todos enlaces sin recuadro
+  (`.t-enlace-cab`), así entra en una fila desde 1280 px; en el teléfono, desde 360 px las
+  cuatro solapas van en un renglón y «Salir» en el de abajo.
 - **Resultados**, en la barra de selectores: «Datos de ejemplo» y **«Descargar resultados»**
   (el reporte de la materia). Si no entran al lado de los selectores, bajan juntos a una
   segunda línea.
@@ -490,6 +490,8 @@ confundía. Quedó así:
   de la materia, sin resultados, en Excel o PDF, para un profesor), **«Cambiar con una
   planilla»** (1 · bajá la planilla, 2 · subila corregida; el JSON quedó como enlace chico para
   quien mantiene el sistema) y **«Publicar»**.
+- **Seguimiento**, en su barra: el alcance, «Datos de ejemplo» y **«Descargar el Excel»** (la
+  planilla de uso interno, con nombres).
 
 El recorrido guiado pasó a `v4`, con un paso para «Descargar para revisar», y a `v5` cuando
 «Descargar resultados» pasó a ser el reporte de la materia (25/09/2026).
@@ -540,13 +542,14 @@ El recorrido guiado pasó a `v4`, con un paso para «Descargar para revisar», y
    saber una vez y debajo sus contenidos, sin conteos ni columnas técnicas, y «Observaciones»
    vacía para que anoten. La columna Año aparece solo con varios años.
 
-   **Seguimiento de la carga (uso interno)**, antes «Todo el relevamiento provincial» dentro de
-   esta misma ventana. Se sacó de «Descargar resultados» porque no es un resultado: es para
-   seguir cómo avanza la carga. **Va discreto a propósito**: un enlace chico y gris al pie del
-   inicio. La primera versión decía «Ver quién contestó», a la vista en la línea de la carga, y
-   el equipo la sintió invasiva: el inicio se proyecta ante autoridades y eso sonaba a vigilar a
-   los docentes. Por lo mismo, ni el enlace, ni la ventana, ni el archivo ni sus hojas dicen
-   «quién contestó». Baja un Excel de toda la provincia y todas las materias, con tres hojas:
+   **El Excel del seguimiento de la carga (uso interno)**, antes «Todo el relevamiento
+   provincial» dentro de esta misma ventana. Se sacó de «Descargar resultados» porque no es un
+   resultado: es para seguir cómo avanza la carga. Ahora se baja desde la pantalla
+   **Seguimiento** (ver más abajo). La primera versión decía «Ver quién contestó», a la vista en
+   la línea de la carga, y el equipo la sintió invasiva: el inicio se proyecta ante autoridades
+   y eso sonaba a vigilar a los docentes. Por lo mismo, ni el botón, ni la ventana, ni el
+   archivo ni sus hojas dicen «quién contestó». Baja un Excel de toda la provincia y todas las
+   materias, con tres hojas:
    *Envíos* (uno por fila, de `v_aportes`, con cuántos saberes trabaja, cuántos no y cuántos
    contenidos eligió), *Por escuela* (las 288 de la nómina en el orden oficial, más las que
    agregaron los docentes; las que no tienen envíos dicen «Sin envíos todavía») y *Detalle* (lo
@@ -578,6 +581,45 @@ completa vive en el hash de la URL, así una vista se puede marcar y compartir.
 **Lo que NO va:** índices de divergencia, comparación entre escuelas lado a lado, pantalla de
 normalización de textos libres, gráficos de torta, tarjetas de métricas grandes, pestañas ni
 menú lateral.
+
+### Seguimiento de la carga (pantalla «Seguimiento»)
+
+Lo pidió el equipo el 27/10/2026, con el cierre del relevamiento cerca: ver cuántos docentes
+cargaron en cada escuela, **de todas las materias juntas**, y qué escuelas y localidades todavía
+no cargaron, para llamarlas. Antes solo estaba en el Excel, que había que bajar y filtrar.
+
+Es la cuarta sección de la cabecera. Hasta ese día el seguimiento iba escondido en un enlace
+gris al pie del inicio, porque «Ver quién contestó» sonaba a vigilar a los docentes delante de
+las autoridades. Esta pantalla **no muestra ningún nombre de docente**: cuenta por escuela, y
+eso es lo que el Ministerio necesita mirar. Los nombres siguen solo en el Excel, que se baja
+desde acá con su aviso de uso interno. El enlace del pie se sacó: la solapa ya está a la vista.
+
+- **Barra:** Alcance (toda la provincia o un departamento), «Datos de ejemplo» y «Descargar el
+  Excel».
+- **Línea de contexto con la respuesta:** «Cargaron 487 docentes de 135 de las 288 escuelas.
+  Faltan 153.» Al lado, dos solapas: «Todas las escuelas» y «Las que no cargaron (153)».
+- **Por departamento** (solo con toda la provincia): un renglón por departamento, en el orden
+  de la nómina, con la barra de 18 px de sus escuelas que ya cargaron («22 de 42»), los
+  docentes y cuántas faltan. El nombre del departamento lleva a su lista.
+- **Las escuelas**, una tabla por departamento, en el orden oficial (cada E.P.E.S. seguida de
+  sus anexos): escuela, localidad, docentes, materias y último envío («hoy», «ayer», «12 oct»).
+  Las que no tienen envíos dicen **«Sin cargas todavía»** en negrita, sin color propio: el
+  ladrillo y el ocre ya dicen otra cosa en el panel. Las que agregaron los docentes (o una que
+  salió de la nómina) van al final de su departamento, marcadas, y no cuentan entre las que
+  faltan: el denominador es siempre la nómina.
+
+Un docente que carga en dos escuelas cuenta en las dos, pero una sola vez en el total de su
+departamento y de la provincia. Se cuentan los aportes (`es_ejemplo` según el interruptor), no
+los nombres.
+
+**No necesita nada nuevo en la base.** Lee la tabla `aportes` con los permisos que el equipo ya
+tiene (solo `escuela_id`, `docente_id`, `espacio_id` y `enviado_en`) y cuenta en el navegador.
+La primera página trae el total y las demás se piden juntas; con 15.000 aportes son 15 pedidos
+chicos. Los nombres de las escuelas salen de `datos/escuelas.json`; las que no están ahí se
+piden a `escuelas`. Se vuelve a contar cada vez que se entra a la pantalla. La selección viaja
+en el hash (`#seguimiento=pirane`), así se puede dejar marcada.
+
+No tiene recorrido guiado: si algo necesitara explicación, estaría mal.
 
 ### Editar el catálogo (assets/editor.js + sql/09_edicion_catalogo.sql)
 
@@ -982,7 +1024,7 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
 - **El reporte por materia** (25/09/2026): «Descargar resultados» arma el reporte de toda la
   materia o de un año, en PDF (barras o mapa de calor) o Excel, y «Todo el relevamiento» pasó
   a un enlace discreto al pie del inicio, «Seguimiento de la carga», con hojas de envíos y por
-  escuela (ver «Exportar»). Probado con un Supabase simulado: Matemática de 1° a 3° en barras (13 páginas,
+  escuela (ver «Exportar»; desde el 27/10 se baja desde la pantalla Seguimiento). Probado con un Supabase simulado: Matemática de 1° a 3° en barras (13 páginas,
   52 saberes) y en mapa de calor (apaisado, 3 tablas), Tecnológica ofrece solo 1° y 2°, un
   solo año sale sin títulos de año, el Excel con columna Año, y el control con sus tres hojas
   (las 288 escuelas, la agregada por un docente al final). La ventana entra sin desplazarse en
@@ -1001,6 +1043,16 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
   Los datos de ejemplo se regeneraron contra los 772 saberes activos (1.500 docentes, 2.586
   aportes, 89.320 selecciones, las 16 materias): cero respuestas en saberes o contenidos
   archivados y cero en escuelas no vigentes
+
+- **Pantalla de Seguimiento** (27/10/2026): cuántos docentes cargaron en cada escuela y
+  departamento, de todas las materias, y cuáles faltan (ver «Seguimiento de la carga»). Probado
+  en Chromium con un Supabase simulado (972 envíos reales y 3.439 de ejemplo, paginados de a
+  1.000 como PostgREST): los totales de provincia y departamento coinciden con los contados
+  aparte, «Las que no cargaron» muestra exactamente las que faltan, la escuela agregada y la que
+  salió de la nómina van marcadas al final de su departamento, la pantalla no pide nombres de
+  docentes, el hash se conserva al recargar, el Excel se baja desde ahí, y con la base caída
+  dice qué pasó y deja reintentar. Sin scroll horizontal de 320 a 1920 px, y la cabecera de
+  todas las pantallas sigue en una fila desde 1280
 
 **Pendiente**
 - **Después de la presentación**, `select public.borrar_datos_ejemplo();`
