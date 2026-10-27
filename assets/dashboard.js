@@ -338,7 +338,7 @@
     irAlInicio();
   }
 
-  // El inicio: el nombre del sistema, una línea de cómo va la carga y los dos
+  // El inicio: el nombre del sistema, una línea de cómo va la carga y los tres
   // caminos. Trae una sola consulta liviana; si falla, la pantalla igual se ve.
   async function irAlInicio() {
     estado.pantalla = 'inicio';
@@ -897,7 +897,11 @@
         : 'Una hoja con año, trimestre, eje, saber y contenidos, y una columna de «Observaciones» para que el profesor anote.';
     }
     if (x.que === 'control') {
-      return 'Tres hojas: los <strong>envíos</strong> (uno por fila), <strong>por escuela</strong> (también las que todavía no tienen ninguno) y el <strong>detalle</strong> de cada envío. <strong>Trae nombre y apellido de cada docente: es de uso interno, no para repartir.</strong>';
+      const a = alcanceSeguimiento();
+      if (a.soloFaltan) return 'Una hoja con cada escuela, su localidad y su contacto (o el de su sede, si es un anexo), para llamarlas. <strong>Trae nombres y celulares de directivos: es de uso interno, no para repartir.</strong>';
+      return a.tipo === 'escuela'
+        ? 'Tres hojas: <strong>por materia</strong>, sus <strong>envíos</strong> (uno por fila) y el <strong>detalle</strong> de cada envío. <strong>Trae nombre y apellido de cada docente: es de uso interno, no para repartir.</strong>'
+        : 'Tres hojas: <strong>por escuela</strong> (con su contacto, también las que todavía no cargaron), los <strong>envíos</strong> (uno por fila) y el <strong>detalle</strong> de cada envío. <strong>Trae nombres de docentes y contactos de directivos: es de uso interno, no para repartir.</strong>';
     }
     const porAnio = x.que === 'materia' && aniosDeLaMateria().length > 1;
     if (x.formato === 'excel') {
@@ -960,15 +964,17 @@
   }
 
   // El Excel del seguimiento de la carga (uso interno, trae nombres). Se abre
-  // desde la pantalla de Seguimiento. Toda la provincia y todas las materias.
+  // desde la pantalla de Seguimiento y baja lo que se está mirando ahí: el
+  // alcance elegido y, si está puesta, la solapa «Solo las que no cargaron».
   function panelControl(x) {
+    const a = alcanceSeguimiento();
     return `<div class="t-velo" data-accion="cerrar-exportar"></div>
     <div class="t-panel" role="dialog" aria-modal="true" aria-labelledby="control-titulo">
       <div class="t-panel__cabecera">
         <h2 class="t-panel__titulo" id="control-titulo">Seguimiento de la carga</h2>
         <button type="button" class="t-panel__cerrar" data-accion="cerrar-exportar" aria-label="Cerrar">${Icono.cerrar}</button>
       </div>
-      <p class="t-panel__bajada">Un Excel para ver cómo avanza el relevamiento: los envíos que llegaron y las escuelas de las que todavía no llegó ninguno. De toda la provincia y de todas las materias.</p>
+      <p class="t-panel__bajada">Baja lo que estás mirando: <strong>${esc(a.nombre)}</strong>${a.soloFaltan ? `, solo las <strong>${numero(a.faltan)} ${plural(a.faltan, 'escuela que todavía no cargó', 'escuelas que todavía no cargaron')}</strong>` : ''}. De todas las materias. Para bajar otra cosa, cerrá esta ventana y cambiá el alcance o la solapa.</p>
       <div class="t-panel__nota t-panel__nota--interno">${notaExportar(x)}</div>
       ${x.progreso ? `<div class="t-panel__nota">${esc(x.progreso)}</div>` : ''}
       ${x.error ? `<div class="t-panel__nota t-panel__nota--error">${esc(x.error)}</div>` : ''}
@@ -1034,7 +1040,8 @@
     try {
       if (x.que === 'control') {
         await cargarSheetJS();
-        window.XLSX.writeFile(await libroControl(), `seguimiento-de-la-carga-${hoyArchivo()}.xlsx`);
+        const a = alcanceSeguimiento();
+        window.XLSX.writeFile(await libroControl(a), `seguimiento-${limpioArchivo(a.nombre)}${a.soloFaltan ? '-sin-cargas' : ''}-${hoyArchivo()}.xlsx`);
         estado.exportar = null;
       } else {
         const reportes = await traerReportes(x.que === 'materia' ? aniosDeLaMateria() : [estado.anio]);
@@ -1219,12 +1226,13 @@
     return libro;
   }
 
-  // Baja una vista entera de a páginas, avisando cuánto lleva. Solo envíos reales.
-  async function traerTodo(vista, columnas, orden, aviso) {
+  // Baja una vista entera de a páginas, avisando cuánto lleva. Solo envíos
+  // reales; «filtrar» achica la consulta (un departamento, una escuela).
+  async function traerTodo(vista, columnas, orden, aviso, filtrar = (q) => q) {
     const filas = [];
     let desde = 0;
     for (;;) {
-      let q = sb.from(vista).select(columnas.join(',')).eq('es_ejemplo', false);
+      let q = filtrar(sb.from(vista).select(columnas.join(',')).eq('es_ejemplo', false));
       for (const o of orden) q = q.order(o);
       const { data, error } = await q.range(desde, desde + FILAS_POR_PAGINA - 1);
       if (error) throw new Error('La base de datos no respondió a mitad de la descarga. Volvé a intentar.');
@@ -1244,21 +1252,90 @@
     return hoja;
   }
 
-  // Seguimiento de la carga (uso interno; antes era «Todo el relevamiento»,
-  // dentro de Descargar resultados). Es para que el equipo vea qué docentes enviaron y de
-  // qué escuelas falta respuesta; por eso trae nombres y no es para repartir.
-  // Toda la provincia, todas las materias, sin mirar la selección del panel.
-  async function libroControl() {
-    const X = window.XLSX;
-    const fecha = `Datos al ${fechaLarga(new Date())}. Trae nombre y apellido de cada docente: es para uso interno, no para repartir.`;
+  // Lo que se está mirando en Seguimiento, para que el Excel baje eso mismo
+  function alcanceSeguimiento() {
+    const s = estado.seguimiento;
+    const d = s.datos;
+    const g = s.lugar && d ? d.grupos.find((x) => x.id === s.lugar) : null;
+    const una = s.lugar && !g ? escuelaSeg(s.lugar) : null;
+    if (una) return { tipo: 'escuela', nombre: una.escuela.nombre, escuela: una.escuela, grupo: una.grupo, soloFaltan: false, faltan: 0 };
+    if (g) return { tipo: 'departamento', nombre: `Departamento ${g.nombre}`, grupo: g, soloFaltan: s.soloFaltan, faltan: g.faltan };
+    return { tipo: 'provincia', nombre: 'Toda la provincia', soloFaltan: s.soloFaltan, faltan: d ? d.provincia.faltan : 0 };
+  }
 
+  // El contacto de una escuela en columnas de Excel; si es un anexo sin
+  // contacto propio, el de su sede, dicho. Varios contactos van con « / ».
+  function contactoParaExcel(id) {
+    const todos = estado.seguimiento.contactos;
+    if (!todos) return ['', '', '', ''];
+    let lista = todos.get(id) || [];
+    let deLaSede = '';
+    if (!lista.length) {
+      const sede = sedeDe(id);
+      lista = sede ? todos.get(sede.id) || [] : [];
+      if (lista.length) deLaSede = ` (de la sede: ${sede.nombre})`;
+    }
+    const unir = (f) => lista.map(f).filter(Boolean).join(' / ');
+    return [unir((c) => c.nombre) + (lista.length ? deLaSede : ''), unir((c) => c.cargo), unir((c) => (c.celular ? celularLegible(c.celular) : '')), unir((c) => c.correo)];
+  }
+
+  const nombreEspacio = (id) => {
+    const esp = Catalogo.espacio(id);
+    return esp ? (Catalogo.esArtistica(esp) ? esp.nombre : Catalogo.nombreCorto(esp)) : id;
+  };
+  const fechaExcel = (ms) => (ms ? new Date(ms).toLocaleString('es-AR') : '');
+
+  // Seguimiento de la carga (uso interno). Baja lo que se está mirando:
+  //   - solo las que no cargaron: una hoja con cada escuela y su contacto;
+  //   - toda la provincia o un departamento: por escuela (con contacto), los
+  //     envíos y el detalle;
+  //   - una escuela: por materia, sus envíos y su detalle.
+  // Las cuentas por escuela salen de las mismas que muestra la pantalla.
+  async function libroControl(a) {
+    const X = window.XLSX;
+    const s = estado.seguimiento;
+    if (!s.datos) throw new Error('Esperá a que termine de contar las cargas y volvé a intentar.');
+    const fecha = `${a.nombre} · todas las materias · Datos al ${fechaLarga(new Date())}. Es para uso interno, no para repartir.`;
+    const libro = X.utils.book_new();
+    const grupos = a.tipo === 'provincia' ? s.datos.grupos.filter((g) => g.total || g.extras.length) : [a.grupo];
+
+    // Solo las que no cargaron: la lista para llamar
+    if (a.soloFaltan) {
+      const filas = grupos.flatMap((g) => g.escuelas.filter((e) => !e.docentes)
+        .map((e) => [g.nombre, e.nombre, e.localidad].concat(contactoParaExcel(e.id))));
+      X.utils.book_append_sheet(libro, hojaConTitulo(X, 'Escuelas que todavía no cargaron — uso interno',
+        [`${numero(filas.length)} ${plural(filas.length, 'escuela', 'escuelas')}, en el orden de la nómina. El contacto es el de la escuela o, si es un anexo sin contacto propio, el de su sede.`, fecha],
+        ['Departamento', 'Escuela', 'Localidad', 'Contacto', 'Cargo', 'Celular', 'Correo'],
+        filas, [16, 44, 22, 30, 20, 16, 30]), 'Sin cargas');
+      return libro;
+    }
+
+    // Los envíos y su detalle, solo del alcance elegido
+    let filtroAportes = (q) => q;
+    let filtroDetalle = (q) => q;
+    if (a.tipo === 'departamento') {
+      filtroAportes = (q) => q.eq('departamento_id', a.grupo.id);
+      filtroDetalle = (q) => q.eq('departamento', a.grupo.nombre);   // los nombres de departamento no se repiten
+    } else if (a.tipo === 'escuela') {
+      filtroAportes = (q) => q.eq('escuela_id', a.escuela.id);
+    }
     const aportes = await traerTodo('v_aportes',
       ['aporte_id', 'enviado_en', 'docente_id', 'apellido', 'nombre', 'escuela_id', 'escuela', 'localidad', 'departamento', 'espacio', 'anio'],
-      ['aporte_id'], 'Trayendo los envíos');
+      ['aporte_id'], 'Trayendo los envíos', filtroAportes);
     // Se piden las columnas de orden solo para ordenar; en el archivo van las que lee una persona
-    const respuestas = await traerTodo('v_relevamiento',
-      ['aporte_id', 'enviado_en', 'departamento', 'escuela', 'localidad', 'apellido', 'nombre', 'espacio', 'anio', 'trimestre', 'eje', 'saber', 'saber_id', 'estado', 'tipo', 'contenido'],
-      ['aporte_id', 'saber_id', 'contenido_orden'], 'Trayendo el detalle de cada envío');
+    const columnasDetalle = ['aporte_id', 'enviado_en', 'departamento', 'escuela', 'localidad', 'apellido', 'nombre', 'espacio', 'anio', 'trimestre', 'eje', 'saber', 'saber_id', 'estado', 'tipo', 'contenido'];
+    const ordenDetalle = ['aporte_id', 'saber_id', 'contenido_orden'];
+    let respuestas = [];
+    if (a.tipo === 'escuela') {
+      // Una escuela: por sus envíos (el nombre de la escuela se repite en la nómina)
+      const ids = aportes.map((x) => x.aporte_id);
+      for (let i = 0; i < ids.length; i += 150) {
+        const tanda = ids.slice(i, i + 150);
+        respuestas = respuestas.concat(await traerTodo('v_relevamiento', columnasDetalle, ordenDetalle, 'Trayendo el detalle de cada envío', (q) => q.in('aporte_id', tanda)));
+      }
+    } else {
+      respuestas = await traerTodo('v_relevamiento', columnasDetalle, ordenDetalle, 'Trayendo el detalle de cada envío', filtroDetalle);
+    }
     if (estado.exportar) { estado.exportar.progreso = 'Armando el Excel…'; render(); }
 
     // Cuánto contestó cada envío
@@ -1270,43 +1347,47 @@
       else { c.trabaja.add(f.saber_id); c.contenidos += 1; }
     }
 
-    // 1 · Envíos: uno por fila
-    const orden = (a, b) => ['departamento', 'escuela', 'apellido', 'nombre', 'espacio'].reduce((r, k) => r || String(a[k] || '').localeCompare(String(b[k] || ''), 'es'), 0) || (a.anio - b.anio);
-    const quien = aportes.slice().sort(orden).map((a) => {
-      const c = cuenta.get(a.aporte_id) || { trabaja: new Set(), noTrabaja: new Set(), contenidos: 0 };
-      return [a.apellido || '', a.nombre || '', a.escuela || '', a.localidad || '', a.departamento || '', a.espacio || '', a.anio == null ? '' : `${a.anio}°`,
-        a.enviado_en ? new Date(a.enviado_en).toLocaleString('es-AR') : '', c.trabaja.size, c.noTrabaja.size, c.contenidos];
-    });
-    const docentes = new Set(aportes.map((a) => a.docente_id)).size;
+    // 1 · Por escuela (o por materia, si es una escuela): las mismas cuentas
+    // que la pantalla, en su mismo orden, con el contacto al lado
+    if (a.tipo === 'escuela') {
+      const e = a.escuela;
+      const filas = Catalogo.areas().flatMap((ar) => Catalogo.espaciosPorArea(ar.id)).map((esp) => {
+        const m = e.porMateria.get(esp.id);
+        return [nombreEspacio(esp.id), m ? m.cargas : 0, m ? m.docentes.size : 0, m ? fechaExcel(m.ultimo) : '', m ? '' : 'Sin cargas todavía'];
+      });
+      const [contacto, cargo, celular, correo] = contactoParaExcel(e.id);
+      X.utils.book_append_sheet(libro, hojaConTitulo(X, `${e.nombre} — por materia — uso interno`,
+        [`${e.localidad ? `${e.localidad} · ` : ''}${numero(e.docentes)} ${plural(e.docentes, 'docente', 'docentes')}, ${numero(e.cargas)} ${plural(e.cargas, 'carga', 'cargas')} en ${numero(e.materias)} ${plural(e.materias, 'materia', 'materias')}.`,
+          `Contacto: ${[contacto, cargo, celular, correo].filter(Boolean).join(' · ') || 'sin contacto cargado'}`, fecha],
+        ['Materia', 'Cargas', 'Docentes', 'Último envío', 'Estado'], filas, [36, 9, 10, 18, 20]), 'Por materia');
+    } else {
+      const filas = grupos.flatMap((g) => g.escuelas.filter((e) => !e.docentes).concat(g.escuelas.filter((e) => e.docentes), g.extras)
+        .map((e) => [g.nombre, e.nombre + (e.extra ? ` (${e.extra})` : ''), e.localidad, e.docentes, e.cargas,
+          [...e.porMateria.keys()].map(nombreEspacio).sort((x, y) => x.localeCompare(y, 'es')).join(', '),
+          fechaExcel(e.ultimo), e.docentes ? '' : 'Sin cargas todavía'].concat(contactoParaExcel(e.id))));
+      const total = grupos.reduce((n, g) => n + g.total, 0);
+      const faltan = grupos.reduce((n, g) => n + g.faltan, 0);
+      X.utils.book_append_sheet(libro, hojaConTitulo(X, 'Por escuela — uso interno',
+        [`${numero(total)} escuelas de la nómina; ${numero(faltan)} ${plural(faltan, 'todavía no cargó', 'todavía no cargaron')} y van primero en cada departamento.`, fecha],
+        ['Departamento', 'Escuela', 'Localidad', 'Docentes que cargaron', 'Cargas', 'Materias cargadas', 'Último envío', 'Estado', 'Contacto', 'Cargo', 'Celular', 'Correo'],
+        filas, [16, 40, 20, 12, 9, 50, 18, 20, 28, 18, 16, 28]), 'Por escuela');
+    }
 
-    // 2 · Por escuela: todas las de la nómina, en el orden oficial, y al final
-    // las que agregaron los docentes. Las que no tienen envíos son las que faltan.
-    const porEscuela = new Map();
-    for (const a of aportes) {
-      if (!porEscuela.has(a.escuela_id)) porEscuela.set(a.escuela_id, { docentes: new Set(), envios: 0, materias: new Set(), escuela: a.escuela, localidad: a.localidad, departamento: a.departamento });
-      const e = porEscuela.get(a.escuela_id);
-      e.docentes.add(a.docente_id); e.envios += 1; e.materias.add(a.espacio);
-    }
-    const filaEscuela = (depto, nombre, localidad, e) => [depto, nombre, localidad || '',
-      e ? e.docentes.size : 0, e ? e.envios : 0, e ? [...e.materias].sort((x, y) => x.localeCompare(y, 'es')).join(', ') : '',
-      e ? '' : 'Sin envíos todavía'];
-    const escuelas = [];
-    const oficiales = new Set();
-    let sinRespuesta = 0;
-    for (const { departamento, escuelas: lista } of Catalogo.buscarEscuelas('').grupos) {
-      for (const es of lista) {
-        oficiales.add(es.id);
-        const e = porEscuela.get(es.id);
-        if (!e) sinRespuesta += 1;
-        escuelas.push(filaEscuela(departamento.nombre, es.nombre, es.localidad, e));
-      }
-    }
-    for (const [id, e] of porEscuela) {
-      if (!oficiales.has(id)) escuelas.push(filaEscuela(e.departamento || '', `${e.escuela} (la agregó un docente)`, e.localidad, e));
-    }
+    // 2 · Envíos: uno por fila
+    const orden = (x, y) => ['departamento', 'escuela', 'apellido', 'nombre', 'espacio'].reduce((r, k) => r || String(x[k] || '').localeCompare(String(y[k] || ''), 'es'), 0) || (x.anio - y.anio);
+    const envios = aportes.slice().sort(orden).map((x) => {
+      const c = cuenta.get(x.aporte_id) || { trabaja: new Set(), noTrabaja: new Set(), contenidos: 0 };
+      return [x.apellido || '', x.nombre || '', x.escuela || '', x.localidad || '', x.departamento || '', x.espacio || '', x.anio == null ? '' : `${x.anio}°`,
+        x.enviado_en ? new Date(x.enviado_en).toLocaleString('es-AR') : '', c.trabaja.size, c.noTrabaja.size, c.contenidos];
+    });
+    const docentes = new Set(aportes.map((x) => x.docente_id)).size;
+    X.utils.book_append_sheet(libro, hojaConTitulo(X, 'Envíos — uso interno',
+      [`${numero(aportes.length)} ${plural(aportes.length, 'envío', 'envíos')} de ${numero(docentes)} ${plural(docentes, 'docente', 'docentes')}. Un envío por fila: quien cargó dos materias aparece dos veces.`, fecha],
+      ['Apellido', 'Nombre', 'Escuela', 'Localidad', 'Departamento', 'Materia', 'Año', 'Enviado', 'Saberes que trabaja', 'Saberes que no trabaja', 'Contenidos elegidos'],
+      envios, [18, 18, 34, 20, 16, 30, 6, 18, 12, 12, 12]), 'Envíos');
 
     // 3 · Detalle: una fila por contenido elegido o saber que no trabaja
-    const que = respuestas.map((f) => [
+    const detalle = respuestas.map((f) => [
       f.enviado_en ? new Date(f.enviado_en).toLocaleString('es-AR') : '',
       f.departamento || '', f.escuela || '', f.localidad || '', f.apellido || '', f.nombre || '',
       f.espacio || '', f.anio == null ? '' : f.anio, f.trimestre == null ? '' : f.trimestre, f.eje || '', f.saber || '',
@@ -1314,20 +1395,10 @@
       f.contenido || '',
       f.tipo === 'libre' ? 'agregado por el docente' : (f.tipo === 'catalogo' ? 'sugerido' : ''),
     ]);
-
-    const libro = X.utils.book_new();
-    X.utils.book_append_sheet(libro, hojaConTitulo(X, 'Envíos — uso interno',
-      [`${numero(aportes.length)} ${plural(aportes.length, 'envío', 'envíos')} de ${numero(docentes)} ${plural(docentes, 'docente', 'docentes')}. Un envío por fila: quien cargó dos materias aparece dos veces.`, fecha],
-      ['Apellido', 'Nombre', 'Escuela', 'Localidad', 'Departamento', 'Materia', 'Año', 'Enviado', 'Saberes que trabaja', 'Saberes que no trabaja', 'Contenidos elegidos'],
-      quien, [18, 18, 34, 20, 16, 30, 6, 18, 12, 12, 12]), 'Envíos');
-    X.utils.book_append_sheet(libro, hojaConTitulo(X, 'Por escuela — uso interno',
-      [`${numero(oficiales.size)} escuelas de la nómina, en el orden oficial. ${numero(sinRespuesta)} ${plural(sinRespuesta, 'todavía no tiene', 'todavía no tienen')} ningún envío: son las que dicen «Sin envíos todavía».`, fecha],
-      ['Departamento', 'Escuela', 'Localidad', 'Docentes que enviaron', 'Envíos', 'Materias cargadas', 'Estado'],
-      escuelas, [16, 40, 22, 12, 9, 60, 24]), 'Por escuela');
     X.utils.book_append_sheet(libro, hojaConTitulo(X, 'Detalle de cada envío — uso interno',
       ['Una fila por contenido elegido y por saber que el docente dijo que no trabaja.', fecha],
       ['Enviado', 'Departamento', 'Escuela', 'Localidad', 'Apellido', 'Nombre', 'Materia', 'Año', 'Trimestre', 'Eje', 'Saber', 'Lo trabaja', 'Contenido', 'Origen del contenido'],
-      que, [18, 16, 36, 20, 18, 18, 28, 5, 9, 40, 70, 10, 60, 22]), 'Detalle');
+      detalle, [18, 16, 36, 20, 18, 18, 28, 5, 9, 40, 70, 10, 60, 22]), 'Detalle');
     return libro;
   }
 
@@ -1469,6 +1540,10 @@
               svg('<path d="M4 20h16"/><rect x="5" y="11" width="3" height="6"/><rect x="10.5" y="7" width="3" height="10"/><rect x="16" y="4" width="3" height="13"/>', { tam: 28, color: '#003380', grosor: 2 }),
               'Ver los resultados',
               'Qué contenidos eligen los docentes, materia por materia.')}
+            ${opcion('ir-seguimiento',
+              svg('<path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h10"/><path d="M17 16l2 2 3-4"/>', { tam: 28, color: '#003380', grosor: 2 }),
+              'Seguir la carga',
+              'Qué escuelas cargaron y a cuáles hay que llamar.')}
             ${opcion('ir-catalogo',
               svg('<path d="M4 20h4l10-10-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/>', { tam: 28, color: '#003380', grosor: 2 }),
               'Editar el catálogo',

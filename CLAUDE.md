@@ -475,8 +475,9 @@ en la cabecera, el logo chico.
 **Al entrar, un inicio** (24/09/2026, lo pidió el equipo: «algo más cómodo de recibir antes de
 usarlo»). La primera versión tenía de más —saludo enorme, estado del catálogo, cuatro consejos—
 y el equipo la sintió cargada. Quedó: «Hola, Ana» chico, la marca ReSaP como título
-(logo, nombre completo, filete tricolor y eslogan), una línea de cómo va la carga y los dos caminos: «Ver los
-resultados» y «Editar el catálogo». Desde el panel se vuelve con «Inicio». **Un link
+(logo, nombre completo, filete tricolor y eslogan), una línea de cómo va la carga y los tres caminos: «Ver los
+resultados», «Seguir la carga» (sumado el 27/10/2026, con el seguimiento) y «Editar el
+catálogo»; desde 1100 px van lado a lado, más angosto uno debajo del otro. Desde el panel se vuelve con «Inicio». **Un link
 compartido** (con `materia=` o `seguimiento=` en el hash) no pasa por el inicio: va directo a
 lo que muestra. Salir borra el hash, así el que entra después arranca por el inicio.
 
@@ -553,12 +554,23 @@ El recorrido guiado pasó a `v4`, con un paso para «Descargar para revisar», y
    la línea de la carga, y el equipo la sintió invasiva: el inicio se proyecta ante autoridades
    y eso sonaba a vigilar a los docentes. Por lo mismo, ni el botón, ni la ventana, ni el
    archivo ni sus hojas dicen «quién contestó». Baja un Excel de toda la provincia y todas las
-   materias, con tres hojas:
-   *Envíos* (uno por fila, de `v_aportes`, con cuántos saberes trabaja, cuántos no y cuántos
-   contenidos eligió), *Por escuela* (las 288 de la nómina en el orden oficial, más las que
-   agregaron los docentes; las que no tienen envíos dicen «Sin envíos todavía») y *Detalle* (lo
-   de antes, de `v_relevamiento`, una fila por contenido o saber no trabajado). **Trae nombre y apellido de cada docente: no es
-   para repartir**, y la ventana lo dice.
+   materias. Desde el 27/10/2026 **baja lo que se está mirando** en Seguimiento (antes bajaba
+   siempre toda la provincia, y el equipo tenía que filtrarlo a mano); la ventana lo dice
+   («Baja lo que estás mirando: Departamento Pirané, solo las 27 escuelas que todavía no
+   cargaron»), y el nombre del archivo también (`seguimiento-departamento-pirane-sin-cargas-…`):
+   - **Solo las que no cargaron**: una hoja, *Sin cargas*, con departamento, escuela, localidad
+     y su contacto (contacto, cargo, celular, correo; el de la sede si es un anexo sin
+     contacto propio, dicho). Es la lista para llamar; no pide envíos a la base.
+   - **Provincia o departamento**: *Por escuela* (las mismas cuentas y el mismo orden que la
+     pantalla —las que no cargaron primero—, con materias, último envío y contacto), *Envíos*
+     (uno por fila, de `v_aportes`, con cuántos saberes trabaja, cuántos no y cuántos
+     contenidos eligió) y *Detalle* (de `v_relevamiento`, una fila por contenido o saber no
+     trabajado), los dos filtrados en la base por el departamento.
+   - **Una escuela**: *Por materia* (las 16, con cargas, docentes y último envío, y el contacto
+     arriba), y sus *Envíos* y *Detalle* (este, pedido por los id de sus envíos: el nombre de
+     una escuela se repite en la nómina).
+   **Trae nombres de docentes y contactos de directivos: no es para repartir**, y la ventana lo
+   dice.
 
    **«Descargar para revisar»**, en el catálogo, exporta la currícula sin resultados:
    todos los años, *Año · Trimestre · Eje · Saber · Contenido · Observaciones*, para que el
@@ -1156,6 +1168,14 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
   `sql/mantenimiento/2026-10-27_sin_datos_de_ejemplo.sql` borra los docentes inventados (con
   sus aportes, en cascada) y las dos funciones; probado contra PostgreSQL 16: con 300 docentes
   de ejemplo y uno real, borra los 300, deja el real y repetirlo no hace nada
+
+- **El Excel del seguimiento baja lo elegido** (27/10/2026) y **el inicio suma «Seguir la
+  carga»**. Probado en Chromium con un Supabase simulado que entiende los filtros de PostgREST:
+  Pirané con «Solo las que no cargaron» da una hoja con sus 27 escuelas y su contacto (un anexo
+  con el de su sede) y no pide envíos; Pirané entero, sus 59 escuelas y la agregada con las que
+  faltan primero, y envíos y detalle pedidos filtrados por departamento; una escuela, sus 16
+  materias con la suma justa y sus envíos; la provincia, las 288 y las de afuera. El inicio
+  entra sin scroll horizontal en 1440, 1024 y 390 px
 
 **Pendiente**
 - **Correr en el SQL Editor `sql/mantenimiento/2026-10-27_sin_datos_de_ejemplo.sql`**: hasta
