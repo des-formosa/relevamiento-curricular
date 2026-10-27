@@ -1813,6 +1813,9 @@ body.tour-abierto { overflow: hidden; }
 }
 .t-seg-enlace:hover { text-decoration-color: currentColor; }
 .t-seg-enlace:focus-visible { outline: 3px solid var(--azul); outline-offset: 2px; }
+/* En la lista, el nombre de la escuela lleva a su detalle por materia */
+.t-seg-escuela .t-seg-enlace { text-align: left; }
+.t-seg-volver { flex-shrink: 0; font-size: 16.5px; }
 
 /* En el teléfono cada escuela es un renglón de texto: el nombre, la
    localidad y debajo los números con su rótulo */
