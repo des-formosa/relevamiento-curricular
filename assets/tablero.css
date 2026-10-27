@@ -1850,6 +1850,95 @@ body.tour-abierto { overflow: hidden; }
   .t-seg-tabla--deptos .t-seg-avance { flex-basis: 100%; width: auto; margin: 4px 0 2px; }
 }
 
+/* ---------- Ficha de la escuela: contacto y cargas (Ficha en dashboard.js) ----------
+   Una tarjeta chica, de borde fino como la del recorrido, que aparece debajo
+   del nombre. Nunca más alta que la pantalla: lo que no entra se desplaza
+   por dentro y la cabecera con la cruz queda arriba. */
+.t-ficha {
+  position: absolute;
+  z-index: 40;
+  width: min(400px, calc(100vw - 32px));
+  max-height: min(560px, calc(100vh - 32px));
+  max-height: min(560px, calc(100dvh - 32px));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--blanco);
+  border: 1px solid var(--t-tinta);
+  border-radius: 3px;
+  box-shadow: 0 6px 0 rgba(12, 20, 38, 0.12);
+  font-size: 15.5px;
+}
+.t-ficha[hidden], .t-ficha-velo[hidden] { display: none; }
+.t-ficha-velo { display: none; }
+.t-ficha__cabeza {
+  position: sticky; top: 0; z-index: 1;
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 10px;
+  padding: 14px 16px 10px; background: var(--blanco); border-bottom: 1px solid var(--linea);
+}
+.t-ficha__titulo { font-size: 18px; font-weight: 800; line-height: 1.2; color: var(--t-tinta); }
+.t-ficha__sub { font-size: 14px; color: var(--t-gris-2); margin-top: 2px; }
+.t-ficha__cerrar {
+  flex-shrink: 0; width: 40px; height: 40px; margin: -6px -8px 0 0;
+  display: flex; align-items: center; justify-content: center;
+  border: none; background: none; border-radius: 3px; cursor: pointer;
+}
+.t-ficha__cerrar:hover { background: var(--gris-claro-4); }
+.t-ficha__cuerpo { display: flex; flex-direction: column; gap: 16px; padding: 12px 16px 16px; }
+.t-ficha__cuerpo section { display: flex; flex-direction: column; gap: 8px; }
+.t-ficha__rotulo { margin: 0; font-size: 11.5px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--azul); }
+.t-ficha__nota { margin: 0; color: var(--tinta-2); line-height: 1.4; }
+.t-ficha__nota strong { color: var(--t-tinta); }
+.t-ficha__contacto { display: flex; flex-direction: column; gap: 3px; padding-left: 10px; border-left: 3px solid var(--pista); }
+.t-ficha__nombre { font-weight: 700; color: var(--t-tinta); }
+.t-ficha__nombre span { font-weight: 400; color: var(--t-gris-2); font-size: 14px; }
+.t-ficha__medio { color: var(--tinta-2); font-variant-numeric: tabular-nums; }
+.t-ficha__medio a { font-weight: 700; }
+.t-ficha__medio--falta { color: var(--t-gris-2); }
+.t-ficha__acciones, .t-ficha__confirmar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 4px; }
+.t-ficha__confirmar { font-weight: 700; color: var(--t-tinta); }
+.t-ficha__boton {
+  height: 36px; padding: 0 12px; border: 1.5px solid var(--borde); border-radius: 3px; background: var(--blanco);
+  font: inherit; font-size: 14.5px; font-weight: 700; color: var(--tinta-2); cursor: pointer;
+}
+.t-ficha__boton:hover { border-color: var(--azul); color: var(--azul); }
+.t-ficha__boton--fuerte { background: var(--azul); border-color: var(--azul); color: var(--blanco); }
+.t-ficha__boton--fuerte:hover { background: var(--azul-profundo); color: var(--blanco); }
+.t-ficha__boton--agregar { align-self: flex-start; }
+.t-ficha__boton:disabled { opacity: .7; cursor: progress; }
+.t-ficha__error { margin: 0; color: var(--ladrillo); font-weight: 700; }
+.t-ficha__form { display: flex; flex-direction: column; gap: 8px; padding: 10px 12px; background: var(--gris-claro-3); border-radius: 3px; }
+.t-ficha__form-titulo { font-weight: 800; color: var(--t-tinta); }
+.t-ficha__form label { display: flex; flex-direction: column; gap: 3px; font-size: 13px; font-weight: 700; color: var(--t-gris-2); }
+.t-ficha__form label span { font-weight: 400; }
+.t-ficha__form input {
+  height: 40px; padding: 0 10px; border: 1.5px solid var(--borde-campo); border-radius: 3px; background: var(--blanco);
+  font: inherit; font-size: 16px; font-weight: 400; color: var(--t-tinta);
+}
+.t-ficha__form input:focus { outline: 3px solid var(--azul-profundo); outline-offset: 1px; border-color: var(--azul); }
+.t-ficha__materias { margin: 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 4px 14px; color: var(--tinta-2); }
+.t-ficha__materias strong { color: var(--t-tinta); }
+.t-ficha__ir { align-self: flex-start; margin-top: 2px; }
+/* En la vista de una escuela, el mismo contacto, sin la tarjeta */
+.t-seg-contacto { display: flex; flex-direction: column; gap: 10px; padding: 14px 16px; background: var(--blanco); border: 1px solid var(--t-borde); }
+.t-seg-contacto > .t-seg-enlace { align-self: flex-start; }
+
+@media (max-width: 899px) {
+  /* En el teléfono, una hoja que sube desde abajo, como las ventanas */
+  .t-ficha {
+    position: fixed; left: 0 !important; right: 0; top: auto !important; bottom: 0;
+    width: 100%; max-height: 85vh; max-height: 85dvh;
+    border: none; border-top: 3px solid var(--azul); border-radius: 0; box-shadow: none;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    font-size: 16px;
+  }
+  .t-ficha-velo { display: block; position: fixed; inset: 0; z-index: 39; background: var(--t-velo); }
+  .t-ficha__boton { height: 44px; }
+  .t-ficha__form input { height: 48px; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .t-ficha:not([hidden]) { animation: t-aparecer 140ms ease both; }
+}
+
 /* ============================================================================
    Movimiento del panel (ver animarLoNuevo en dashboard.js)
 

@@ -76,7 +76,8 @@
     // todas las materias. lugar = null (toda la provincia), el id de un
     // departamento o el de una escuela (no hay ids repetidos entre los dos).
     // soloFaltan: mostrar solo las escuelas que todavía no cargaron
-    seguimiento: { lugar: null, soloFaltan: false, datos: null, cargando: false, error: null },
+    // contactos: Map escuela_id → [contacto], o null si la base todavía no los tiene
+    seguimiento: { lugar: null, soloFaltan: false, datos: null, contactos: null, cargando: false, error: null },
     usuario: null,
     espacio_id: null,
     anio: 1,
@@ -276,16 +277,33 @@
     };
   }
 
+  // Los contactos de las escuelas (sql/13). Son pocos y se traen de una vez.
+  // Si la tabla todavía no existe, el seguimiento anda igual y la ficha lo dice.
+  async function traerContactos() {
+    const { data, error } = await sb.from('contactos_escuela').select('id, escuela_id, nombre, cargo, celular, correo').order('id');
+    if (error) return null;
+    const porEscuela = new Map();
+    for (const c of data || []) {
+      if (!porEscuela.has(c.escuela_id)) porEscuela.set(c.escuela_id, []);
+      porEscuela.get(c.escuela_id).push(c);
+    }
+    return porEscuela;
+  }
+
   async function cargarSeguimiento() {
     const s = estado.seguimiento;
     const ejemplo = estado.ejemplo;
+    Ficha.cerrar();
     s.cargando = true;
     s.error = null;
     render();
     let datos = null;
     let error = null;
+    let contactos = null;
     try {
-      datos = await contarSeguimiento(await traerEnvios(ejemplo));
+      const [envios, c] = await Promise.all([traerEnvios(ejemplo), traerContactos()]);
+      contactos = c;
+      datos = await contarSeguimiento(envios);
     } catch (e) {
       error = (e && e.message) || 'No pudimos traer las cargas. Volvé a intentar.';
     }
@@ -293,6 +311,7 @@
     if (estado.ejemplo !== ejemplo) return;
     s.cargando = false;
     s.datos = datos;
+    s.contactos = contactos;
     s.error = error;
     if (estado.pantalla === 'seguimiento') render();
   }
@@ -393,7 +412,8 @@
     // mano: el que entra después tiene que ver los resultados, no el editor
     estado.modo = 'resultados';
     Editor.limpiar();
-    estado.seguimiento = { lugar: null, soloFaltan: false, datos: null, cargando: false, error: null };
+    estado.seguimiento = { lugar: null, soloFaltan: false, datos: null, contactos: null, cargando: false, error: null };
+    Ficha.cerrar();
     history.replaceState(null, '', window.location.pathname + window.location.search);
     estado.pantalla = 'ingreso';
     render();
@@ -1564,7 +1584,7 @@
         <thead><tr><th scope="col">Escuela</th><th scope="col">Localidad</th></tr></thead>
         <tbody>${lista.map((e) => `
           <tr>
-            <th scope="row" class="t-seg-escuela"><button type="button" class="t-seg-enlace" data-accion="seg-lugar" data-id="${esc(e.id)}">${esc(e.nombre)}</button></th>
+            <th scope="row" class="t-seg-escuela"><button type="button" class="t-seg-enlace" data-accion="seg-lugar" data-id="${esc(e.id)}" data-ficha="${esc(e.id)}">${esc(e.nombre)}</button></th>
             <td class="t-seg-localidad">${esc(e.localidad)}</td>
           </tr>`).join('')}</tbody>
       </table>
@@ -1601,7 +1621,7 @@
     const resumen = g.total ? `cargaron ${numero(g.cargaron)} de ${numero(g.total)} escuelas${g.faltan ? ` · ${numero(g.faltan)} sin cargas todavía` : ''}` : '';
     const filas = lista.map((e) => `
         <tr class="${e.docentes ? '' : 't-seg-fila--falta'}">
-          <th scope="row" class="t-seg-escuela"><button type="button" class="t-seg-enlace" data-accion="seg-lugar" data-id="${esc(e.id)}">${esc(e.nombre)}</button>${e.extra ? ` <span class="t-seg-extra">(${esc(e.extra)})</span>` : ''}</th>
+          <th scope="row" class="t-seg-escuela"><button type="button" class="t-seg-enlace" data-accion="seg-lugar" data-id="${esc(e.id)}" data-ficha="${esc(e.id)}">${esc(e.nombre)}</button>${e.extra ? ` <span class="t-seg-extra">(${esc(e.extra)})</span>` : ''}</th>
           <td class="t-seg-localidad">${esc(e.localidad)}</td>
           ${e.docentes
             ? `<td class="t-seg-num" data-etiqueta="Docentes">${numero(e.docentes)}</td>
@@ -1646,6 +1666,13 @@
     return `<div class="t-contexto"><div class="t-contexto__texto">${texto}</div>${volver}</div>
       <div class="t-cuerpo t-seg">
         <section class="t-seg-bloque">
+          <h2 class="t-seg-titulo">Contacto</h2>
+          <div class="t-seg-contacto">
+            ${contactosHTML(e.id, false)}
+            <button type="button" class="t-seg-enlace" data-accion="abrir-ficha" data-id="${esc(e.id)}">Agregar, corregir o quitar un contacto</button>
+          </div>
+        </section>
+        <section class="t-seg-bloque">
           <h2 class="t-seg-titulo">Por materia</h2>
           <table class="t-seg-tabla t-seg-tabla--materias">
             <thead><tr><th scope="col">Materia</th><th scope="col" class="t-seg-num">Cargas</th><th scope="col" class="t-seg-num">Docentes</th><th scope="col" class="t-seg-fecha">Último envío</th></tr></thead>
@@ -1654,6 +1681,289 @@
         </section>
       </div>`;
   }
+
+  /* ---------- Ficha de la escuela: contacto y cargas ---------- */
+
+  // Una escuela de las contadas, con su departamento
+  function escuelaSeg(id) {
+    const d = estado.seguimiento.datos;
+    for (const g of (d ? d.grupos : [])) {
+      const e = g.escuelas.concat(g.extras).find((x) => x.id === id);
+      if (e) return { escuela: e, grupo: g };
+    }
+    return null;
+  }
+
+  // La sede de un anexo: la E.P.E.S. que lo precede en la nómina, que lo deja
+  // seguido de su escuela. Coincide con las planillas de directivos en todos
+  // los anexos que traen (44) y con los 41 que nombran su E.P.E.S.
+  let sedes = null;
+  function sedeDe(id) {
+    if (!sedes) {
+      sedes = new Map();
+      for (const { escuelas } of Catalogo.buscarEscuelas('').grupos) {
+        let sede = null;
+        for (const e of escuelas) {
+          if (!/^ANEXO/.test(e.tipo || '')) sede = e;
+          else if (sede) sedes.set(e.id, sede);
+        }
+      }
+    }
+    return sedes.get(id) || null;
+  }
+
+  // «3704123456» → «370 412-3456»; los enlaces para llamar y por WhatsApp
+  // llevan el 54 (y el 9 de celular) adelante
+  const celularLegible = (d) => (d.length === 10 ? `${d.slice(0, 3)} ${d.slice(3, 6)}-${d.slice(6)}` : d);
+  const celularInternacional = (d) => (d.length === 10 ? `54${d}` : d.replace(/^0+/, ''));
+  const enlaceWhatsApp = (d) => `https://wa.me/${d.length === 10 ? `549${d}` : d.replace(/^0+/, '')}`;
+
+  // Los contactos de una escuela; con «editable», con los botones para
+  // corregir y quitar. Un anexo sin contacto propio muestra el de su sede.
+  function contactosHTML(id, editable) {
+    const todos = estado.seguimiento.contactos;
+    if (!todos) return '<p class="t-ficha__nota">Los contactos de las escuelas todavía no están cargados en la base. Avisale a quien administra el sistema.</p>';
+    const f = Ficha.estado;
+    const uno = (c, propio) => {
+      if (editable && propio && f.editando === c.id) return formularioContacto(c);
+      const confirma = editable && propio && f.quitando === c.id;
+      return `<div class="t-ficha__contacto">
+        <div class="t-ficha__nombre">${esc(c.nombre || 'Sin nombre')}${c.cargo ? ` <span>${esc(c.cargo)}</span>` : ''}</div>
+        ${c.celular ? `<div class="t-ficha__medio">${esc(celularLegible(c.celular))} · <a href="tel:+${esc(celularInternacional(c.celular))}">Llamar</a> · <a href="${esc(enlaceWhatsApp(c.celular))}" target="_blank" rel="noopener">WhatsApp</a></div>` : ''}
+        ${c.correo ? `<div class="t-ficha__medio"><a href="mailto:${esc(c.correo)}">${esc(c.correo)}</a></div>` : ''}
+        ${!c.celular && !c.correo ? '<div class="t-ficha__medio t-ficha__medio--falta">Sin celular ni correo</div>' : ''}
+        ${confirma ? `<div class="t-ficha__confirmar">¿Quitar a ${esc(c.nombre || 'este contacto')}? <button type="button" class="t-ficha__boton t-ficha__boton--fuerte" data-ficha-accion="quitar" data-id="${c.id}" ${f.guardando ? 'disabled' : ''}>Sí, quitar</button><button type="button" class="t-ficha__boton" data-ficha-accion="cancelar">No</button></div>`
+          : editable && propio ? `<div class="t-ficha__acciones"><button type="button" class="t-ficha__boton" data-ficha-accion="corregir" data-id="${c.id}">Corregir</button><button type="button" class="t-ficha__boton" data-ficha-accion="pedir-quitar" data-id="${c.id}">Quitar</button></div>` : ''}
+      </div>`;
+    };
+    const propios = todos.get(id) || [];
+    let html = propios.map((c) => uno(c, true)).join('');
+    if (!propios.length) {
+      const sede = sedeDe(id);
+      const deLaSede = sede ? todos.get(sede.id) || [] : [];
+      html = deLaSede.length
+        ? `<p class="t-ficha__nota">No tiene contacto propio. Depende de la <strong>${esc(sede.nombre)}</strong>:</p>${deLaSede.map((c) => uno(c, false)).join('')}`
+        : '<p class="t-ficha__nota">No tiene ningún contacto cargado.</p>';
+    }
+    if (editable) {
+      html += f.editando === 'nuevo' ? formularioContacto(null)
+        : f.editando == null ? '<button type="button" class="t-ficha__boton t-ficha__boton--agregar" data-ficha-accion="agregar">+ Agregar un contacto</button>' : '';
+      if (f.error) html += `<p class="t-ficha__error" role="alert">${esc(f.error)}</p>`;
+    }
+    return html;
+  }
+
+  function formularioContacto(c) {
+    const v = (k) => esc(c && c[k] ? (k === 'celular' ? celularLegible(c[k]) : c[k]) : '');
+    const g = Ficha.estado.guardando;
+    return `<form class="t-ficha__form" data-ficha-form="${c ? c.id : 'nuevo'}" novalidate>
+      <div class="t-ficha__form-titulo">${c ? 'Corregir el contacto' : 'Nuevo contacto'}</div>
+      <label>Nombre y apellido<input name="nombre" type="text" value="${v('nombre')}" autocomplete="off"></label>
+      <label>Cargo <span>(opcional)</span><input name="cargo" type="text" value="${v('cargo')}" placeholder="Dirección, Secretaría…" autocomplete="off"></label>
+      <label>Celular<input name="celular" type="tel" inputmode="tel" value="${v('celular')}" placeholder="3704 123456" autocomplete="off"></label>
+      <label>Correo<input name="correo" type="email" inputmode="email" value="${v('correo')}" placeholder="nombre@gmail.com" autocomplete="off"></label>
+      <div class="t-ficha__acciones">
+        <button type="submit" class="t-ficha__boton t-ficha__boton--fuerte" ${g ? 'disabled' : ''}>${g ? 'Guardando…' : 'Guardar'}</button>
+        <button type="button" class="t-ficha__boton" data-ficha-accion="cancelar">Cancelar</button>
+      </div>
+    </form>`;
+  }
+
+  // Las cargas de la escuela en pocas líneas: lo que se mira al pasar
+  function cargasHTML(e) {
+    if (!e.docentes) return '<p class="t-ficha__nota"><strong>Todavía no cargó.</strong></p>';
+    const materias = Catalogo.areas().flatMap((a) => Catalogo.espaciosPorArea(a.id))
+      .filter((esp) => e.porMateria.has(esp.id))
+      .map((esp) => `<li>${esc(Catalogo.esArtistica(esp) ? esp.nombre : Catalogo.nombreCorto(esp))} <strong>${numero(e.porMateria.get(esp.id).cargas)}</strong></li>`).join('');
+    return `<p class="t-ficha__nota">${numero(e.docentes)} ${plural(e.docentes, 'docente', 'docentes')} · ${numero(e.cargas)} ${plural(e.cargas, 'carga', 'cargas')} en ${numero(e.materias)} ${plural(e.materias, 'materia', 'materias')} · último envío ${esc(cuandoFue(e.ultimo))}</p>
+      <ul class="t-ficha__materias">${materias}</ul>`;
+  }
+
+  // La ficha vive fuera de #app (el panel se redibuja entero en cada acción y
+  // se la llevaría puesta), como el recorrido. Con el mouse aparece al pasar
+  // por el nombre y se va al salir; si se entra a ella o se toca algo adentro,
+  // queda fija hasta cerrarla. En el teléfono se abre al tocar el nombre, como
+  // una hoja desde abajo.
+  const Ficha = (() => {
+    const caja = document.createElement('div');
+    caja.className = 't-ficha';
+    caja.setAttribute('role', 'dialog');
+    caja.setAttribute('aria-label', 'Contacto y cargas de la escuela');
+    caja.hidden = true;
+    const velo = document.createElement('div');
+    velo.className = 't-ficha-velo';
+    velo.hidden = true;
+    document.body.append(velo, caja);
+    const f = { id: null, fija: false, editando: null, quitando: null, error: null, guardando: false };
+    let ancla = null;
+    let reloj = null;
+
+    function dibujar() {
+      const dato = f.id && escuelaSeg(f.id);
+      if (!dato) { cerrar(); return; }
+      const { escuela: e, grupo: g } = dato;
+      const enSuVista = estado.seguimiento.lugar === e.id;
+      caja.innerHTML = `
+        <div class="t-ficha__cabeza">
+          <div>
+            <div class="t-ficha__titulo">${esc(e.nombre)}</div>
+            <div class="t-ficha__sub">${esc([e.localidad, g && g.id ? `departamento ${g.nombre}` : ''].filter(Boolean).join(' · '))}</div>
+          </div>
+          ${f.fija ? `<button type="button" class="t-ficha__cerrar" data-ficha-accion="cerrar" aria-label="Cerrar">${Icono.cerrar}</button>` : ''}
+        </div>
+        <div class="t-ficha__cuerpo">
+          <section><h3 class="t-ficha__rotulo">Contacto</h3>${contactosHTML(e.id, true)}</section>
+          <section><h3 class="t-ficha__rotulo">Cargas</h3>${cargasHTML(e)}
+            ${enSuVista ? '' : `<button type="button" class="t-seg-enlace t-ficha__ir" data-ficha-accion="ir" data-id="${esc(e.id)}">Ver todas sus materias →</button>`}
+          </section>
+        </div>`;
+      caja.classList.toggle('t-ficha--fija', f.fija);
+      velo.hidden = !f.fija;
+      ubicar();
+    }
+
+    // Debajo del nombre (o arriba, si no entra), sin salirse de la pantalla.
+    // En el teléfono la ubica el CSS, abajo de todo.
+    function ubicar() {
+      caja.style.left = caja.style.top = '';
+      if (window.matchMedia('(max-width: 899px)').matches || !ancla || !ancla.isConnected) return;
+      const r = ancla.getBoundingClientRect();
+      const ancho = caja.offsetWidth;
+      const alto = caja.offsetHeight;
+      const izq = Math.max(16, Math.min(r.left, window.innerWidth - ancho - 16));
+      const abajo = window.innerHeight - r.bottom;
+      const arriba = abajo < alto + 16 && r.top > abajo ? Math.max(16, r.top - alto - 8) : r.bottom + 8;
+      caja.style.left = `${izq + window.scrollX}px`;
+      caja.style.top = `${arriba + window.scrollY}px`;
+    }
+
+    function abrir(id, el, fija) {
+      clearTimeout(reloj);
+      const otra = f.id !== id;
+      if (otra) Object.assign(f, { editando: null, quitando: null, error: null, guardando: false });
+      f.id = id;
+      f.fija = f.fija && !otra ? true : fija;
+      ancla = el;
+      caja.hidden = false;
+      dibujar();
+      if (fija) { const x = caja.querySelector('.t-ficha__cerrar'); if (x) x.focus(); }
+    }
+    function cerrar() {
+      clearTimeout(reloj);
+      const habia = f.id && f.fija;
+      f.id = null; f.fija = false; f.editando = null; f.quitando = null; f.error = null;
+      caja.hidden = true; velo.hidden = true; caja.innerHTML = '';
+      if (habia && ancla && ancla.isConnected) ancla.focus();
+      ancla = null;
+    }
+    // Fijarla no la redibuja: si lo hiciera al tomar el foco, el botón que se
+    // está tocando desaparecería antes del clic. Solo suma la cruz.
+    function fijar() {
+      if (f.fija || !f.id) return;
+      f.fija = true;
+      caja.classList.add('t-ficha--fija');
+      velo.hidden = false;
+      const cabeza = caja.querySelector('.t-ficha__cabeza');
+      if (cabeza && !cabeza.querySelector('.t-ficha__cerrar')) {
+        cabeza.insertAdjacentHTML('beforeend', `<button type="button" class="t-ficha__cerrar" data-ficha-accion="cerrar" aria-label="Cerrar">${Icono.cerrar}</button>`);
+      }
+    }
+
+    async function guardar(form) {
+      const datos = Object.fromEntries(new FormData(form).entries());
+      const id = form.dataset.fichaForm === 'nuevo' ? null : Number(form.dataset.fichaForm);
+      f.guardando = true; f.error = null; dibujar();
+      const { data, error } = await sb.rpc('guardar_contacto', {
+        p_id: id, p_escuela_id: f.id, p_nombre: datos.nombre, p_cargo: datos.cargo, p_celular: datos.celular, p_correo: datos.correo,
+      });
+      f.guardando = false;
+      if (error || !data || data.error) {
+        f.error = (data && data.error) || 'No pudimos guardar el contacto. Revisá la conexión y volvé a intentar.';
+        dibujar();
+        return;
+      }
+      const lista = estado.seguimiento.contactos.get(data.escuela_id) || [];
+      const i = lista.findIndex((c) => c.id === data.id);
+      if (i >= 0) lista[i] = data; else lista.push(data);
+      estado.seguimiento.contactos.set(data.escuela_id, lista);
+      f.editando = null;
+      despuesDeCambiar();
+    }
+    async function quitar(id) {
+      f.guardando = true; f.error = null; dibujar();
+      const { data, error } = await sb.rpc('quitar_contacto', { p_id: id });
+      f.guardando = false;
+      f.quitando = null;
+      if (error || !data || data.error) {
+        f.error = (data && data.error) || 'No pudimos quitar el contacto. Revisá la conexión y volvé a intentar.';
+        dibujar();
+        return;
+      }
+      const lista = (estado.seguimiento.contactos.get(f.id) || []).filter((c) => c.id !== id);
+      estado.seguimiento.contactos.set(f.id, lista);
+      despuesDeCambiar();
+    }
+    // La vista de la escuela muestra los mismos contactos: se redibuja detrás
+    function despuesDeCambiar() {
+      const id = f.id;
+      if (estado.seguimiento.lugar === id) render();
+      f.id = id;
+      dibujar();
+    }
+
+    caja.addEventListener('click', (e) => {
+      const b = e.target.closest('[data-ficha-accion]');
+      if (!b) { fijar(); return; }
+      const id = b.dataset.id;
+      switch (b.dataset.fichaAccion) {
+        case 'cerrar': cerrar(); break;
+        case 'agregar': f.fija = true; f.editando = 'nuevo'; f.quitando = null; f.error = null; dibujar(); focoPrimerCampo(); break;
+        case 'corregir': f.fija = true; f.editando = Number(id); f.quitando = null; f.error = null; dibujar(); focoPrimerCampo(); break;
+        case 'pedir-quitar': f.fija = true; f.quitando = Number(id); f.editando = null; f.error = null; dibujar(); break;
+        case 'quitar': quitar(Number(id)); break;
+        case 'cancelar': f.editando = null; f.quitando = null; f.error = null; dibujar(); break;
+        case 'ir': {
+          cerrar();
+          estado.seguimiento.lugar = id;
+          escribirHashSeguimiento();
+          render();
+          window.scrollTo(0, 0);
+          break;
+        }
+        default: break;
+      }
+    });
+    const focoPrimerCampo = () => { const c = caja.querySelector('.t-ficha__form input'); if (c) c.focus(); };
+    caja.addEventListener('submit', (e) => { e.preventDefault(); guardar(e.target); });
+    caja.addEventListener('focusin', fijar);
+    caja.addEventListener('pointerenter', () => clearTimeout(reloj));
+    caja.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse' && !f.fija) reloj = setTimeout(cerrar, 250); });
+    velo.addEventListener('click', cerrar);
+
+    // Al pasar el mouse por un nombre: un instante de espera para que recorrer
+    // la lista no abra una ficha por fila; si ya hay una abierta, cambia enseguida
+    app.addEventListener('pointerover', (e) => {
+      if (e.pointerType !== 'mouse') return;
+      const el = e.target.closest('[data-ficha]');
+      if (!el || (f.fija && f.id)) return;
+      clearTimeout(reloj);
+      reloj = setTimeout(() => abrir(el.dataset.ficha, el, false), f.id ? 60 : 350);
+    });
+    app.addEventListener('pointerout', (e) => {
+      if (e.pointerType !== 'mouse' || f.fija) return;
+      const el = e.target.closest('[data-ficha]');
+      if (!el || el.contains(e.relatedTarget)) return;
+      clearTimeout(reloj);
+      reloj = setTimeout(() => { if (!caja.matches(':hover')) cerrar(); }, 250);
+    });
+    // Con la ficha fija, tocar afuera la cierra
+    document.addEventListener('pointerdown', (e) => {
+      if (f.fija && f.id && !caja.contains(e.target) && !e.target.closest('[data-ficha], [data-accion="abrir-ficha"]') && e.target !== velo) cerrar();
+    });
+    window.addEventListener('resize', () => { if (f.id) ubicar(); });
+
+    return { abrir, cerrar, abierta: () => !!f.id, estado: f };
+  })();
 
   function pantallaSeguimiento() {
     const s = estado.seguimiento;
@@ -1751,6 +2061,7 @@
     const fn = { ingreso: pantallaIngreso, 'sin-permiso': pantallaSinPermiso, inicio: pantallaInicio, panel: pantallaPanel, seguimiento: pantallaSeguimiento }[estado.pantalla] || pantallaCargando;
     const habiaPanel = !!app.querySelector('.t-panel');
     app.innerHTML = fn();
+    if (estado.pantalla !== 'seguimiento' && Ficha.abierta()) Ficha.cerrar();
     animarLoNuevo(habiaPanel);
     document.body.style.overflow = estado.exportar ? 'hidden' : '';
     // La primera vez que se entra a cada pantalla, el recorrido arranca solo
@@ -1763,10 +2074,18 @@
      Eventos
      ====================================================================== */
 
+  // En el teléfono, tocar el nombre de una escuela abre su ficha; con el mouse
+  // o el teclado lleva a su detalle, porque la ficha ya se ve al pasar
+  let conElDedo = false;
+  document.addEventListener('pointerdown', (e) => { conElDedo = e.pointerType === 'touch' || e.pointerType === 'pen'; }, true);
+  document.addEventListener('keydown', () => { conElDedo = false; }, true);
+
   app.addEventListener('click', (e) => {
     const objetivo = e.target.closest('[data-accion]');
     if (!objetivo) return;
     const d = objetivo.dataset;
+    if (d.ficha && conElDedo) { Ficha.abrir(d.ficha, objetivo, true); return; }
+    if (d.accion === 'abrir-ficha') { Ficha.abrir(d.id, objetivo, true); return; }
     if (d.accion.startsWith('ed-') || d.accion.startsWith('ar-')) { Editor.manejar(d.accion, d, objetivo); return; }
     switch (d.accion) {
       case 'salir': salir(); break;
@@ -1790,6 +2109,7 @@
         break;
       }
       case 'seg-lugar':
+        Ficha.cerrar();
         estado.seguimiento.lugar = d.id || null;
         escribirHashSeguimiento();
         render();
@@ -1847,6 +2167,7 @@
         break;
       }
       case 'seg-lugar':
+        Ficha.cerrar();
         estado.seguimiento.lugar = el.value || null;
         escribirHashSeguimiento();
         render();
@@ -1870,6 +2191,7 @@
   });
 
   document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && Ficha.abierta()) { Ficha.cerrar(); return; }
     if (e.key === 'Escape' && estado.exportar && !estado.exportar.descargando) { estado.exportar = null; render(); }
   });
 

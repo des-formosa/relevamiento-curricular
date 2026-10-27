@@ -21,3 +21,10 @@ planillas/
 
 # Caché de Python
 __pycache__/
+
+# Contactos de directivos (nombres y celulares): datos personales, nunca al
+# repositorio. Las planillas y el SQL que genera datos/generar_contactos.py
+# se guardan fuera o en estas carpetas, que git ignora.
+datos/directivos/
+sql/privado/
+DIRECTIVOS*.xlsx
