@@ -597,13 +597,16 @@ desde acá con su aviso de uso interno. El enlace del pie se sacó: la solapa ya
 - **Barra:** Alcance (toda la provincia o un departamento), «Datos de ejemplo» y «Descargar el
   Excel».
 - **Línea de contexto con la respuesta:** «Cargaron 487 docentes de 135 de las 288 escuelas.
-  Faltan 153.» Al lado, dos solapas: «Todas las escuelas» y «Las que no cargaron (153)».
+  Faltan 153.»
 - **Por departamento** (solo con toda la provincia): un renglón por departamento, en el orden
   de la nómina, con la barra de 18 px de sus escuelas que ya cargaron («22 de 42»), los
   docentes y cuántas faltan. El nombre del departamento lleva a su lista.
-- **Las escuelas**, una tabla por departamento, en el orden oficial (cada E.P.E.S. seguida de
-  sus anexos): escuela, localidad, docentes, materias y último envío («hoy», «ayer», «12 oct»).
-  Las que no tienen envíos dicen **«Sin cargas todavía»** en negrita, sin color propio: el
+- **Las escuelas**, una sola lista por departamento: **primero las que todavía no cargaron**
+  (a las que hay que llamar) y después las que ya cargaron, cada parte en el orden oficial
+  (cada E.P.E.S. seguida de sus anexos): escuela, localidad, docentes, materias y último envío
+  («hoy», «ayer», «12 oct»). La primera versión tenía dos solapas, «Todas las escuelas» y «Las
+  que no cargaron», y el equipo las sintió de más: con las que faltan arriba, una lista dice
+  todo. Las que no tienen envíos dicen **«Sin cargas todavía»** en negrita, sin color propio: el
   ladrillo y el ocre ya dicen otra cosa en el panel. Las que agregaron los docentes (o una que
   salió de la nómina) van al final de su departamento, marcadas, y no cuentan entre las que
   faltan: el denominador es siempre la nómina.
@@ -1052,7 +1055,8 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
   salió de la nómina van marcadas al final de su departamento, la pantalla no pide nombres de
   docentes, el hash se conserva al recargar, el Excel se baja desde ahí, y con la base caída
   dice qué pasó y deja reintentar. Sin scroll horizontal de 320 a 1920 px, y la cabecera de
-  todas las pantallas sigue en una fila desde 1280
+  todas las pantallas sigue en una fila desde 1280. El mismo día se sacaron las dos solapas:
+  una sola lista, con las que no cargaron arriba en cada departamento
 
 **Pendiente**
 - **Después de la presentación**, `select public.borrar_datos_ejemplo();`

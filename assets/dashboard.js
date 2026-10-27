@@ -73,9 +73,8 @@
     nombre: null,             // el de equipo_planificacion, para saludar
     inicio: null,             // { cargas } para la pantalla de inicio
     // Seguimiento de la carga: cuántos docentes cargaron en cada escuela, de
-    // todas las materias. departamento_id null = toda la provincia;
-    // solo = 'todas' | 'faltan' (las escuelas que todavía no cargaron)
-    seguimiento: { departamento_id: null, solo: 'todas', datos: null, cargando: false, error: null },
+    // todas las materias. departamento_id null = toda la provincia
+    seguimiento: { departamento_id: null, datos: null, cargando: false, error: null },
     usuario: null,
     espacio_id: null,
     anio: 1,
@@ -379,7 +378,7 @@
     // mano: el que entra después tiene que ver los resultados, no el editor
     estado.modo = 'resultados';
     Editor.limpiar();
-    estado.seguimiento = { departamento_id: null, solo: 'todas', datos: null, cargando: false, error: null };
+    estado.seguimiento = { departamento_id: null, datos: null, cargando: false, error: null };
     history.replaceState(null, '', window.location.pathname + window.location.search);
     estado.pantalla = 'ingreso';
     render();
@@ -1508,7 +1507,6 @@
 
   // «Cargaron 1.234 docentes de 180 de las 288 escuelas. Faltan 108.»
   function contextoSeguimiento(d, g) {
-    const s = estado.seguimiento;
     const c = g || d.provincia;
     let texto;
     if (!c.docentes) {
@@ -1517,15 +1515,7 @@
       texto = `${g ? `En el departamento ${esc(g.nombre)} cargaron` : 'Cargaron'} <strong>${numero(c.docentes)} ${plural(c.docentes, 'docente', 'docentes')}</strong> de <strong>${numero(c.cargaron)} ${g ? 'de sus' : 'de las'} ${numero(c.total)} escuelas</strong>. `
         + (c.faltan ? `Faltan <strong>${numero(c.faltan)}</strong>.` : 'Ya cargaron todas.');
     }
-    const solapa = (valor, titulo) =>
-      `<button type="button" class="t-vista ${s.solo === valor ? 't-vista--activa' : ''}" data-accion="seg-solo" data-solo="${valor}" aria-pressed="${s.solo === valor}">${titulo}</button>`;
-    return `<div class="t-contexto">
-      <div class="t-contexto__texto">${texto}</div>
-      <div class="t-vistas">
-        ${solapa('todas', 'Todas las escuelas')}
-        ${solapa('faltan', `Las que no cargaron (${numero(c.faltan)})`)}
-      </div>
-    </div>`;
+    return `<div class="t-contexto"><div class="t-contexto__texto">${texto}</div></div>`;
   }
 
   // Un renglón por departamento, en el orden de la nómina: la barra es la
@@ -1549,9 +1539,12 @@
     </section>`;
   }
 
+  // Una sola lista por departamento: primero las que todavía no cargaron (a
+  // las que hay que llamar), después las que ya cargaron. Dentro de cada parte,
+  // el orden de la nómina. Al final, las que no son de la nómina.
   function tablaEscuelas(g) {
-    const faltan = estado.seguimiento.solo === 'faltan';
-    const lista = faltan ? g.escuelas.filter((e) => !e.docentes) : g.escuelas.concat(g.extras);
+    const lista = g.escuelas.filter((e) => !e.docentes)
+      .concat(g.escuelas.filter((e) => e.docentes), g.extras);
     const resumen = g.total ? `cargaron ${numero(g.cargaron)} de ${numero(g.total)} escuelas${g.faltan ? ` · faltan ${numero(g.faltan)}` : ''}` : '';
     const filas = lista.map((e) => `
         <tr class="${e.docentes ? '' : 't-seg-fila--falta'}">
@@ -1569,7 +1562,7 @@
       <table class="t-seg-tabla">
         <thead><tr><th scope="col">Escuela</th><th scope="col">Localidad</th><th scope="col" class="t-seg-num">Docentes</th><th scope="col" class="t-seg-num">Materias</th><th scope="col" class="t-seg-fecha">Último envío</th></tr></thead>
         <tbody>${filas}</tbody>
-      </table>` : '<p class="t-seg-vacia">Ya cargaron todas las escuelas del departamento.</p>'}
+      </table>` : ''}
     </section>`;
   }
 
@@ -1584,7 +1577,7 @@
       const d = s.datos;
       const g = s.departamento_id ? d.grupos.find((x) => x.id === s.departamento_id) : null;
       // El grupo «Sin departamento» (por si una escuela llega sin él) solo tiene agregadas
-      const grupos = (g ? [g] : d.grupos).filter((x) => x.total || (x.extras.length && s.solo !== 'faltan'));
+      const grupos = (g ? [g] : d.grupos).filter((x) => x.total || x.extras.length);
       contenido = `<div class="t-seg-marco">
         ${contextoSeguimiento(d, g)}
         <div class="t-cuerpo t-seg">
@@ -1638,10 +1631,10 @@
       }
     }
     if (estado.modo !== 'catalogo') previo.editor = null;
-    // En el seguimiento, al llegar las cuentas y al cambiar de departamento o
-    // de solapa; abrir la ventana del Excel no hace parpadear la lista
+    // En el seguimiento, al llegar las cuentas y al cambiar de departamento;
+    // abrir la ventana del Excel no hace parpadear la lista
     const seg = estado.seguimiento;
-    const vistaSeg = estado.pantalla === 'seguimiento' && seg.datos ? [seg.datos, seg.departamento_id, seg.solo] : null;
+    const vistaSeg = estado.pantalla === 'seguimiento' && seg.datos ? [seg.datos, seg.departamento_id] : null;
     if (vistaSeg && !(previo.seguimiento && vistaSeg.every((v, i) => v === previo.seguimiento[i]))) {
       const cuerpo = app.querySelector('.t-seg');
       if (cuerpo) {
@@ -1691,7 +1684,6 @@
       case 'ir-catalogo': irAlPanel('catalogo'); break;
       case 'ir-seguimiento': irAlSeguimiento(); break;
       case 'seg-reintentar': cargarSeguimiento(); break;
-      case 'seg-solo': if (estado.seguimiento.solo !== d.solo) { estado.seguimiento.solo = d.solo; render(); } break;
       case 'seg-departamento':
         estado.seguimiento.departamento_id = d.id;
         escribirHashSeguimiento();
