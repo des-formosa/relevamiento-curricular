@@ -73,8 +73,9 @@
     nombre: null,             // el de equipo_planificacion, para saludar
     inicio: null,             // { cargas } para la pantalla de inicio
     // Seguimiento de la carga: cuántos docentes cargaron en cada escuela, de
-    // todas las materias. departamento_id null = toda la provincia
-    seguimiento: { departamento_id: null, datos: null, cargando: false, error: null },
+    // todas las materias. lugar = null (toda la provincia), el id de un
+    // departamento o el de una escuela (no hay ids repetidos entre los dos)
+    seguimiento: { lugar: null, datos: null, cargando: false, error: null },
     usuario: null,
     espacio_id: null,
     anio: 1,
@@ -118,11 +119,11 @@
     if (estado.ejemplo) h.set('ejemplo', '1');
     history.replaceState(null, '', '#' + h.toString());
   }
-  // El seguimiento tiene su propio hash («#seguimiento=pirane»), así se puede
+  // El seguimiento tiene su propio hash («#seguimiento=pirane», «#seguimiento=epes-10»), así se puede
   // dejar marcado y recargar sin volver al inicio
   function escribirHashSeguimiento() {
     const h = new URLSearchParams();
-    h.set('seguimiento', estado.seguimiento.departamento_id || '');
+    h.set('seguimiento', estado.seguimiento.lugar || '');
     if (estado.ejemplo) h.set('ejemplo', '1');
     history.replaceState(null, '', '#' + h.toString());
   }
@@ -210,15 +211,23 @@
     const porEscuela = new Map();
     for (const a of envios) {
       let e = porEscuela.get(a.escuela_id);
-      if (!e) porEscuela.set(a.escuela_id, (e = { docentes: new Set(), materias: new Set(), ultimo: 0 }));
+      if (!e) porEscuela.set(a.escuela_id, (e = { docentes: new Set(), porMateria: new Map(), cargas: 0, ultimo: 0 }));
+      const cuando = Date.parse(a.enviado_en) || 0;
       e.docentes.add(a.docente_id);
-      e.materias.add(a.espacio_id);
-      e.ultimo = Math.max(e.ultimo, Date.parse(a.enviado_en) || 0);
+      e.cargas += 1;
+      e.ultimo = Math.max(e.ultimo, cuando);
+      // Por materia: cuántas cargas (una por docente y año) y de cuántos docentes
+      let m = e.porMateria.get(a.espacio_id);
+      if (!m) e.porMateria.set(a.espacio_id, (m = { cargas: 0, docentes: new Set(), ultimo: 0 }));
+      m.cargas += 1;
+      m.docentes.add(a.docente_id);
+      m.ultimo = Math.max(m.ultimo, cuando);
     }
     const fila = (escuela, extra) => {
       const e = porEscuela.get(escuela.id);
       return { id: escuela.id, nombre: escuela.nombre, localidad: escuela.localidad || '', extra,
-        docentes: e ? e.docentes.size : 0, materias: e ? e.materias.size : 0, ultimo: e ? e.ultimo : 0, idsDocentes: e ? e.docentes : null };
+        docentes: e ? e.docentes.size : 0, materias: e ? e.porMateria.size : 0, cargas: e ? e.cargas : 0,
+        ultimo: e ? e.ultimo : 0, idsDocentes: e ? e.docentes : null, porMateria: e ? e.porMateria : new Map() };
     };
 
     const grupos = Catalogo.departamentos().map((d) => ({
@@ -339,12 +348,12 @@
   }
 
   // Las cargas se cuentan de nuevo cada vez que se entra: así está al día
-  function irAlSeguimiento(departamentoId) {
+  function irAlSeguimiento(lugar) {
     estado.pantalla = 'seguimiento';
     estado.modo = 'resultados';
     estado.exportar = null;
     Editor.limpiar();
-    if (departamentoId !== undefined) estado.seguimiento.departamento_id = Catalogo.departamento(departamentoId) ? departamentoId : null;
+    if (lugar !== undefined) estado.seguimiento.lugar = lugar || null;
     escribirHashSeguimiento();
     render();
     window.scrollTo(0, 0);
@@ -378,7 +387,7 @@
     // mano: el que entra después tiene que ver los resultados, no el editor
     estado.modo = 'resultados';
     Editor.limpiar();
-    estado.seguimiento = { departamento_id: null, datos: null, cargando: false, error: null };
+    estado.seguimiento = { lugar: null, datos: null, cargando: false, error: null };
     history.replaceState(null, '', window.location.pathname + window.location.search);
     estado.pantalla = 'ingreso';
     render();
@@ -1487,13 +1496,23 @@
 
   function barraSeguimiento() {
     const s = estado.seguimiento;
-    const opciones = [`<option value="" ${s.departamento_id ? '' : 'selected'}>Toda la provincia</option>`]
-      .concat(Catalogo.departamentos().map((d) =>
-        `<option value="${esc(d.id)}" ${s.departamento_id === d.id ? 'selected' : ''}>Departamento ${esc(d.nombre)}</option>`)).join('');
+    const opcion = (id, texto) => `<option value="${esc(id)}" ${(s.lugar || '') === id ? 'selected' : ''}>${esc(texto)}</option>`;
+    // Las escuelas que no están en la nómina (agregadas por docentes) solo
+    // se conocen después de contar
+    const extras = s.datos ? s.datos.grupos.flatMap((g) => g.extras) : estado.escuelasAgregadas;
+    const opciones = [
+      opcion('', 'Toda la provincia'),
+      `<optgroup label="Por departamento">${Catalogo.departamentos().map((d) => opcion(d.id, `Departamento ${d.nombre}`)).join('')}</optgroup>`,
+      ...Catalogo.departamentos().map((d) => {
+        const grupo = Catalogo.buscarEscuelas('', d.id).grupos[0];
+        return grupo ? `<optgroup label="Escuelas · ${esc(d.nombre)}">${grupo.escuelas.map((e) => opcion(e.id, e.nombre)).join('')}</optgroup>` : '';
+      }),
+      extras.length ? `<optgroup label="Escuelas agregadas por docentes">${extras.map((e) => opcion(e.id, e.nombre)).join('')}</optgroup>` : '',
+    ].join('');
     return `<div class="t-selectores">
       <div class="t-selector">
-        <label class="t-selector__etiqueta" for="s-seg-departamento">Alcance</label>
-        <select class="t-select t-select--alcance" id="s-seg-departamento" data-cambio="seg-departamento">${opciones}</select>
+        <label class="t-selector__etiqueta" for="s-seg-lugar">Alcance</label>
+        <select class="t-select t-select--alcance" id="s-seg-lugar" data-cambio="seg-lugar">${opciones}</select>
       </div>
       <div class="espaciador"></div>
       <div class="t-selectores__acciones">
@@ -1525,7 +1544,7 @@
   function tablaDepartamentos(d) {
     const filas = d.grupos.filter((g) => g.total).map((g) => `
         <tr>
-          <th scope="row"><button type="button" class="t-seg-enlace" data-accion="seg-departamento" data-id="${esc(g.id)}">${esc(g.nombre)}</button></th>
+          <th scope="row"><button type="button" class="t-seg-enlace" data-accion="seg-lugar" data-id="${esc(g.id)}">${esc(g.nombre)}</button></th>
           <td class="t-seg-avance">
             <div class="t-fila__barra"><div class="t-pista"><div class="t-barra" style="width:${Math.round(100 * g.cargaron / g.total)}%"></div></div><span class="t-seg-de">${numero(g.cargaron)} de ${numero(g.total)}</span></div>
           </td>
@@ -1550,7 +1569,7 @@
     const resumen = g.total ? `cargaron ${numero(g.cargaron)} de ${numero(g.total)} escuelas${g.faltan ? ` · ${numero(g.faltan)} sin cargas todavía` : ''}` : '';
     const filas = lista.map((e) => `
         <tr class="${e.docentes ? '' : 't-seg-fila--falta'}">
-          <th scope="row" class="t-seg-escuela">${esc(e.nombre)}${e.extra ? ` <span class="t-seg-extra">(${esc(e.extra)})</span>` : ''}</th>
+          <th scope="row" class="t-seg-escuela"><button type="button" class="t-seg-enlace" data-accion="seg-lugar" data-id="${esc(e.id)}">${esc(e.nombre)}</button>${e.extra ? ` <span class="t-seg-extra">(${esc(e.extra)})</span>` : ''}</th>
           <td class="t-seg-localidad">${esc(e.localidad)}</td>
           ${e.docentes
             ? `<td class="t-seg-num" data-etiqueta="Docentes">${numero(e.docentes)}</td>
@@ -1568,6 +1587,42 @@
     </section>`;
   }
 
+  // Una escuela: cuántos docentes cargaron y, materia por materia, cuántas
+  // cargas hay. Están todas las materias, también las que no tienen ninguna,
+  // para ver qué falta en esa escuela.
+  function vistaEscuela(e, g) {
+    const donde = [e.localidad, g && g.id ? `departamento ${g.nombre}` : ''].filter(Boolean).join(', ');
+    const texto = e.docentes
+      ? `En <strong>${esc(e.nombre)}</strong>${donde ? ` (${esc(donde)})` : ''} cargaron <strong>${numero(e.docentes)} ${plural(e.docentes, 'docente', 'docentes')}</strong>: <strong>${numero(e.cargas)} ${plural(e.cargas, 'carga', 'cargas')}</strong> en ${numero(e.materias)} ${plural(e.materias, 'materia', 'materias')}.`
+      : `<strong>${esc(e.nombre)}</strong>${donde ? ` (${esc(donde)})` : ''} <strong>todavía no cargó</strong>.`;
+    const nombre = (esp) => (Catalogo.esArtistica(esp) ? esp.nombre : Catalogo.nombreCorto(esp));
+    const filas = Catalogo.areas().flatMap((a) => Catalogo.espaciosPorArea(a.id)).map((esp) => {
+      const m = e.porMateria.get(esp.id);
+      return `
+        <tr class="${m ? '' : 't-seg-fila--falta'}">
+          <th scope="row">${esc(nombre(esp))}</th>
+          ${m
+            ? `<td class="t-seg-num" data-etiqueta="Cargas">${numero(m.cargas)}</td>
+          <td class="t-seg-num" data-etiqueta="Docentes">${numero(m.docentes.size)}</td>
+          <td class="t-seg-fecha" data-etiqueta="Último envío">${esc(cuandoFue(m.ultimo))}</td>`
+            : '<td class="t-seg-sin" colspan="3">Sin cargas todavía</td>'}
+        </tr>`;
+    }).join('');
+    const volver = g && g.id
+      ? `<button type="button" class="t-seg-enlace t-seg-volver" data-accion="seg-lugar" data-id="${esc(g.id)}">← Departamento ${esc(g.nombre)}</button>`
+      : '<button type="button" class="t-seg-enlace t-seg-volver" data-accion="seg-lugar" data-id="">← Toda la provincia</button>';
+    return `<div class="t-contexto"><div class="t-contexto__texto">${texto}</div>${volver}</div>
+      <div class="t-cuerpo t-seg">
+        <section class="t-seg-bloque">
+          <h2 class="t-seg-titulo">Por materia</h2>
+          <table class="t-seg-tabla t-seg-tabla--materias">
+            <thead><tr><th scope="col">Materia</th><th scope="col" class="t-seg-num">Cargas</th><th scope="col" class="t-seg-num">Docentes</th><th scope="col" class="t-seg-fecha">Último envío</th></tr></thead>
+            <tbody>${filas}</tbody>
+          </table>
+        </section>
+      </div>`;
+  }
+
   function pantallaSeguimiento() {
     const s = estado.seguimiento;
     let contenido = '';
@@ -1577,15 +1632,24 @@
       contenido = `<div class="t-cuerpo"><div class="t-estado"><div class="t-estado__titulo">No pudimos contar las cargas</div><div class="t-estado__texto">${esc(s.error)}</div><button type="button" class="boton boton--primario boton--66" data-accion="seg-reintentar">Volver a intentar</button></div></div>`;
     } else if (s.datos) {
       const d = s.datos;
-      const g = s.departamento_id ? d.grupos.find((x) => x.id === s.departamento_id) : null;
+      // El lugar elegido: un departamento, una escuela o, si no es ninguno, la provincia
+      const g = s.lugar ? d.grupos.find((x) => x.id === s.lugar) : null;
+      let escuela = null;
+      let suGrupo = null;
+      if (s.lugar && !g) {
+        for (const x of d.grupos) {
+          escuela = x.escuelas.concat(x.extras).find((e) => e.id === s.lugar) || null;
+          if (escuela) { suGrupo = x; break; }
+        }
+      }
       // El grupo «Sin departamento» (por si una escuela llega sin él) solo tiene agregadas
       const grupos = (g ? [g] : d.grupos).filter((x) => x.total || x.extras.length);
       contenido = `<div class="t-seg-marco">
-        ${contextoSeguimiento(d, g)}
+        ${escuela ? vistaEscuela(escuela, suGrupo) : `${contextoSeguimiento(d, g)}
         <div class="t-cuerpo t-seg">
           ${g ? '' : tablaDepartamentos(d)}
           ${grupos.map(tablaEscuelas).join('')}
-        </div>
+        </div>`}
       </div>`;
     }
     return `<div class="tablero">
@@ -1636,7 +1700,7 @@
     // En el seguimiento, al llegar las cuentas y al cambiar de departamento;
     // abrir la ventana del Excel no hace parpadear la lista
     const seg = estado.seguimiento;
-    const vistaSeg = estado.pantalla === 'seguimiento' && seg.datos ? [seg.datos, seg.departamento_id] : null;
+    const vistaSeg = estado.pantalla === 'seguimiento' && seg.datos ? [seg.datos, seg.lugar] : null;
     if (vistaSeg && !(previo.seguimiento && vistaSeg.every((v, i) => v === previo.seguimiento[i]))) {
       const cuerpo = app.querySelector('.t-seg');
       if (cuerpo) {
@@ -1686,8 +1750,8 @@
       case 'ir-catalogo': irAlPanel('catalogo'); break;
       case 'ir-seguimiento': irAlSeguimiento(); break;
       case 'seg-reintentar': cargarSeguimiento(); break;
-      case 'seg-departamento':
-        estado.seguimiento.departamento_id = d.id;
+      case 'seg-lugar':
+        estado.seguimiento.lugar = d.id || null;
         escribirHashSeguimiento();
         render();
         window.scrollTo(0, 0);
@@ -1743,8 +1807,8 @@
         cargarDatos();
         break;
       }
-      case 'seg-departamento':
-        estado.seguimiento.departamento_id = el.value || null;
+      case 'seg-lugar':
+        estado.seguimiento.lugar = el.value || null;
         escribirHashSeguimiento();
         render();
         break;

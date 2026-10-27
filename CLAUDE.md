@@ -594,8 +594,9 @@ las autoridades. Esta pantalla **no muestra ningún nombre de docente**: cuenta 
 eso es lo que el Ministerio necesita mirar. Los nombres siguen solo en el Excel, que se baja
 desde acá con su aviso de uso interno. El enlace del pie se sacó: la solapa ya está a la vista.
 
-- **Barra:** Alcance (toda la provincia o un departamento), «Datos de ejemplo» y «Descargar el
-  Excel».
+- **Barra:** Alcance (toda la provincia, un departamento o una escuela, agrupadas por
+  departamento como en Resultados, más las que agregaron los docentes), «Datos de ejemplo» y
+  «Descargar el Excel».
 - **Línea de contexto con la respuesta:** «Cargaron 487 docentes de 135 de las 288 escuelas.
   153 escuelas todavía no cargaron.» Nunca «Faltan 153» a secas: el equipo preguntó «¿faltan
   qué?». Lo mismo en la tabla («Escuelas sin cargas») y en cada departamento («20 sin cargas
@@ -608,11 +609,19 @@ desde acá con su aviso de uso interno. El enlace del pie se sacó: la solapa ya
   (cada E.P.E.S. seguida de sus anexos): escuela, localidad, docentes, materias y último envío
   («hoy», «ayer», «12 oct»). La primera versión tenía dos solapas, «Todas las escuelas» y «Las
   que no cargaron», y el equipo las sintió de más: con las que faltan arriba, una lista dice
-  todo. Las que no tienen envíos dicen **«Sin cargas todavía»** en negrita, centrado en el
+  todo. El nombre de cada escuela lleva a su detalle (ver abajo). Las que no tienen envíos dicen **«Sin cargas todavía»** en negrita, centrado en el
   lugar de las tres columnas de números, sin color propio: el
   ladrillo y el ocre ya dicen otra cosa en el panel. Las que agregaron los docentes (o una que
   salió de la nómina) van al final de su departamento, marcadas, y no cuentan entre las que
   faltan: el denominador es siempre la nómina.
+
+- **Una escuela** (pedido del 27/10/2026: «filtrar por escuela y ver cuántas cargas de cada
+  materia»): la línea dice «En E.P.E.S. N° 2 (Pirane, departamento Pirané) cargaron 5 docentes:
+  12 cargas en 9 materias», con «← Departamento Pirané» a la derecha para volver. Debajo, **Por
+  materia**: las 16 materias en el orden del catálogo, con cargas, docentes y último envío. Las
+  que no tienen ninguna dicen «Sin cargas todavía» y siguen en la lista, para ver qué falta en
+  esa escuela. Una carga es un aporte: un docente, una materia, un año; por eso cargas puede ser
+  más que docentes.
 
 Un docente que carga en dos escuelas cuenta en las dos, pero una sola vez en el total de su
 departamento y de la provincia. Se cuentan los aportes (`es_ejemplo` según el interruptor), no
@@ -623,7 +632,8 @@ tiene (solo `escuela_id`, `docente_id`, `espacio_id` y `enviado_en`) y cuenta en
 La primera página trae el total y las demás se piden juntas; con 15.000 aportes son 15 pedidos
 chicos. Los nombres de las escuelas salen de `datos/escuelas.json`; las que no están ahí se
 piden a `escuelas`. Se vuelve a contar cada vez que se entra a la pantalla. La selección viaja
-en el hash (`#seguimiento=pirane`), así se puede dejar marcada.
+en el hash (`#seguimiento=pirane` o `#seguimiento=epes-2`: los id de departamentos y escuelas
+no se repiten entre sí), así se puede dejar marcada.
 
 No tiene recorrido guiado: si algo necesitara explicación, estaría mal.
 
@@ -1058,8 +1068,11 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
   salió de la nómina van marcadas al final de su departamento, la pantalla no pide nombres de
   docentes, el hash se conserva al recargar, el Excel se baja desde ahí, y con la base caída
   dice qué pasó y deja reintentar. Sin scroll horizontal de 320 a 1920 px, y la cabecera de
-  todas las pantallas sigue en una fila desde 1280. El mismo día se sacaron las dos solapas:
-  una sola lista, con las que no cargaron arriba en cada departamento
+  todas las pantallas sigue en una fila desde 1280. El mismo día se sacaron las dos solapas
+  (una sola lista, con las que no cargaron arriba en cada departamento) y se sumó el filtro por
+  escuela con sus cargas por materia: probado que la suma por materia da las cargas de la
+  escuela, que una escuela sin cargas muestra sus 16 materias «Sin cargas todavía», que la
+  agregada por un docente se puede elegir y que «← Departamento» vuelve
 
 **Pendiente**
 - **Después de la presentación**, `select public.borrar_datos_ejemplo();`
