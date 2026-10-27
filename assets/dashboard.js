@@ -85,7 +85,6 @@
     vista: 'detalle',                 // detalle | mapa
     modo: 'resultados',               // resultados | catalogo (editar el diseño);
                                       //   no se guarda: siempre se entra por resultados
-    ejemplo: false,
     datos: null,
     cargandoDatos: false,
     errorDatos: null,
@@ -106,7 +105,6 @@
     if (h.get('departamento')) estado.alcance = { tipo: 'departamento', id: h.get('departamento') };
     else if (h.get('escuela')) estado.alcance = { tipo: 'escuela', id: h.get('escuela') };
     if (h.get('vista') === 'mapa') estado.vista = 'mapa';
-    if (h.get('ejemplo') === '1') estado.ejemplo = true;
     // El modo no viaja en el hash a propósito: se entra siempre por los
     // resultados. Editar el catálogo es algo que se elige, no un lugar donde
     // amanecer porque la última vez quedaste ahí.
@@ -118,7 +116,6 @@
     if (estado.alcance.tipo === 'departamento') h.set('departamento', estado.alcance.id);
     if (estado.alcance.tipo === 'escuela') h.set('escuela', estado.alcance.id);
     if (estado.vista === 'mapa') h.set('vista', 'mapa');
-    if (estado.ejemplo) h.set('ejemplo', '1');
     history.replaceState(null, '', '#' + h.toString());
   }
   // El seguimiento tiene su propio hash («#seguimiento=pirane», «#seguimiento=epes-10»), así se puede
@@ -127,7 +124,6 @@
     const h = new URLSearchParams();
     h.set('seguimiento', estado.seguimiento.lugar || '');
     if (estado.seguimiento.soloFaltan) h.set('faltan', '1');
-    if (estado.ejemplo) h.set('ejemplo', '1');
     history.replaceState(null, '', '#' + h.toString());
   }
 
@@ -151,7 +147,7 @@
       p_trimestre: null,
       p_departamento_id: estado.alcance.tipo === 'departamento' ? estado.alcance.id : null,
       p_escuela_id: estado.alcance.tipo === 'escuela' ? estado.alcance.id : null,
-      p_ejemplo: estado.ejemplo,
+      p_ejemplo: false,   // solo envíos reales (ver sql/mantenimiento/2026-10-27_sin_datos_de_ejemplo.sql)
     });
     estado.cargandoDatos = false;
     if (error) {
@@ -187,10 +183,10 @@
   // Sin nombres de docentes. La primera página dice cuántos son y las demás
   // se piden juntas; se pagina con la medida que devuelva la base, por si
   // entrega menos filas que las pedidas.
-  async function traerEnvios(ejemplo) {
+  async function traerEnvios() {
     const pagina = (desde, hasta, conteo) => sb.from('aportes')
       .select('escuela_id, docente_id, espacio_id, enviado_en', conteo ? { count: 'exact' } : {})
-      .eq('es_ejemplo', ejemplo).order('id').range(desde, hasta);
+      .eq('es_ejemplo', false).order('id').range(desde, hasta);
     const fallo = 'No pudimos traer las cargas. Revisá la conexión y volvé a intentar.';
     const primera = await pagina(0, FILAS_POR_PAGINA - 1, true);
     if (primera.error) throw new Error(fallo);
@@ -292,7 +288,6 @@
 
   async function cargarSeguimiento() {
     const s = estado.seguimiento;
-    const ejemplo = estado.ejemplo;
     Ficha.cerrar();
     s.cargando = true;
     s.error = null;
@@ -301,14 +296,12 @@
     let error = null;
     let contactos = null;
     try {
-      const [envios, c] = await Promise.all([traerEnvios(ejemplo), traerContactos()]);
+      const [envios, c] = await Promise.all([traerEnvios(), traerContactos()]);
       contactos = c;
       datos = await contarSeguimiento(envios);
     } catch (e) {
       error = (e && e.message) || 'No pudimos traer las cargas. Volvé a intentar.';
     }
-    // Si mientras tanto se cambió a los datos de ejemplo (o al revés), manda el último pedido
-    if (estado.ejemplo !== ejemplo) return;
     s.cargando = false;
     s.datos = datos;
     s.contactos = contactos;
@@ -494,10 +487,6 @@
       <button type="button" class="t-enlace-cab" data-accion="salir">Salir</button>`;
   }
 
-  function bandaEjemplo() {
-    if (!estado.ejemplo) return '';
-    return `<div class="t-banda-ejemplo"><strong>Datos de ejemplo</strong> · inventados para la demostración. No son respuestas de docentes.</div>`;
-  }
 
   function selectores() {
     const opcionesMateria = Catalogo.areas().map((a) => {
@@ -539,9 +528,6 @@
       <div class="espaciador"></div>
       ${estado.modo === 'catalogo' ? '' : `
       <div class="t-selectores__acciones">
-        <button type="button" class="t-interruptor ${estado.ejemplo ? 't-interruptor--activo' : ''}" data-accion="alternar-ejemplo" aria-pressed="${estado.ejemplo}">
-          <span class="t-interruptor__pista"></span>Datos de ejemplo
-        </button>
         <button type="button" class="t-exportar" data-accion="abrir-exportar">${Icono.descargar}Descargar resultados</button>
       </div>`}
     </div>`;
@@ -698,7 +684,6 @@
         <h1 class="t-doc__titulo">${esc(nombreMateria())} · ${esc(textoAnios(reportes.map((r) => r.anio)))}</h1>
         <div class="t-doc__sub">${mapa ? 'Mapa de calor: los contenidos más elegidos, por eje y trimestre' : 'Contenidos que priorizan los docentes, trimestre por trimestre'}</div>
         <div class="t-doc__datos">${esc(textoAlcance())}${varios ? '' : ` · ${textoBase(unico)}`} · Datos al ${esc(fechaLarga(new Date()))}</div>
-        ${estado.ejemplo ? '<div class="t-doc__ejemplo">DATOS DE EJEMPLO: inventados para mostrar cómo se ve. No son respuestas de docentes.</div>' : ''}
         <p class="t-doc__lectura">${mapa
           ? `Cada fila es un eje del diseño curricular y cada columna, un trimestre. En cada celda, los ${TILES_POR_CELDA} contenidos más elegidos de ese eje: el número y el color dicen qué porcentaje de los docentes que trabajan ese saber lo eligió.`
           : 'Los saberes van en el orden del diseño curricular. Debajo de cada uno, los contenidos que eligieron los docentes que lo trabajan, de más a menos elegido; el porcentaje es sobre esos docentes.'}</p>
@@ -889,8 +874,7 @@
     if (!d.contexto.docentes) {
       return `<div class="t-estado">
         <div class="t-estado__titulo">Todavía no hay cargas de ${esc(nombreMateria())} de ${esc(textoAnio())}${estado.alcance.tipo === 'provincia' ? '' : ` en ${esc(nombreAlcance())}`}</div>
-        <div class="t-estado__texto">${estado.ejemplo ? 'Tampoco hay datos de ejemplo para esta selección. Probá con otra materia u otro año.' : 'Cuando los docentes empiecen a enviar, los resultados aparecen acá solos. Mientras tanto podés ver cómo se va a ver el tablero con datos de ejemplo.'}</div>
-        ${estado.ejemplo ? '' : '<button type="button" class="boton boton--primario boton--66" data-accion="alternar-ejemplo">Ver datos de ejemplo</button>'}
+        <div class="t-estado__texto">Cuando los docentes envíen esta materia y año, los resultados aparecen acá solos. Mientras tanto, probá con otra materia, otro año u otro alcance.</div>
       </div>`;
     }
     return estado.vista === 'mapa' ? vistaMapa() : vistaDetalle();
@@ -985,10 +969,6 @@
         <button type="button" class="t-panel__cerrar" data-accion="cerrar-exportar" aria-label="Cerrar">${Icono.cerrar}</button>
       </div>
       <p class="t-panel__bajada">Un Excel para ver cómo avanza el relevamiento: los envíos que llegaron y las escuelas de las que todavía no llegó ninguno. De toda la provincia y de todas las materias.</p>
-      <label class="t-opcion ${x.ejemplo ? 't-opcion--elegida' : ''}" for="ex-ejemplo">
-        <input type="checkbox" id="ex-ejemplo" ${x.ejemplo ? 'checked' : ''} data-cambio="ex-ejemplo">
-        <span><span class="t-opcion__titulo">Con los datos de ejemplo</span><span class="t-opcion__sub">Para ver cómo es la planilla antes de que lleguen cargas reales</span></span>
-      </label>
       <div class="t-panel__nota t-panel__nota--interno">${notaExportar(x)}</div>
       ${x.progreso ? `<div class="t-panel__nota">${esc(x.progreso)}</div>` : ''}
       ${x.error ? `<div class="t-panel__nota t-panel__nota--error">${esc(x.error)}</div>` : ''}
@@ -1016,7 +996,6 @@
   function nombreArchivo(reportes) {
     const anios = reportes.length > 1 ? 'todos-los-anios' : `${reportes[0].anio}-anio`;
     const partes = ['resultados', limpioArchivo(nombreMateria()), anios, limpioArchivo(textoAlcance())];
-    if (estado.ejemplo) partes.push('ejemplo');
     return partes.join('-') + '.xlsx';
   }
 
@@ -1033,7 +1012,7 @@
         p_trimestre: null,
         p_departamento_id: estado.alcance.tipo === 'departamento' ? estado.alcance.id : null,
         p_escuela_id: estado.alcance.tipo === 'escuela' ? estado.alcance.id : null,
-        p_ejemplo: estado.ejemplo,
+        p_ejemplo: false,   // solo envíos reales (ver sql/mantenimiento/2026-10-27_sin_datos_de_ejemplo.sql)
       });
       if (error) throw new Error(`No pudimos traer los resultados de ${anio}° año. Revisá la conexión y volvé a intentar.`);
       reportes.push({ anio, datos: prepararDatos(data) });
@@ -1055,7 +1034,7 @@
     try {
       if (x.que === 'control') {
         await cargarSheetJS();
-        window.XLSX.writeFile(await libroControl(x.ejemplo), `seguimiento-de-la-carga-${hoyArchivo()}${x.ejemplo ? '-ejemplo' : ''}.xlsx`);
+        window.XLSX.writeFile(await libroControl(), `seguimiento-de-la-carga-${hoyArchivo()}.xlsx`);
         estado.exportar = null;
       } else {
         const reportes = await traerReportes(x.que === 'materia' ? aniosDeLaMateria() : [estado.anio]);
@@ -1199,7 +1178,6 @@
       [`${nombreMateria()} · ${textoAnios(reportes.map((r) => r.anio))} — Contenidos que priorizan los docentes`],
       [`${textoAlcance()} · ${base} · Datos al ${fechaLarga(new Date())}`],
     ];
-    if (estado.ejemplo) filas.push(['DATOS DE EJEMPLO: inventados para mostrar cómo se ve. No son respuestas de docentes.']);
     filas.push(['El porcentaje es sobre los docentes que trabajan ese saber. En «Observaciones» se puede anotar si falta, sobra o hay que corregir algo.']);
     filas.push([]);
     const cabecera = (conAnio ? ['Año'] : []).concat(['Trimestre', 'Saber', 'Eje', 'Contenido priorizado', '% de docentes', 'Observaciones']);
@@ -1241,12 +1219,12 @@
     return libro;
   }
 
-  // Baja una vista entera de a páginas, avisando cuánto lleva
-  async function traerTodo(vista, columnas, orden, aviso, ejemplo) {
+  // Baja una vista entera de a páginas, avisando cuánto lleva. Solo envíos reales.
+  async function traerTodo(vista, columnas, orden, aviso) {
     const filas = [];
     let desde = 0;
     for (;;) {
-      let q = sb.from(vista).select(columnas.join(',')).eq('es_ejemplo', ejemplo);
+      let q = sb.from(vista).select(columnas.join(',')).eq('es_ejemplo', false);
       for (const o of orden) q = q.order(o);
       const { data, error } = await q.range(desde, desde + FILAS_POR_PAGINA - 1);
       if (error) throw new Error('La base de datos no respondió a mitad de la descarga. Volvé a intentar.');
@@ -1270,18 +1248,17 @@
   // dentro de Descargar resultados). Es para que el equipo vea qué docentes enviaron y de
   // qué escuelas falta respuesta; por eso trae nombres y no es para repartir.
   // Toda la provincia, todas las materias, sin mirar la selección del panel.
-  async function libroControl(conEjemplo) {
+  async function libroControl() {
     const X = window.XLSX;
-    const ejemplo = conEjemplo ? ['DATOS DE EJEMPLO: inventados para mostrar cómo se ve. No son respuestas de docentes.'] : [];
     const fecha = `Datos al ${fechaLarga(new Date())}. Trae nombre y apellido de cada docente: es para uso interno, no para repartir.`;
 
     const aportes = await traerTodo('v_aportes',
       ['aporte_id', 'enviado_en', 'docente_id', 'apellido', 'nombre', 'escuela_id', 'escuela', 'localidad', 'departamento', 'espacio', 'anio'],
-      ['aporte_id'], 'Trayendo los envíos', conEjemplo);
+      ['aporte_id'], 'Trayendo los envíos');
     // Se piden las columnas de orden solo para ordenar; en el archivo van las que lee una persona
     const respuestas = await traerTodo('v_relevamiento',
       ['aporte_id', 'enviado_en', 'departamento', 'escuela', 'localidad', 'apellido', 'nombre', 'espacio', 'anio', 'trimestre', 'eje', 'saber', 'saber_id', 'estado', 'tipo', 'contenido'],
-      ['aporte_id', 'saber_id', 'contenido_orden'], 'Trayendo el detalle de cada envío', conEjemplo);
+      ['aporte_id', 'saber_id', 'contenido_orden'], 'Trayendo el detalle de cada envío');
     if (estado.exportar) { estado.exportar.progreso = 'Armando el Excel…'; render(); }
 
     // Cuánto contestó cada envío
@@ -1340,15 +1317,15 @@
 
     const libro = X.utils.book_new();
     X.utils.book_append_sheet(libro, hojaConTitulo(X, 'Envíos — uso interno',
-      [`${numero(aportes.length)} ${plural(aportes.length, 'envío', 'envíos')} de ${numero(docentes)} ${plural(docentes, 'docente', 'docentes')}. Un envío por fila: quien cargó dos materias aparece dos veces.`, fecha, ...ejemplo],
+      [`${numero(aportes.length)} ${plural(aportes.length, 'envío', 'envíos')} de ${numero(docentes)} ${plural(docentes, 'docente', 'docentes')}. Un envío por fila: quien cargó dos materias aparece dos veces.`, fecha],
       ['Apellido', 'Nombre', 'Escuela', 'Localidad', 'Departamento', 'Materia', 'Año', 'Enviado', 'Saberes que trabaja', 'Saberes que no trabaja', 'Contenidos elegidos'],
       quien, [18, 18, 34, 20, 16, 30, 6, 18, 12, 12, 12]), 'Envíos');
     X.utils.book_append_sheet(libro, hojaConTitulo(X, 'Por escuela — uso interno',
-      [`${numero(oficiales.size)} escuelas de la nómina, en el orden oficial. ${numero(sinRespuesta)} ${plural(sinRespuesta, 'todavía no tiene', 'todavía no tienen')} ningún envío: son las que dicen «Sin envíos todavía».`, fecha, ...ejemplo],
+      [`${numero(oficiales.size)} escuelas de la nómina, en el orden oficial. ${numero(sinRespuesta)} ${plural(sinRespuesta, 'todavía no tiene', 'todavía no tienen')} ningún envío: son las que dicen «Sin envíos todavía».`, fecha],
       ['Departamento', 'Escuela', 'Localidad', 'Docentes que enviaron', 'Envíos', 'Materias cargadas', 'Estado'],
       escuelas, [16, 40, 22, 12, 9, 60, 24]), 'Por escuela');
     X.utils.book_append_sheet(libro, hojaConTitulo(X, 'Detalle de cada envío — uso interno',
-      ['Una fila por contenido elegido y por saber que el docente dijo que no trabaja.', fecha, ...ejemplo],
+      ['Una fila por contenido elegido y por saber que el docente dijo que no trabaja.', fecha],
       ['Enviado', 'Departamento', 'Escuela', 'Localidad', 'Apellido', 'Nombre', 'Materia', 'Año', 'Trimestre', 'Eje', 'Saber', 'Lo trabaja', 'Contenido', 'Origen del contenido'],
       que, [18, 16, 36, 20, 18, 18, 28, 5, 9, 40, 70, 10, 60, 22]), 'Detalle');
     return libro;
@@ -1442,7 +1419,6 @@
     }
     return `<div class="tablero">
       ${cabecera()}
-      ${bandaEjemplo()}
       ${selectores()}
       ${lineaContexto()}
       <div class="t-cuerpo">
@@ -1542,9 +1518,6 @@
       </div>
       <div class="espaciador"></div>
       <div class="t-selectores__acciones">
-        <button type="button" class="t-interruptor ${estado.ejemplo ? 't-interruptor--activo' : ''}" data-accion="alternar-ejemplo" aria-pressed="${estado.ejemplo}">
-          <span class="t-interruptor__pista"></span>Datos de ejemplo
-        </button>
         <button type="button" class="t-exportar" data-accion="abrir-control">${Icono.descargar}Descargar el Excel</button>
       </div>
     </div>`;
@@ -1998,7 +1971,6 @@
     }
     return `<div class="tablero">
       ${cabecera()}
-      ${bandaEjemplo()}
       ${barraSeguimiento()}
       ${contenido}
       ${panelExportar()}
@@ -2091,12 +2063,6 @@
       case 'salir': salir(); break;
       case 'reintentar-permiso': estado.pantalla = 'cargando'; render(); verificarSesion(); break;
       case 'reintentar': cargarDatos(); break;
-      case 'alternar-ejemplo':
-        estado.ejemplo = !estado.ejemplo;
-        if (estado.pantalla === 'seguimiento') { escribirHashSeguimiento(); cargarSeguimiento(); break; }
-        escribirHash();
-        cargarDatos();
-        break;
       case 'tour': Tour.iniciar(estado.modo === 'catalogo' ? 'catalogo' : 'resultados'); break;
       case 'ir-inicio': irAlInicio(); break;
       case 'ir-resultados': irAlPanel('resultados'); break;
@@ -2136,7 +2102,7 @@
         };
         render();
         break;
-      case 'abrir-control': estado.exportar = { que: 'control', ejemplo: estado.ejemplo, progreso: null, error: null, descargando: false }; render(); break;
+      case 'abrir-control': estado.exportar = { que: 'control', progreso: null, error: null, descargando: false }; render(); break;
       case 'cerrar-exportar': if (!(estado.exportar && estado.exportar.descargando)) { estado.exportar = null; render(); } break;
       case 'descargar': descargar(); break;
       default: break;
@@ -2174,7 +2140,6 @@
         break;
       case 'ex-que': if (estado.exportar) { estado.exportar.que = el.value; estado.exportar.error = null; render(); } break;
       case 'ex-formato': if (estado.exportar) { estado.exportar.formato = el.value; estado.exportar.error = null; render(); } break;
-      case 'ex-ejemplo': if (estado.exportar) { estado.exportar.ejemplo = el.checked; estado.exportar.error = null; render(); } break;
       case 'ex-vista': if (estado.exportar) { estado.exportar.vista = el.value; estado.exportar.error = null; render(); } break;
       default: break;
     }
