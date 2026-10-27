@@ -653,16 +653,22 @@ para llamarla). En las listas del seguimiento, el nombre de cada escuela abre un
   ella o se toca algo adentro queda **fija**, con una cruz, hasta cerrarla (cruz, Escape o tocar
   afuera). El clic en el nombre sigue llevando al detalle de la escuela.
 - **En el teléfono**, tocar el nombre la abre como una hoja desde abajo, y no navega.
-- Adentro: **Contacto** (nombre y cargo; el celular legible, con «Llamar» y «WhatsApp», que
-  llevan el +54 9; el correo), con **«+ Agregar un contacto»**, y en cada uno **«Corregir»** y
-  **«Quitar»** (que pregunta «¿Quitar a …?» ahí mismo). Debajo, **Cargas**: docentes, cargas,
-  último envío y las materias que cargó, con «Ver todas sus materias →».
+- Adentro: **Contacto** (nombre y cargo; el celular legible, que es el enlace para llamar, y
+  «WhatsApp» al lado, los dos con el +54 9; el correo). Las acciones no ocupan renglones
+  propios (la primera versión tenía dos botones con borde bajo cada contacto y uno grande al
+  final, y el equipo los vio raros y amontonados): **«+ Agregar»** es un enlace chico a la
+  derecha del rótulo, y cada contacto lleva a su costado un **lápiz** (corregir) y un **tacho**
+  (quitar), chicos y grises como los del editor del catálogo. Corregir pone en su lugar un
+  formulario compacto (los cuatro campos de a dos; en el teléfono, en columna) con «Guardar»
+  chico y «Cancelar» como enlace; quitar, una sola línea «¿Quitar a …? Quitar · No». Debajo,
+  **Cargas**: docentes, cargas, último envío y las materias que cargó, con «Ver todas sus
+  materias →».
 - Un **anexo** sin contacto propio muestra el de su sede («No tiene contacto propio. Depende de
   la E.P.E.S. N° 2»), sin botones para corregirlo desde ahí. La sede es la E.P.E.S. que lo
   precede en la nómina: coincide con la planilla de directivos en los 44 anexos que trae y con
   los 41 que nombran su E.P.E.S.
-- El **detalle de una escuela** tiene el mismo contacto en un bloque, y «Agregar, corregir o
-  quitar un contacto» abre la ficha fija: así se llega también con teclado.
+- El **detalle de una escuela** tiene el mismo contacto en un bloque, y «Editar contactos» abre
+  la ficha fija: así se llega también con teclado.
 
 Vive fuera de `#app`, como el recorrido, porque el panel se redibuja entero en cada acción.
 Fijarla no la redibuja (solo suma la cruz): si lo hiciera al tomar el foco, el botón que se

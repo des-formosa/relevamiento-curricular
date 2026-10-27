@@ -1642,7 +1642,7 @@
           <h2 class="t-seg-titulo">Contacto</h2>
           <div class="t-seg-contacto">
             ${contactosHTML(e.id, false)}
-            <button type="button" class="t-seg-enlace" data-accion="abrir-ficha" data-id="${esc(e.id)}">Agregar, corregir o quitar un contacto</button>
+            <button type="button" class="t-seg-enlace" data-accion="abrir-ficha" data-id="${esc(e.id)}">Editar contactos</button>
           </div>
         </section>
         <section class="t-seg-bloque">
@@ -1691,27 +1691,47 @@
   const celularInternacional = (d) => (d.length === 10 ? `54${d}` : d.replace(/^0+/, ''));
   const enlaceWhatsApp = (d) => `https://wa.me/${d.length === 10 ? `549${d}` : d.replace(/^0+/, '')}`;
 
-  // Los contactos de una escuela; con «editable», con los botones para
-  // corregir y quitar. Un anexo sin contacto propio muestra el de su sede.
+  // Íconos chicos y grises, como los del editor del catálogo: el contacto se
+  // lee primero y las acciones quedan a un costado, sin ocupar un renglón
+  const IconoFicha = {
+    corregir: svg('<path d="M4 20h4l10-10-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/>', { tam: 18, color: '#535D71', grosor: 2.2 }),
+    quitar: svg('<path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6 7l1 13h10l1-13"/>', { tam: 18, color: '#535D71', grosor: 2.2 }),
+  };
+
+  // Los contactos de una escuela; con «editable», con el lápiz y el tacho al
+  // costado de cada uno. Un anexo sin contacto propio muestra el de su sede.
   function contactosHTML(id, editable) {
     const todos = estado.seguimiento.contactos;
     if (!todos) return '<p class="t-ficha__nota">Los contactos de las escuelas todavía no están cargados en la base. Avisale a quien administra el sistema.</p>';
     const f = Ficha.estado;
     const uno = (c, propio) => {
       if (editable && propio && f.editando === c.id) return formularioContacto(c);
-      const confirma = editable && propio && f.quitando === c.id;
-      return `<div class="t-ficha__contacto">
-        <div class="t-ficha__nombre">${esc(c.nombre || 'Sin nombre')}${c.cargo ? ` <span>${esc(c.cargo)}</span>` : ''}</div>
-        ${c.celular ? `<div class="t-ficha__medio">${esc(celularLegible(c.celular))} · <a href="tel:+${esc(celularInternacional(c.celular))}">Llamar</a> · <a href="${esc(enlaceWhatsApp(c.celular))}" target="_blank" rel="noopener">WhatsApp</a></div>` : ''}
-        ${c.correo ? `<div class="t-ficha__medio"><a href="mailto:${esc(c.correo)}">${esc(c.correo)}</a></div>` : ''}
-        ${!c.celular && !c.correo ? '<div class="t-ficha__medio t-ficha__medio--falta">Sin celular ni correo</div>' : ''}
-        ${confirma ? `<div class="t-ficha__confirmar">¿Quitar a ${esc(c.nombre || 'este contacto')}? <button type="button" class="t-ficha__boton t-ficha__boton--fuerte" data-ficha-accion="quitar" data-id="${c.id}" ${f.guardando ? 'disabled' : ''}>Sí, quitar</button><button type="button" class="t-ficha__boton" data-ficha-accion="cancelar">No</button></div>`
-          : editable && propio ? `<div class="t-ficha__acciones"><button type="button" class="t-ficha__boton" data-ficha-accion="corregir" data-id="${c.id}">Corregir</button><button type="button" class="t-ficha__boton" data-ficha-accion="pedir-quitar" data-id="${c.id}">Quitar</button></div>` : ''}
+      const quien = esc(c.nombre || 'este contacto');
+      const acciones = !(editable && propio) ? ''
+        : f.quitando === c.id
+          ? `<div class="t-ficha__confirmar" role="group" aria-label="Confirmar">¿Quitar a ${quien}?
+              <button type="button" class="t-ficha__si" data-ficha-accion="quitar" data-id="${c.id}" ${f.guardando ? 'disabled' : ''}>Quitar</button>
+              <button type="button" class="t-ficha__enlace" data-ficha-accion="cancelar">No</button></div>`
+          : `<div class="t-ficha__iconos">
+              <button type="button" class="t-ficha__icono" data-ficha-accion="corregir" data-id="${c.id}" title="Corregir" aria-label="Corregir a ${quien}">${IconoFicha.corregir}</button>
+              <button type="button" class="t-ficha__icono" data-ficha-accion="pedir-quitar" data-id="${c.id}" title="Quitar" aria-label="Quitar a ${quien}">${IconoFicha.quitar}</button>
+            </div>`;
+      const medios = [
+        c.celular ? `<a href="tel:+${esc(celularInternacional(c.celular))}">${esc(celularLegible(c.celular))}</a> · <a href="${esc(enlaceWhatsApp(c.celular))}" target="_blank" rel="noopener">WhatsApp</a>` : '',
+        c.correo ? `<a href="mailto:${esc(c.correo)}">${esc(c.correo)}</a>` : '',
+      ].filter(Boolean);
+      return `<div class="t-ficha__contacto ${f.quitando === c.id && propio ? 't-ficha__contacto--quitando' : ''}">
+        <div class="t-ficha__contacto-cabeza">
+          <div class="t-ficha__nombre">${esc(c.nombre || 'Sin nombre')}${c.cargo ? ` <span>${esc(c.cargo)}</span>` : ''}</div>
+          ${f.quitando === c.id ? '' : acciones}
+        </div>
+        ${medios.length ? medios.map((m) => `<div class="t-ficha__medio">${m}</div>`).join('') : '<div class="t-ficha__medio t-ficha__medio--falta">Sin celular ni correo</div>'}
+        ${f.quitando === c.id ? acciones : ''}
       </div>`;
     };
     const propios = todos.get(id) || [];
     let html = propios.map((c) => uno(c, true)).join('');
-    if (!propios.length) {
+    if (!propios.length && f.editando !== 'nuevo') {
       const sede = sedeDe(id);
       const deLaSede = sede ? todos.get(sede.id) || [] : [];
       html = deLaSede.length
@@ -1719,25 +1739,34 @@
         : '<p class="t-ficha__nota">No tiene ningún contacto cargado.</p>';
     }
     if (editable) {
-      html += f.editando === 'nuevo' ? formularioContacto(null)
-        : f.editando == null ? '<button type="button" class="t-ficha__boton t-ficha__boton--agregar" data-ficha-accion="agregar">+ Agregar un contacto</button>' : '';
+      if (f.editando === 'nuevo') html += formularioContacto(null);
       if (f.error) html += `<p class="t-ficha__error" role="alert">${esc(f.error)}</p>`;
     }
     return html;
   }
 
+  // El rótulo «Contacto» con «+ Agregar» a la derecha, chico, en vez de un
+  // botón más al final de la lista
+  function rotuloContacto(editable) {
+    const f = Ficha.estado;
+    const agregar = editable && estado.seguimiento.contactos && f.editando == null && f.quitando == null
+      ? '<button type="button" class="t-ficha__enlace" data-ficha-accion="agregar">+ Agregar</button>' : '';
+    return `<div class="t-ficha__rotulo-linea"><h3 class="t-ficha__rotulo">Contacto</h3>${agregar}</div>`;
+  }
+
+  // Compacto: los cuatro campos de a dos (en el teléfono, uno debajo del otro);
+  // «Guardar» chico y «Cancelar» como enlace
   function formularioContacto(c) {
     const v = (k) => esc(c && c[k] ? (k === 'celular' ? celularLegible(c[k]) : c[k]) : '');
     const g = Ficha.estado.guardando;
-    return `<form class="t-ficha__form" data-ficha-form="${c ? c.id : 'nuevo'}" novalidate>
-      <div class="t-ficha__form-titulo">${c ? 'Corregir el contacto' : 'Nuevo contacto'}</div>
-      <label>Nombre y apellido<input name="nombre" type="text" value="${v('nombre')}" autocomplete="off"></label>
-      <label>Cargo <span>(opcional)</span><input name="cargo" type="text" value="${v('cargo')}" placeholder="Dirección, Secretaría…" autocomplete="off"></label>
-      <label>Celular<input name="celular" type="tel" inputmode="tel" value="${v('celular')}" placeholder="3704 123456" autocomplete="off"></label>
-      <label>Correo<input name="correo" type="email" inputmode="email" value="${v('correo')}" placeholder="nombre@gmail.com" autocomplete="off"></label>
-      <div class="t-ficha__acciones">
-        <button type="submit" class="t-ficha__boton t-ficha__boton--fuerte" ${g ? 'disabled' : ''}>${g ? 'Guardando…' : 'Guardar'}</button>
-        <button type="button" class="t-ficha__boton" data-ficha-accion="cancelar">Cancelar</button>
+    return `<form class="t-ficha__form" data-ficha-form="${c ? c.id : 'nuevo'}" novalidate aria-label="${c ? 'Corregir el contacto' : 'Nuevo contacto'}">
+      <label class="t-ficha__campo"><span>Nombre y apellido</span><input name="nombre" type="text" value="${v('nombre')}" autocomplete="off"></label>
+      <label class="t-ficha__campo"><span>Cargo <em>(opcional)</em></span><input name="cargo" type="text" value="${v('cargo')}" placeholder="Dirección…" autocomplete="off"></label>
+      <label class="t-ficha__campo"><span>Celular</span><input name="celular" type="tel" inputmode="tel" value="${v('celular')}" placeholder="3704 123456" autocomplete="off"></label>
+      <label class="t-ficha__campo"><span>Correo</span><input name="correo" type="email" inputmode="email" value="${v('correo')}" placeholder="nombre@gmail.com" autocomplete="off"></label>
+      <div class="t-ficha__form-acciones">
+        <button type="submit" class="t-ficha__si" ${g ? 'disabled' : ''}>${g ? 'Guardando…' : 'Guardar'}</button>
+        <button type="button" class="t-ficha__enlace" data-ficha-accion="cancelar">Cancelar</button>
       </div>
     </form>`;
   }
@@ -1785,7 +1814,7 @@
           ${f.fija ? `<button type="button" class="t-ficha__cerrar" data-ficha-accion="cerrar" aria-label="Cerrar">${Icono.cerrar}</button>` : ''}
         </div>
         <div class="t-ficha__cuerpo">
-          <section><h3 class="t-ficha__rotulo">Contacto</h3>${contactosHTML(e.id, true)}</section>
+          <section>${rotuloContacto(true)}${contactosHTML(e.id, true)}</section>
           <section><h3 class="t-ficha__rotulo">Cargas</h3>${cargasHTML(e)}
             ${enSuVista ? '' : `<button type="button" class="t-seg-enlace t-ficha__ir" data-ficha-accion="ir" data-id="${esc(e.id)}">Ver todas sus materias →</button>`}
           </section>
