@@ -937,6 +937,8 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
 @media (max-width: 400px) {
   .t-cabecera__nombre span:first-child { font-size: 11px; }
   .t-interruptor, .t-salir { font-size: 13.5px; }
+  /* Las cuatro solapas entran en un renglón desde 360 px; «Salir» baja al de abajo */
+  .t-cabecera .t-enlace-cab { padding: 0 4px; font-size: 14.5px; }
 }
 
 /* Pantalla baja (zoom grande, teléfono acostado): los botones de las ventanas
@@ -1680,17 +1682,6 @@ body.tour-abierto { overflow: hidden; }
 .t-inicio .eslogan { font-size: 19px; }
 .t-inicio__estado { font-family: var(--texto); font-size: 16.5px; color: var(--tinta-2); margin: 26px 0 0; }
 .t-inicio__estado strong { font-family: var(--ui); color: var(--t-tinta); }
-/* «Seguimiento de la carga»: al pie del inicio, chico y en gris. Es de uso
-   interno y el inicio se proyecta en reuniones: tiene que estar, no llamar la
-   atención */
-.t-inicio__pie { margin-top: 28px; }
-.t-enlace-discreto {
-  border: none; background: none; padding: 4px 0; cursor: pointer;
-  font-family: var(--texto); font-size: 14px; color: var(--t-gris);
-  text-decoration: underline; text-decoration-color: var(--t-borde); text-underline-offset: 3px;
-}
-.t-enlace-discreto:hover { color: var(--azul); text-decoration-color: currentColor; }
-.t-enlace-discreto:focus-visible { outline: 3px solid var(--azul); outline-offset: 2px; }
 .t-inicio__opciones { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 36px; }
 .t-inicio__opcion {
   display: flex; align-items: center; gap: 16px; text-align: left;
@@ -1729,8 +1720,8 @@ body.tour-abierto { overflow: hidden; }
   .t-inicio__opcion-titulo { font-size: 19px; }
 }
 
-/* Navegación de la cabecera: Inicio · Resultados · Catálogo, con el lugar
-   actual subrayado como una solapa */
+/* Navegación de la cabecera: Inicio · Resultados · Catálogo · Seguimiento,
+   con el lugar actual subrayado como una solapa */
 .t-nav { display: flex; align-items: center; gap: 2px; }
 .t-enlace-cab--actual { color: var(--t-tinta); text-decoration-color: var(--azul); text-decoration-thickness: 3px; text-underline-offset: 8px; }
 .t-nav__separador { width: 1px; height: 26px; background: var(--t-borde); margin: 0 6px; }
@@ -1739,6 +1730,8 @@ body.tour-abierto { overflow: hidden; }
 .ar-enlace { border: none; background: none; padding: 0; font: inherit; color: var(--azul); text-decoration: underline; cursor: pointer; }
 @media (max-width: 899px) {
   .t-nav__separador { display: none; }
+  /* Con cuatro solapas, en el teléfono más angosto pueden no entrar: que bajen */
+  .t-nav { flex-wrap: wrap; }
   .t-selectores .t-interruptor { justify-content: center; height: 52px; }
 }
 
@@ -1756,6 +1749,99 @@ body.tour-abierto { overflow: hidden; }
   .t-select--materia { width: 250px; }
   .t-select--anio { width: 130px; }
   .t-select--alcance { width: 270px; }
+}
+
+/* ============================================================================
+   Seguimiento de la carga (pantalla «Seguimiento»)
+
+   Cuántos docentes cargaron en cada escuela, para saber a cuáles llamar. Son
+   tablas y no tarjetas: es una lista para recorrer con el teléfono en la mano.
+   Las que todavía no cargaron se distinguen por lo que dicen, en negrita, no
+   por un color: el ladrillo y el ocre ya dicen otra cosa en el panel.
+   ============================================================================ */
+/* Centrado y con un ancho tope, como el editor: en una pantalla ancha, una
+   tabla de punta a punta deja los números lejos del nombre de la escuela */
+.t-seg-marco { flex-grow: 1; width: 100%; max-width: 1244px; margin: 0 auto; }
+.t-seg { display: flex; flex-direction: column; gap: 36px; }
+.t-seg-bloque { display: flex; flex-direction: column; gap: 10px; }
+.t-seg-titulo {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--azul);
+}
+.t-seg-titulo span { font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--t-gris-2); margin-left: 6px; }
+.t-seg-tabla { width: 100%; border-collapse: collapse; background: var(--blanco); border: 1px solid var(--t-borde); }
+.t-seg-tabla th, .t-seg-tabla td {
+  padding: 11px 16px;
+  border-top: 1px solid var(--linea);
+  text-align: left;
+  vertical-align: baseline;
+  font-size: 16.5px;
+  font-weight: 400;
+}
+.t-seg-tabla thead th {
+  border-top: none;
+  border-bottom: 1px solid var(--t-borde);
+  padding-top: 12px;
+  padding-bottom: 10px;
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--t-gris-2);
+}
+.t-seg-tabla tbody th { font-weight: 700; color: var(--t-tinta); }
+.t-seg-tabla .t-seg-num { width: 110px; text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.t-seg-tabla .t-seg-fecha { width: 140px; white-space: nowrap; color: var(--tinta-2); }
+.t-seg-localidad { color: var(--tinta-2); }
+.t-seg-tabla .t-seg-sin { font-weight: 700; color: var(--t-tinta); }
+.t-seg-extra { font-size: 14.5px; font-weight: 400; color: var(--t-gris-2); }
+.t-seg-vacia { margin: 0; font-family: var(--texto); font-size: 16px; color: var(--t-gris); }
+
+/* Por departamento: la barra es la parte de sus escuelas que ya cargó */
+.t-seg-tabla--deptos td, .t-seg-tabla--deptos tbody th { vertical-align: middle; }
+.t-seg-tabla--deptos .t-seg-avance { width: 52%; }
+.t-seg-de { width: 86px; flex-shrink: 0; text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.t-seg-enlace {
+  border: none; background: none; padding: 0; cursor: pointer;
+  font: inherit; font-weight: 700; color: var(--azul);
+  text-decoration: underline; text-decoration-color: var(--t-borde); text-underline-offset: 4px;
+}
+.t-seg-enlace:hover { text-decoration-color: currentColor; }
+.t-seg-enlace:focus-visible { outline: 3px solid var(--azul); outline-offset: 2px; }
+
+/* En el teléfono cada escuela es un renglón de texto: el nombre, la
+   localidad y debajo los números con su rótulo */
+@media (max-width: 899px) {
+  .t-seg { gap: 28px; }
+  .t-seg-tabla thead { display: none; }
+  .t-seg-tabla, .t-seg-tabla tbody { display: block; }
+  .t-seg-tabla tr {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 3px 16px;
+    padding: 12px 14px;
+    border-top: 1px solid var(--linea);
+  }
+  .t-seg-tabla tbody tr:first-child { border-top: none; }
+  .t-seg-tabla th, .t-seg-tabla td { display: block; padding: 0; border: none; font-size: 16px; }
+  .t-seg-tabla tbody th, .t-seg-localidad { flex-basis: 100%; }
+  .t-seg-tabla .t-seg-num, .t-seg-tabla .t-seg-fecha { width: auto; text-align: left; }
+  .t-seg-tabla td[data-etiqueta]::before {
+    content: attr(data-etiqueta);
+    margin-right: 6px;
+    font-family: var(--ui);
+    font-size: 11.5px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--t-gris-2);
+  }
+  .t-seg-tabla--deptos .t-seg-avance { flex-basis: 100%; width: auto; margin: 4px 0 2px; }
 }
 
 /* ============================================================================

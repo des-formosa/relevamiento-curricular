@@ -69,9 +69,13 @@
      ====================================================================== */
 
   const estado = {
-    pantalla: 'cargando',     // cargando | ingreso | sin-permiso | inicio | panel
+    pantalla: 'cargando',     // cargando | ingreso | sin-permiso | inicio | panel | seguimiento
     nombre: null,             // el de equipo_planificacion, para saludar
     inicio: null,             // { cargas } para la pantalla de inicio
+    // Seguimiento de la carga: cuántos docentes cargaron en cada escuela, de
+    // todas las materias. departamento_id null = toda la provincia;
+    // solo = 'todas' | 'faltan' (las escuelas que todavía no cargaron)
+    seguimiento: { departamento_id: null, solo: 'todas', datos: null, cargando: false, error: null },
     usuario: null,
     espacio_id: null,
     anio: 1,
@@ -112,6 +116,14 @@
     if (estado.alcance.tipo === 'departamento') h.set('departamento', estado.alcance.id);
     if (estado.alcance.tipo === 'escuela') h.set('escuela', estado.alcance.id);
     if (estado.vista === 'mapa') h.set('vista', 'mapa');
+    if (estado.ejemplo) h.set('ejemplo', '1');
+    history.replaceState(null, '', '#' + h.toString());
+  }
+  // El seguimiento tiene su propio hash («#seguimiento=pirane»), así se puede
+  // dejar marcado y recargar sin volver al inicio
+  function escribirHashSeguimiento() {
+    const h = new URLSearchParams();
+    h.set('seguimiento', estado.seguimiento.departamento_id || '');
     if (estado.ejemplo) h.set('ejemplo', '1');
     history.replaceState(null, '', '#' + h.toString());
   }
@@ -166,6 +178,115 @@
     estado.escuelasAgregadas = data || [];
   }
 
+  /* ---------- Seguimiento de la carga ---------- */
+
+  // Los envíos, con lo justo para contar: escuela, docente, materia y fecha.
+  // Sin nombres de docentes. La primera página dice cuántos son y las demás
+  // se piden juntas; se pagina con la medida que devuelva la base, por si
+  // entrega menos filas que las pedidas.
+  async function traerEnvios(ejemplo) {
+    const pagina = (desde, hasta, conteo) => sb.from('aportes')
+      .select('escuela_id, docente_id, espacio_id, enviado_en', conteo ? { count: 'exact' } : {})
+      .eq('es_ejemplo', ejemplo).order('id').range(desde, hasta);
+    const fallo = 'No pudimos traer las cargas. Revisá la conexión y volvé a intentar.';
+    const primera = await pagina(0, FILAS_POR_PAGINA - 1, true);
+    if (primera.error) throw new Error(fallo);
+    const filas = primera.data || [];
+    const total = typeof primera.count === 'number' ? primera.count : filas.length;
+    const paso = filas.length;
+    const pedidos = [];
+    for (let desde = paso; paso && desde < total; desde += paso) pedidos.push(pagina(desde, desde + paso - 1, false));
+    for (const r of await Promise.all(pedidos)) {
+      if (r.error) throw new Error(fallo);
+      filas.push(...r.data);
+    }
+    return filas;
+  }
+
+  // Cuenta por escuela y por departamento. Las escuelas son las de la nómina,
+  // en el orden oficial; las que no tienen envíos son las que faltan. Las que
+  // agregaron los docentes (o una que salió de la nómina) van al final de su
+  // departamento y no cuentan entre las que faltan.
+  async function contarSeguimiento(envios) {
+    const porEscuela = new Map();
+    for (const a of envios) {
+      let e = porEscuela.get(a.escuela_id);
+      if (!e) porEscuela.set(a.escuela_id, (e = { docentes: new Set(), materias: new Set(), ultimo: 0 }));
+      e.docentes.add(a.docente_id);
+      e.materias.add(a.espacio_id);
+      e.ultimo = Math.max(e.ultimo, Date.parse(a.enviado_en) || 0);
+    }
+    const fila = (escuela, extra) => {
+      const e = porEscuela.get(escuela.id);
+      return { id: escuela.id, nombre: escuela.nombre, localidad: escuela.localidad || '', extra,
+        docentes: e ? e.docentes.size : 0, materias: e ? e.materias.size : 0, ultimo: e ? e.ultimo : 0, idsDocentes: e ? e.docentes : null };
+    };
+
+    const grupos = Catalogo.departamentos().map((d) => ({
+      id: d.id, nombre: d.nombre,
+      escuelas: ((Catalogo.buscarEscuelas('', d.id).grupos[0] || {}).escuelas || []).map((es) => fila(es, null)),
+      extras: [],
+    }));
+    const porDepartamento = new Map(grupos.map((g) => [g.id, g]));
+
+    // Las que no están en la nómina: primero las que el panel ya conoce, y las
+    // que no (agregadas después de entrar, o que salieron), se piden a la base
+    const nomina = new Set(grupos.flatMap((g) => g.escuelas.map((e) => e.id)));
+    const conocidas = new Map(estado.escuelasAgregadas.map((e) => [e.id, Object.assign({ origen: 'agregada_por_docente' }, e)]));
+    const faltanDatos = [...porEscuela.keys()].filter((id) => !nomina.has(id) && !conocidas.has(id));
+    if (faltanDatos.length) {
+      const { data } = await sb.from('escuelas').select('id, nombre, localidad, departamento_id, origen').in('id', faltanDatos);
+      for (const e of data || []) conocidas.set(e.id, e);
+    }
+    for (const id of porEscuela.keys()) {
+      if (nomina.has(id)) continue;
+      const e = conocidas.get(id) || { id, nombre: id, localidad: '', departamento_id: null, origen: null };
+      let g = porDepartamento.get(e.departamento_id);
+      if (!g) {
+        g = porDepartamento.get('') || { id: '', nombre: 'Sin departamento', escuelas: [], extras: [] };
+        if (!porDepartamento.has('')) { porDepartamento.set('', g); grupos.push(g); }
+      }
+      g.extras.push(fila(e, e.origen === 'agregada_por_docente' ? 'la agregó un docente' : 'ya no está en la nómina'));
+    }
+
+    for (const g of grupos) {
+      g.extras.sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
+      g.total = g.escuelas.length;
+      g.cargaron = g.escuelas.filter((e) => e.docentes > 0).length;
+      g.faltan = g.total - g.cargaron;
+      const docentes = new Set();
+      for (const e of g.escuelas.concat(g.extras)) if (e.idsDocentes) e.idsDocentes.forEach((id) => docentes.add(id));
+      g.docentes = docentes.size;
+    }
+    const suma = (k) => grupos.reduce((n, g) => n + g[k], 0);
+    return {
+      grupos,
+      provincia: { total: suma('total'), cargaron: suma('cargaron'), faltan: suma('faltan'),
+        docentes: new Set(envios.map((a) => a.docente_id)).size },
+    };
+  }
+
+  async function cargarSeguimiento() {
+    const s = estado.seguimiento;
+    const ejemplo = estado.ejemplo;
+    s.cargando = true;
+    s.error = null;
+    render();
+    let datos = null;
+    let error = null;
+    try {
+      datos = await contarSeguimiento(await traerEnvios(ejemplo));
+    } catch (e) {
+      error = (e && e.message) || 'No pudimos traer las cargas. Volvé a intentar.';
+    }
+    // Si mientras tanto se cambió a los datos de ejemplo (o al revés), manda el último pedido
+    if (estado.ejemplo !== ejemplo) return;
+    s.cargando = false;
+    s.datos = datos;
+    s.error = error;
+    if (estado.pantalla === 'seguimiento') render();
+  }
+
   /* ======================================================================
      Sesión
      ====================================================================== */
@@ -185,7 +306,9 @@
     await cargarEscuelasAgregadas();
     // Un link compartido (con la selección en el hash) va directo a lo que
     // muestra; entrar al panel a secas, al inicio
-    if (/(^|[#&])materia=/.test(window.location.hash)) { irAlPanel('resultados'); return; }
+    const hash = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+    if (hash.has('seguimiento')) { irAlSeguimiento(hash.get('seguimiento')); return; }
+    if (hash.has('materia')) { irAlPanel('resultados'); return; }
     irAlInicio();
   }
 
@@ -216,6 +339,19 @@
     cargarDatos();
   }
 
+  // Las cargas se cuentan de nuevo cada vez que se entra: así está al día
+  function irAlSeguimiento(departamentoId) {
+    estado.pantalla = 'seguimiento';
+    estado.modo = 'resultados';
+    estado.exportar = null;
+    Editor.limpiar();
+    if (departamentoId !== undefined) estado.seguimiento.departamento_id = Catalogo.departamento(departamentoId) ? departamentoId : null;
+    escribirHashSeguimiento();
+    render();
+    window.scrollTo(0, 0);
+    cargarSeguimiento();
+  }
+
   async function ingresar(email, clave) {
     estado.ingreso.enviando = true;
     estado.ingreso.error = null;
@@ -243,6 +379,7 @@
     // mano: el que entra después tiene que ver los resultados, no el editor
     estado.modo = 'resultados';
     Editor.limpiar();
+    estado.seguimiento = { departamento_id: null, solo: 'todas', datos: null, cargando: false, error: null };
     history.replaceState(null, '', window.location.pathname + window.location.search);
     estado.pantalla = 'ingreso';
     render();
@@ -279,7 +416,7 @@
       </div>
       <div class="t-cabecera__derecha">
         <div class="t-cabecera__fecha">Datos al ${esc(fechaLarga(new Date()))}</div>
-        ${['inicio', 'panel'].includes(estado.pantalla) ? navegacion() : ''}
+        ${['inicio', 'panel', 'seguimiento'].includes(estado.pantalla) ? navegacion() : ''}
       </div>
     </header>`;
   }
@@ -305,17 +442,18 @@
       <img class="resap-chico__palabra" src="${RUTA_RESAP_PALABRA}" alt="ReSaP">
     </span>`;
 
-  // La cabecera solo lleva por dónde moverse: Inicio, Resultados y Catálogo,
-  // con el lugar actual marcado, y la ayuda y la salida. Las acciones de cada
-  // pantalla van en su propia barra, al lado de lo que afectan.
+  // La cabecera solo lleva por dónde moverse: Inicio, Resultados, Catálogo y
+  // Seguimiento, con el lugar actual marcado, y la ayuda y la salida. Las
+  // acciones de cada pantalla van en su propia barra, al lado de lo que afectan.
   function navegacion() {
-    const actual = estado.pantalla === 'inicio' ? 'inicio' : estado.modo === 'catalogo' ? 'catalogo' : 'resultados';
+    const actual = ['inicio', 'seguimiento'].includes(estado.pantalla) ? estado.pantalla : estado.modo === 'catalogo' ? 'catalogo' : 'resultados';
     const enlace = (id, accion, texto) =>
       `<button type="button" class="t-enlace-cab ${actual === id ? 't-enlace-cab--actual' : ''}" data-accion="${accion}" ${actual === id ? 'aria-current="page"' : ''}>${texto}</button>`;
     return `<nav class="t-nav" aria-label="Secciones">
         ${enlace('inicio', 'ir-inicio', 'Inicio')}
         ${enlace('resultados', 'ir-resultados', 'Resultados')}
         ${enlace('catalogo', 'ir-catalogo', 'Catálogo')}
+        ${enlace('seguimiento', 'ir-seguimiento', 'Seguimiento')}
       </nav>
       <span class="t-nav__separador" aria-hidden="true"></span>
       ${estado.pantalla === 'panel' ? '<button type="button" class="t-enlace-cab t-ayuda" data-accion="tour" title="Ver cómo se usa esta pantalla">¿Cómo se usa?</button>' : ''}
@@ -803,9 +941,8 @@
     </div>`;
   }
 
-  // Seguimiento de la carga (uso interno). Se abre desde un enlace discreto al
-  // pie del inicio: no es un resultado y el inicio se proyecta en reuniones, así
-  // que no se ofrece a la vista. Toda la provincia y todas las materias.
+  // El Excel del seguimiento de la carga (uso interno, trae nombres). Se abre
+  // desde la pantalla de Seguimiento. Toda la provincia y todas las materias.
   function panelControl(x) {
     return `<div class="t-velo" data-accion="cerrar-exportar"></div>
     <div class="t-panel" role="dialog" aria-modal="true" aria-labelledby="control-titulo">
@@ -1327,11 +1464,140 @@
               'Editar el catálogo',
               'Los saberes y contenidos que ven los docentes.')}
           </div>
-          <div class="t-inicio__pie">
-            <button type="button" class="t-enlace-discreto" data-accion="abrir-control">Seguimiento de la carga</button>
-          </div>
         </div>
       </main>
+    </div>`;
+  }
+
+  /* ---------- Seguimiento de la carga ---------- */
+
+  // Cuántos docentes cargaron en cada escuela, de todas las materias, para ver
+  // a qué escuelas hay que llamar antes del cierre. No muestra nombres de
+  // docentes: eso queda en el Excel de uso interno, que se baja desde acá.
+
+  // El último envío de una escuela: «hoy», «ayer» o «12 oct»
+  function cuandoFue(ms) {
+    if (!ms) return '';
+    const d = new Date(ms);
+    const h = new Date();
+    const dias = Math.round((new Date(h.getFullYear(), h.getMonth(), h.getDate()) - new Date(d.getFullYear(), d.getMonth(), d.getDate())) / 86400000);
+    if (dias === 0) return 'hoy';
+    if (dias === 1) return 'ayer';
+    return d.toLocaleDateString('es-AR', { day: 'numeric', month: 'short' });
+  }
+
+  function barraSeguimiento() {
+    const s = estado.seguimiento;
+    const opciones = [`<option value="" ${s.departamento_id ? '' : 'selected'}>Toda la provincia</option>`]
+      .concat(Catalogo.departamentos().map((d) =>
+        `<option value="${esc(d.id)}" ${s.departamento_id === d.id ? 'selected' : ''}>Departamento ${esc(d.nombre)}</option>`)).join('');
+    return `<div class="t-selectores">
+      <div class="t-selector">
+        <label class="t-selector__etiqueta" for="s-seg-departamento">Alcance</label>
+        <select class="t-select t-select--alcance" id="s-seg-departamento" data-cambio="seg-departamento">${opciones}</select>
+      </div>
+      <div class="espaciador"></div>
+      <div class="t-selectores__acciones">
+        <button type="button" class="t-interruptor ${estado.ejemplo ? 't-interruptor--activo' : ''}" data-accion="alternar-ejemplo" aria-pressed="${estado.ejemplo}">
+          <span class="t-interruptor__pista"></span>Datos de ejemplo
+        </button>
+        <button type="button" class="t-exportar" data-accion="abrir-control">${Icono.descargar}Descargar el Excel</button>
+      </div>
+    </div>`;
+  }
+
+  // «Cargaron 1.234 docentes de 180 de las 288 escuelas. Faltan 108.»
+  function contextoSeguimiento(d, g) {
+    const s = estado.seguimiento;
+    const c = g || d.provincia;
+    let texto;
+    if (!c.docentes) {
+      texto = g ? `Todavía no cargó ningún docente del departamento ${esc(g.nombre)}.` : 'Todavía no cargó ningún docente.';
+    } else {
+      texto = `${g ? `En el departamento ${esc(g.nombre)} cargaron` : 'Cargaron'} <strong>${numero(c.docentes)} ${plural(c.docentes, 'docente', 'docentes')}</strong> de <strong>${numero(c.cargaron)} ${g ? 'de sus' : 'de las'} ${numero(c.total)} escuelas</strong>. `
+        + (c.faltan ? `Faltan <strong>${numero(c.faltan)}</strong>.` : 'Ya cargaron todas.');
+    }
+    const solapa = (valor, titulo) =>
+      `<button type="button" class="t-vista ${s.solo === valor ? 't-vista--activa' : ''}" data-accion="seg-solo" data-solo="${valor}" aria-pressed="${s.solo === valor}">${titulo}</button>`;
+    return `<div class="t-contexto">
+      <div class="t-contexto__texto">${texto}</div>
+      <div class="t-vistas">
+        ${solapa('todas', 'Todas las escuelas')}
+        ${solapa('faltan', `Las que no cargaron (${numero(c.faltan)})`)}
+      </div>
+    </div>`;
+  }
+
+  // Un renglón por departamento, en el orden de la nómina: la barra es la
+  // parte de sus escuelas que ya cargó
+  function tablaDepartamentos(d) {
+    const filas = d.grupos.filter((g) => g.total).map((g) => `
+        <tr>
+          <th scope="row"><button type="button" class="t-seg-enlace" data-accion="seg-departamento" data-id="${esc(g.id)}">${esc(g.nombre)}</button></th>
+          <td class="t-seg-avance">
+            <div class="t-fila__barra"><div class="t-pista"><div class="t-barra" style="width:${Math.round(100 * g.cargaron / g.total)}%"></div></div><span class="t-seg-de">${numero(g.cargaron)} de ${numero(g.total)}</span></div>
+          </td>
+          <td class="t-seg-num" data-etiqueta="Docentes">${numero(g.docentes)}</td>
+          <td class="t-seg-num" data-etiqueta="Faltan">${g.faltan ? `<strong>${numero(g.faltan)}</strong>` : '—'}</td>
+        </tr>`).join('');
+    return `<section class="t-seg-bloque">
+      <h2 class="t-seg-titulo">Por departamento</h2>
+      <table class="t-seg-tabla t-seg-tabla--deptos">
+        <thead><tr><th scope="col">Departamento</th><th scope="col">Escuelas que cargaron</th><th scope="col" class="t-seg-num">Docentes</th><th scope="col" class="t-seg-num">Faltan</th></tr></thead>
+        <tbody>${filas}</tbody>
+      </table>
+    </section>`;
+  }
+
+  function tablaEscuelas(g) {
+    const faltan = estado.seguimiento.solo === 'faltan';
+    const lista = faltan ? g.escuelas.filter((e) => !e.docentes) : g.escuelas.concat(g.extras);
+    const resumen = g.total ? `cargaron ${numero(g.cargaron)} de ${numero(g.total)} escuelas${g.faltan ? ` · faltan ${numero(g.faltan)}` : ''}` : '';
+    const filas = lista.map((e) => `
+        <tr class="${e.docentes ? '' : 't-seg-fila--falta'}">
+          <th scope="row" class="t-seg-escuela">${esc(e.nombre)}${e.extra ? ` <span class="t-seg-extra">(${esc(e.extra)})</span>` : ''}</th>
+          <td class="t-seg-localidad">${esc(e.localidad)}</td>
+          ${e.docentes
+            ? `<td class="t-seg-num" data-etiqueta="Docentes">${numero(e.docentes)}</td>
+          <td class="t-seg-num" data-etiqueta="Materias">${numero(e.materias)}</td>
+          <td class="t-seg-fecha" data-etiqueta="Último envío">${esc(cuandoFue(e.ultimo))}</td>`
+            : '<td class="t-seg-sin" colspan="3">Sin cargas todavía</td>'}
+        </tr>`).join('');
+    return `<section class="t-seg-bloque">
+      <h2 class="t-seg-titulo">${g.id ? `Departamento ${esc(g.nombre)}` : esc(g.nombre)}${resumen ? ` <span>${resumen}</span>` : ''}</h2>
+      ${lista.length ? `
+      <table class="t-seg-tabla">
+        <thead><tr><th scope="col">Escuela</th><th scope="col">Localidad</th><th scope="col" class="t-seg-num">Docentes</th><th scope="col" class="t-seg-num">Materias</th><th scope="col" class="t-seg-fecha">Último envío</th></tr></thead>
+        <tbody>${filas}</tbody>
+      </table>` : '<p class="t-seg-vacia">Ya cargaron todas las escuelas del departamento.</p>'}
+    </section>`;
+  }
+
+  function pantallaSeguimiento() {
+    const s = estado.seguimiento;
+    let contenido = '';
+    if (s.cargando) {
+      contenido = '<div class="t-cuerpo"><div class="t-estado"><div class="t-estado__texto">Contando las cargas de cada escuela…</div></div></div>';
+    } else if (s.error) {
+      contenido = `<div class="t-cuerpo"><div class="t-estado"><div class="t-estado__titulo">No pudimos contar las cargas</div><div class="t-estado__texto">${esc(s.error)}</div><button type="button" class="boton boton--primario boton--66" data-accion="seg-reintentar">Volver a intentar</button></div></div>`;
+    } else if (s.datos) {
+      const d = s.datos;
+      const g = s.departamento_id ? d.grupos.find((x) => x.id === s.departamento_id) : null;
+      // El grupo «Sin departamento» (por si una escuela llega sin él) solo tiene agregadas
+      const grupos = (g ? [g] : d.grupos).filter((x) => x.total || (x.extras.length && s.solo !== 'faltan'));
+      contenido = `<div class="t-seg-marco">
+        ${contextoSeguimiento(d, g)}
+        <div class="t-cuerpo t-seg">
+          ${g ? '' : tablaDepartamentos(d)}
+          ${grupos.map(tablaEscuelas).join('')}
+        </div>
+      </div>`;
+    }
+    return `<div class="tablero">
+      ${cabecera()}
+      ${bandaEjemplo()}
+      ${barraSeguimiento()}
+      ${contenido}
       ${panelExportar()}
     </div>`;
   }
@@ -1343,7 +1609,7 @@
   // Movimiento: el panel se redibuja entero en cada acción, así que cada
   // animación corre solo si hay algo nuevo: otra sección, otros datos u otra
   // vista, un panel que recién se abre. Con «reducir movimiento», nada (CSS).
-  const previo = { seccion: null, datos: null, vista: null, editor: null };
+  const previo = { seccion: null, datos: null, vista: null, editor: null, seguimiento: null };
 
   function animarLoNuevo(habiaPanel) {
     const seccion = estado.pantalla + '|' + estado.modo;
@@ -1372,12 +1638,24 @@
       }
     }
     if (estado.modo !== 'catalogo') previo.editor = null;
+    // En el seguimiento, al llegar las cuentas y al cambiar de departamento o
+    // de solapa; abrir la ventana del Excel no hace parpadear la lista
+    const seg = estado.seguimiento;
+    const vistaSeg = estado.pantalla === 'seguimiento' && seg.datos ? [seg.datos, seg.departamento_id, seg.solo] : null;
+    if (vistaSeg && !(previo.seguimiento && vistaSeg.every((v, i) => v === previo.seguimiento[i]))) {
+      const cuerpo = app.querySelector('.t-seg');
+      if (cuerpo) {
+        cuerpo.classList.add('t-entra');
+        app.querySelectorAll('.t-barra').forEach((b) => b.classList.add('t-barra--crece'));
+      }
+    }
+    previo.seguimiento = vistaSeg;
     if (!habiaPanel) app.querySelectorAll('.t-panel, .t-velo').forEach((el) => el.classList.add('t-panel--entra'));
     previo.seccion = seccion;
   }
 
   function render() {
-    const fn = { ingreso: pantallaIngreso, 'sin-permiso': pantallaSinPermiso, inicio: pantallaInicio, panel: pantallaPanel }[estado.pantalla] || pantallaCargando;
+    const fn = { ingreso: pantallaIngreso, 'sin-permiso': pantallaSinPermiso, inicio: pantallaInicio, panel: pantallaPanel, seguimiento: pantallaSeguimiento }[estado.pantalla] || pantallaCargando;
     const habiaPanel = !!app.querySelector('.t-panel');
     app.innerHTML = fn();
     animarLoNuevo(habiaPanel);
@@ -1401,11 +1679,25 @@
       case 'salir': salir(); break;
       case 'reintentar-permiso': estado.pantalla = 'cargando'; render(); verificarSesion(); break;
       case 'reintentar': cargarDatos(); break;
-      case 'alternar-ejemplo': estado.ejemplo = !estado.ejemplo; escribirHash(); cargarDatos(); break;
+      case 'alternar-ejemplo':
+        estado.ejemplo = !estado.ejemplo;
+        if (estado.pantalla === 'seguimiento') { escribirHashSeguimiento(); cargarSeguimiento(); break; }
+        escribirHash();
+        cargarDatos();
+        break;
       case 'tour': Tour.iniciar(estado.modo === 'catalogo' ? 'catalogo' : 'resultados'); break;
       case 'ir-inicio': irAlInicio(); break;
       case 'ir-resultados': irAlPanel('resultados'); break;
       case 'ir-catalogo': irAlPanel('catalogo'); break;
+      case 'ir-seguimiento': irAlSeguimiento(); break;
+      case 'seg-reintentar': cargarSeguimiento(); break;
+      case 'seg-solo': if (estado.seguimiento.solo !== d.solo) { estado.seguimiento.solo = d.solo; render(); } break;
+      case 'seg-departamento':
+        estado.seguimiento.departamento_id = d.id;
+        escribirHashSeguimiento();
+        render();
+        window.scrollTo(0, 0);
+        break;
       case 'alternar-modo':
         estado.modo = estado.modo === 'catalogo' ? 'resultados' : 'catalogo';
         Editor.limpiar();
@@ -1457,6 +1749,11 @@
         cargarDatos();
         break;
       }
+      case 'seg-departamento':
+        estado.seguimiento.departamento_id = el.value || null;
+        escribirHashSeguimiento();
+        render();
+        break;
       case 'ex-que': if (estado.exportar) { estado.exportar.que = el.value; estado.exportar.error = null; render(); } break;
       case 'ex-formato': if (estado.exportar) { estado.exportar.formato = el.value; estado.exportar.error = null; render(); } break;
       case 'ex-ejemplo': if (estado.exportar) { estado.exportar.ejemplo = el.checked; estado.exportar.error = null; render(); } break;
