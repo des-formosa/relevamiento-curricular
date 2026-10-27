@@ -80,7 +80,8 @@ fijada, nunca por bundler.
 │   ├── contenidos_672_originales.json   los recortes que traía la transcripción
 │   ├── Nomina de Escuelas por Departamentos.xlsx   nómina oficial, la fuente
 │   ├── generar_escuelas.py  el .xlsx → escuelas.json
-│   └── escuelas.json       288 unidades educativas, 9 departamentos
+│   ├── escuelas.json       288 unidades educativas, 9 departamentos
+│   └── generar_contactos.py  planillas de directivos → SQL de contactos (fuera de git)
 └── sql/                    se corren en orden en el SQL Editor; todos se pueden re-ejecutar
     ├── 01_esquema.sql      tablas e índices
     ├── 02_rls.sql          RLS, permisos, es_equipo()
@@ -94,6 +95,8 @@ fijada, nunca por bundler.
     ├── 10_publicar_catalogo.sql  bucket `catalogo`, registro de publicaciones
     ├── 11_importar_catalogo.sql  exportar a filas e importar correcciones por id
     ├── 12_reemplazar_materia.sql  subir la planilla de una materia y reemplazarla
+    ├── 13_contactos_escuelas.sql  contactos de cada escuela, solo para el equipo
+    ├── privado/            lo que genera generar_contactos.py: datos personales, no se versiona
     ├── mantenimiento/      scripts de una sola vez, con fecha; no forman parte de la instalación
     └── generar_cargas.py   regenera 06, 07 y 08 cuando cambian los JSON
 ```
@@ -643,6 +646,44 @@ piden a `escuelas`. Se vuelve a contar cada vez que se entra a la pantalla. La s
 en el hash (`#seguimiento=pirane` o `#seguimiento=epes-2`: los id de departamentos y escuelas
 no se repiten entre sí), así se puede dejar marcada.
 
+**La ficha de la escuela** (27/10/2026, pedido del equipo: ver el contacto de cada escuela
+para llamarla). En las listas del seguimiento, el nombre de cada escuela abre una ficha:
+
+- **Con el mouse**, al pasar por el nombre, después de un instante (si no, recorrer la lista
+  abriría una por fila; con una ya abierta, cambia enseguida). Se va al salir. Si se entra a
+  ella o se toca algo adentro queda **fija**, con una cruz, hasta cerrarla (cruz, Escape o tocar
+  afuera). El clic en el nombre sigue llevando al detalle de la escuela.
+- **En el teléfono**, tocar el nombre la abre como una hoja desde abajo, y no navega.
+- Adentro: **Contacto** (nombre y cargo; el celular legible, con «Llamar» y «WhatsApp», que
+  llevan el +54 9; el correo), con **«+ Agregar un contacto»**, y en cada uno **«Corregir»** y
+  **«Quitar»** (que pregunta «¿Quitar a …?» ahí mismo). Debajo, **Cargas**: docentes, cargas,
+  último envío y las materias que cargó, con «Ver todas sus materias →».
+- Un **anexo** sin contacto propio muestra el de su sede («No tiene contacto propio. Depende de
+  la E.P.E.S. N° 2»), sin botones para corregirlo desde ahí. La sede es la E.P.E.S. que lo
+  precede en la nómina: coincide con la planilla de directivos en los 44 anexos que trae y con
+  los 41 que nombran su E.P.E.S.
+- El **detalle de una escuela** tiene el mismo contacto en un bloque, y «Agregar, corregir o
+  quitar un contacto» abre la ficha fija: así se llega también con teclado.
+
+Vive fuera de `#app`, como el recorrido, porque el panel se redibuja entero en cada acción.
+Fijarla no la redibuja (solo suma la cruz): si lo hiciera al tomar el foco, el botón que se
+estaba tocando desaparecía antes del clic.
+
+**Los contactos son datos personales y el repositorio es público.** Viven solo en Supabase, en
+`contactos_escuela` (`sql/13_contactos_escuelas.sql`): la lee el equipo y nadie más, y se
+escribe solo con `guardar_contacto()` y `quitar_contacto()`, que validan (al menos celular o
+correo; celular de 6 a 15 números, guardado sin espacios; correo con @ y punto) y devuelven el
+error en palabras del equipo. La carga inicial sale de las planillas de directivos del
+Ministerio (interior y capital, 06/08): `python datos/generar_contactos.py <planillas.xlsx>`
+(`--revisar` informa sin escribir) arma `sql/privado/14_cargar_contactos.sql`, que se corre una
+vez en el SQL Editor. Ni las planillas ni ese SQL entran a git (`.gitignore`). Las planillas
+no traen correos: solo director, situación de revista y celular. Dan 107 contactos (101 con
+celular); quedan sin contacto las 6 agrarias, la 20, la 49, la 103 y un anexo de la E.I.B. 3,
+que se agregan desde la ficha. Volver a correr el SQL reemplaza lo que vino de la planilla,
+salvo en las escuelas donde el equipo ya agregó o corrigió algo: ahí manda lo del equipo.
+Mientras la tabla no exista, el seguimiento anda igual y la ficha dice que los contactos
+todavía no están cargados.
+
 No tiene recorrido guiado: si algo necesitara explicación, estaría mal.
 
 ### Editar el catálogo (assets/editor.js + sql/09_edicion_catalogo.sql)
@@ -1084,7 +1125,23 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
   «Solo las que no cargaron», sin columnas de números: probado que muestra exactamente las que
   faltan, un bloque por departamento con alguna, y que se recuerda al recargar
 
+- **La ficha de la escuela** (27/10/2026): contacto y cargas al pasar por el nombre (o al
+  tocarlo en el teléfono), con agregar, corregir y quitar contactos. `sql/13` probado contra
+  PostgreSQL 16: se puede repetir; el equipo lee y escribe por las funciones, un usuario que no
+  es del equipo no ve nada ni puede escribir, `anon` no lee ni ejecuta, el insert directo se
+  rechaza; las validaciones devuelven su mensaje; la carga de las planillas da 107 contactos y
+  repetirla no duplica ni pisa lo corregido. En Chromium con un Supabase simulado: no se abre al
+  instante, al salir se cierra, fija con un clic adentro, agregar con un correo incompleto lo
+  avisa, agregar, corregir (trae lo que tenía) y quitar con confirmación, Escape y tocar afuera
+  la cierran, el anexo muestra a su sede, el detalle de la escuela muestra lo mismo y se
+  actualiza, en el teléfono es una hoja de lado a lado que no navega, y sin la tabla avisa y
+  muestra las cargas
+
 **Pendiente**
+- **Correr en el SQL Editor de Supabase `sql/13_contactos_escuelas.sql` y después
+  `sql/privado/14_cargar_contactos.sql`** (este último no está en el repositorio: se genera con
+  `datos/generar_contactos.py` o se pide a quien lo armó). Hasta entonces la ficha dice que los
+  contactos no están cargados
 - **Después de la presentación**, `select public.borrar_datos_ejemplo();`
 - El formulario escribe de verdad por defecto; `?demo` en el link es solo para mostrarlo sin
   guardar. Repartir el link sin `?demo`
