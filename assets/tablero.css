@@ -1797,7 +1797,9 @@ body.tour-abierto { overflow: hidden; }
 .t-seg-tabla .t-seg-num { width: 110px; text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .t-seg-tabla .t-seg-fecha { width: 140px; white-space: nowrap; color: var(--tinta-2); }
 .t-seg-localidad { color: var(--tinta-2); }
-.t-seg-tabla .t-seg-sin { font-weight: 700; color: var(--t-tinta); }
+/* Ocupa las tres columnas de números: centrado en ellas, no pegado a la
+   izquierda de «Docentes», que se alinea a la derecha */
+.t-seg-tabla .t-seg-sin { font-weight: 700; color: var(--t-tinta); text-align: center; }
 .t-seg-extra { font-size: 14.5px; font-weight: 400; color: var(--t-gris-2); }
 
 /* Por departamento: la barra es la parte de sus escuelas que ya cargó */
@@ -1829,7 +1831,7 @@ body.tour-abierto { overflow: hidden; }
   .t-seg-tabla tbody tr:first-child { border-top: none; }
   .t-seg-tabla th, .t-seg-tabla td { display: block; padding: 0; border: none; font-size: 16px; }
   .t-seg-tabla tbody th, .t-seg-localidad { flex-basis: 100%; }
-  .t-seg-tabla .t-seg-num, .t-seg-tabla .t-seg-fecha { width: auto; text-align: left; }
+  .t-seg-tabla .t-seg-num, .t-seg-tabla .t-seg-fecha, .t-seg-tabla .t-seg-sin { width: auto; text-align: left; }
   .t-seg-tabla td[data-etiqueta]::before {
     content: attr(data-etiqueta);
     margin-right: 6px;
