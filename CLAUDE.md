@@ -600,7 +600,15 @@ desde acá con su aviso de uso interno. El enlace del pie se sacó: la solapa ya
 - **Línea de contexto con la respuesta:** «Cargaron 487 docentes de 135 de las 288 escuelas.
   153 escuelas todavía no cargaron.» Nunca «Faltan 153» a secas: el equipo preguntó «¿faltan
   qué?». Lo mismo en la tabla («Escuelas sin cargas») y en cada departamento («20 sin cargas
-  todavía»).
+  todavía»). Al lado, dos solapas: **«Todas las escuelas»** y **«Solo las que no cargaron
+  (153)»**, también con un departamento elegido.
+- **Solo las que no cargaron** (vuelta el 27/10/2026, a pedido del equipo, que quería ver
+  esa lista sola): un bloque por departamento que tenga alguna («Departamento Formosa · 20 de
+  sus 42 escuelas todavía no cargaron») con solo **escuela y localidad**. La primera versión
+  repetía «Sin cargas todavía» en cada fila y dejaba vacías las columnas de números: si el
+  título ya lo dice, en la fila sobra. Tampoco va la tabla por departamento: los títulos de
+  los bloques ya tienen esos números. Los departamentos que ya cargaron completos no aparecen.
+  Queda en el hash (`&faltan=1`).
 - **Por departamento** (solo con toda la provincia): un renglón por departamento, en el orden
   de la nómina, con la barra de 18 px de sus escuelas que ya cargaron («22 de 42»), los
   docentes y sus escuelas sin cargas. El nombre del departamento lleva a su lista.
@@ -609,7 +617,7 @@ desde acá con su aviso de uso interno. El enlace del pie se sacó: la solapa ya
   (cada E.P.E.S. seguida de sus anexos): escuela, localidad, docentes, materias y último envío
   («hoy», «ayer», «12 oct»). La primera versión tenía dos solapas, «Todas las escuelas» y «Las
   que no cargaron», y el equipo las sintió de más: con las que faltan arriba, una lista dice
-  todo. El nombre de cada escuela lleva a su detalle (ver abajo). Las que no tienen envíos dicen **«Sin cargas todavía»** en negrita, centrado en el
+  todo (las dos solapas volvieron después; ver arriba). El nombre de cada escuela lleva a su detalle (ver abajo). Las que no tienen envíos dicen **«Sin cargas todavía»** en negrita, centrado en el
   lugar de las tres columnas de números, sin color propio: el
   ladrillo y el ocre ya dicen otra cosa en el panel. Las que agregaron los docentes (o una que
   salió de la nómina) van al final de su departamento, marcadas, y no cuentan entre las que
@@ -1072,7 +1080,9 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
   (una sola lista, con las que no cargaron arriba en cada departamento) y se sumó el filtro por
   escuela con sus cargas por materia: probado que la suma por materia da las cargas de la
   escuela, que una escuela sin cargas muestra sus 16 materias «Sin cargas todavía», que la
-  agregada por un docente se puede elegir y que «← Departamento» vuelve
+  agregada por un docente se puede elegir y que «← Departamento» vuelve. Por último volvió
+  «Solo las que no cargaron», sin columnas de números: probado que muestra exactamente las que
+  faltan, un bloque por departamento con alguna, y que se recuerda al recargar
 
 **Pendiente**
 - **Después de la presentación**, `select public.borrar_datos_ejemplo();`

@@ -1816,6 +1816,8 @@ body.tour-abierto { overflow: hidden; }
 /* En la lista, el nombre de la escuela lleva a su detalle por materia */
 .t-seg-escuela .t-seg-enlace { text-align: left; }
 .t-seg-volver { flex-shrink: 0; font-size: 16.5px; }
+.t-seg-tabla--faltan .t-seg-localidad { width: 40%; }
+.t-seg-vacia { margin: 0; font-family: var(--texto); font-size: 17px; color: var(--tinta-2); }
 
 /* En el teléfono cada escuela es un renglón de texto: el nombre, la
    localidad y debajo los números con su rótulo */
