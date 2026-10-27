@@ -1505,7 +1505,7 @@
     </div>`;
   }
 
-  // «Cargaron 1.234 docentes de 180 de las 288 escuelas. Faltan 108.»
+  // «Cargaron 1.234 docentes de 180 de las 288 escuelas. 108 escuelas todavía no cargaron.»
   function contextoSeguimiento(d, g) {
     const c = g || d.provincia;
     let texto;
@@ -1513,7 +1513,9 @@
       texto = g ? `Todavía no cargó ningún docente del departamento ${esc(g.nombre)}.` : 'Todavía no cargó ningún docente.';
     } else {
       texto = `${g ? `En el departamento ${esc(g.nombre)} cargaron` : 'Cargaron'} <strong>${numero(c.docentes)} ${plural(c.docentes, 'docente', 'docentes')}</strong> de <strong>${numero(c.cargaron)} ${g ? 'de sus' : 'de las'} ${numero(c.total)} escuelas</strong>. `
-        + (c.faltan ? `Faltan <strong>${numero(c.faltan)}</strong>.` : 'Ya cargaron todas.');
+        + (c.faltan
+          ? `<strong>${numero(c.faltan)} ${plural(c.faltan, 'escuela todavía no cargó', 'escuelas todavía no cargaron')}</strong>.`
+          : 'Ya cargaron todas las escuelas.');
     }
     return `<div class="t-contexto"><div class="t-contexto__texto">${texto}</div></div>`;
   }
@@ -1528,12 +1530,12 @@
             <div class="t-fila__barra"><div class="t-pista"><div class="t-barra" style="width:${Math.round(100 * g.cargaron / g.total)}%"></div></div><span class="t-seg-de">${numero(g.cargaron)} de ${numero(g.total)}</span></div>
           </td>
           <td class="t-seg-num" data-etiqueta="Docentes">${numero(g.docentes)}</td>
-          <td class="t-seg-num" data-etiqueta="Faltan">${g.faltan ? `<strong>${numero(g.faltan)}</strong>` : '—'}</td>
+          <td class="t-seg-num" data-etiqueta="Escuelas sin cargas">${g.faltan ? `<strong>${numero(g.faltan)}</strong>` : '—'}</td>
         </tr>`).join('');
     return `<section class="t-seg-bloque">
       <h2 class="t-seg-titulo">Por departamento</h2>
       <table class="t-seg-tabla t-seg-tabla--deptos">
-        <thead><tr><th scope="col">Departamento</th><th scope="col">Escuelas que cargaron</th><th scope="col" class="t-seg-num">Docentes</th><th scope="col" class="t-seg-num">Faltan</th></tr></thead>
+        <thead><tr><th scope="col">Departamento</th><th scope="col">Escuelas que cargaron</th><th scope="col" class="t-seg-num">Docentes</th><th scope="col" class="t-seg-num">Escuelas sin cargas</th></tr></thead>
         <tbody>${filas}</tbody>
       </table>
     </section>`;
@@ -1545,7 +1547,7 @@
   function tablaEscuelas(g) {
     const lista = g.escuelas.filter((e) => !e.docentes)
       .concat(g.escuelas.filter((e) => e.docentes), g.extras);
-    const resumen = g.total ? `cargaron ${numero(g.cargaron)} de ${numero(g.total)} escuelas${g.faltan ? ` · faltan ${numero(g.faltan)}` : ''}` : '';
+    const resumen = g.total ? `cargaron ${numero(g.cargaron)} de ${numero(g.total)} escuelas${g.faltan ? ` · ${numero(g.faltan)} sin cargas todavía` : ''}` : '';
     const filas = lista.map((e) => `
         <tr class="${e.docentes ? '' : 't-seg-fila--falta'}">
           <th scope="row" class="t-seg-escuela">${esc(e.nombre)}${e.extra ? ` <span class="t-seg-extra">(${esc(e.extra)})</span>` : ''}</th>

@@ -597,16 +597,19 @@ desde acá con su aviso de uso interno. El enlace del pie se sacó: la solapa ya
 - **Barra:** Alcance (toda la provincia o un departamento), «Datos de ejemplo» y «Descargar el
   Excel».
 - **Línea de contexto con la respuesta:** «Cargaron 487 docentes de 135 de las 288 escuelas.
-  Faltan 153.»
+  153 escuelas todavía no cargaron.» Nunca «Faltan 153» a secas: el equipo preguntó «¿faltan
+  qué?». Lo mismo en la tabla («Escuelas sin cargas») y en cada departamento («20 sin cargas
+  todavía»).
 - **Por departamento** (solo con toda la provincia): un renglón por departamento, en el orden
   de la nómina, con la barra de 18 px de sus escuelas que ya cargaron («22 de 42»), los
-  docentes y cuántas faltan. El nombre del departamento lleva a su lista.
+  docentes y sus escuelas sin cargas. El nombre del departamento lleva a su lista.
 - **Las escuelas**, una sola lista por departamento: **primero las que todavía no cargaron**
   (a las que hay que llamar) y después las que ya cargaron, cada parte en el orden oficial
   (cada E.P.E.S. seguida de sus anexos): escuela, localidad, docentes, materias y último envío
   («hoy», «ayer», «12 oct»). La primera versión tenía dos solapas, «Todas las escuelas» y «Las
   que no cargaron», y el equipo las sintió de más: con las que faltan arriba, una lista dice
-  todo. Las que no tienen envíos dicen **«Sin cargas todavía»** en negrita, sin color propio: el
+  todo. Las que no tienen envíos dicen **«Sin cargas todavía»** en negrita, centrado en el
+  lugar de las tres columnas de números, sin color propio: el
   ladrillo y el ocre ya dicen otra cosa en el panel. Las que agregaron los docentes (o una que
   salió de la nómina) van al final de su departamento, marcadas, y no cuentan entre las que
   faltan: el denominador es siempre la nómina.
