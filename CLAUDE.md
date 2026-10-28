@@ -98,6 +98,7 @@ fijada, nunca por bundler.
     ├── 11_importar_catalogo.sql  exportar a filas e importar correcciones por id
     ├── 12_reemplazar_materia.sql  subir la planilla de una materia y reemplazarla
     ├── 13_contactos_escuelas.sql  contactos de cada escuela, solo para el equipo
+    ├── 14_sedes_anexos.sql  de qué E.P.E.S. depende cada anexo, cuando el equipo la corrige
     ├── privado/            lo que genera generar_contactos.py: datos personales, no se versiona
     ├── mantenimiento/      scripts de una sola vez, con fecha; no forman parte de la instalación
     └── generar_cargas.py   regenera 06, 07 y 08 cuando cambian los JSON
@@ -686,12 +687,25 @@ para llamarla). En las listas del seguimiento, el nombre de cada escuela abre un
   nómina: cuenta como anexo porque lo dice el nombre. Los tres «E.P.E.S. E.I.B. N° 13 …»
   dependen de la E.I.B. N° 5 (lo dicen el orden, el CUE y la delegación; la N° 13 no está en
   la nómina).
+- **La sede se puede cambiar** (28/10/2026, pedido del equipo). En la ficha de un anexo, arriba
+  del contacto, va **Sede**: la E.P.E.S. y dónde queda, con «Cambiar» a la derecha del rótulo,
+  como «+ Agregar». Cambiar abre una lista de las 112 E.P.E.S. agrupadas por departamento, en
+  el orden de la nómina (ningún anexo: una sede de una sede no tiene sentido), más «De ninguna:
+  tiene dirección propia». Lo corregido lleva al lado «corregida por el equipo», y al cambiarla
+  de nuevo aparece «Volver a la de la nómina (E.P.E.S. N° 25)». Vale para todo el panel: la
+  ficha, el detalle de la escuela y el Excel. Se guarda en `sedes_anexos`
+  (`sql/14_sedes_anexos.sql`): una fila es una corrección, sin fila vale la de la nómina, y
+  `sede_id` en null es «de ninguna». Se escribe solo con `guardar_sede()` y `restaurar_sede()`;
+  la lee el equipo. Mientras la tabla no exista, vale la de la nómina y no aparece «Cambiar».
+  Las E.P.E.S. no tienen la sección.
 - El **detalle de una escuela** tiene el mismo contacto en un bloque, y «Editar contactos» abre
   la ficha fija: así se llega también con teclado.
 
 Vive fuera de `#app`, como el recorrido, porque el panel se redibuja entero en cada acción.
-Fijarla no la redibuja (solo suma la cruz): si lo hiciera al tomar el foco, el botón que se
-estaba tocando desaparecía antes del clic.
+Fijarla no la redibuja (solo muestra la cruz): si lo hiciera al tomar el foco, el botón que
+se estaba tocando desaparecía antes del clic. La cruz tiene su lugar guardado aunque no se vea:
+cuando aparecía de la nada, un título largo («Anexo de Educación Rural – El Quemado») pasaba a
+dos renglones, todo se corría hacia abajo y el clic caía en otro lado.
 
 **Los contactos son datos personales y el repositorio es público.** Viven solo en Supabase, en
 `contactos_escuela` (`sql/13_contactos_escuelas.sql`): la lee el equipo y nadie más, y se
@@ -1189,8 +1203,19 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
   en la nómina entera, y la ficha dice dónde queda la sede. Revisados los 175 anexos contra la
   delegación zonal, el CUE y las planillas: solo cambiaron esos diez y el anexo 11 de la E.I.B. 3.
   Probado en Chromium: Pozo Molina y El Descanso con la N° 39, El Quemado sigue con la N° 25
+- **La sede se cambia desde la ficha** (28/10/2026): `sql/14_sedes_anexos.sql`. Probado contra
+  PostgreSQL 16: se puede repetir; el equipo guarda, cambia a «de ninguna» y vuelve a la de la
+  nómina; una escuela que depende de sí misma, una sede o un anexo que no existen y un usuario
+  que no es del equipo reciben su mensaje; `anon` no lee ni ejecuta y el insert directo se
+  rechaza. En Chromium con un Supabase simulado: la lista trae las 112 E.P.E.S. y ningún anexo,
+  con la de hoy elegida; guardar, «de ninguna», volver a la de la nómina y cancelar; al recargar,
+  el detalle de la escuela muestra la corregida; sin la tabla, sin «Cambiar»; en el teléfono la
+  lista entra y es alta para el dedo. De paso se arregló que el primer clic dentro de una ficha
+  de título largo cayera en otro lado (ver «La ficha de la escuela»)
 
 **Pendiente**
+- **Correr en el SQL Editor `sql/14_sedes_anexos.sql`**: hasta entonces la ficha muestra la
+  sede de la nómina y no ofrece «Cambiar»
 - **Correr en el SQL Editor `sql/mantenimiento/2026-10-27_sin_datos_de_ejemplo.sql`**: hasta
   entonces los datos inventados siguen en la base, aunque el panel ya no los muestra en ningún
   lado

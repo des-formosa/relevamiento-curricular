@@ -1833,6 +1833,8 @@ body.tour-abierto { overflow: hidden; }
   border: none; background: none; border-radius: 3px; cursor: pointer;
 }
 .t-ficha__cerrar:hover { background: var(--gris-claro-4); }
+/* Sin fijar, la cruz no se ve pero guarda su lugar (ver fijar() en dashboard.js) */
+.t-ficha__cerrar[hidden] { display: flex; visibility: hidden; }
 .t-ficha__cuerpo { display: flex; flex-direction: column; gap: 16px; padding: 12px 16px 16px; }
 .t-ficha__cuerpo section { display: flex; flex-direction: column; gap: 8px; }
 .t-ficha__rotulo { margin: 0; font-size: 11.5px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--azul); }
@@ -1881,6 +1883,15 @@ body.tour-abierto { overflow: hidden; }
   font: inherit; font-size: 15.5px; font-weight: 400; color: var(--t-tinta);
 }
 .t-ficha__campo input:focus { outline: 3px solid var(--azul-profundo); outline-offset: 1px; border-color: var(--azul); }
+/* La sede: un solo campo, la lista de las E.P.E.S. por departamento */
+.t-ficha__form--sede { grid-template-columns: 1fr; }
+.t-ficha__campo select {
+  width: 100%; height: 36px; padding: 0 6px; border: 1.5px solid var(--borde-campo); border-radius: 3px; background: var(--blanco);
+  font: inherit; font-size: 15px; font-weight: 400; color: var(--t-tinta);
+}
+.t-ficha__campo select:focus { outline: 3px solid var(--azul-profundo); outline-offset: 1px; border-color: var(--azul); }
+.t-ficha__form-acciones { flex-wrap: wrap; }
+.t-ficha__marca { font-size: 13px; color: var(--t-gris-2); white-space: nowrap; }
 .t-ficha__form-acciones { grid-column: 1 / -1; display: flex; align-items: center; gap: 14px; margin-top: 2px; }
 .t-ficha__materias { margin: 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 4px 14px; color: var(--tinta-2); }
 .t-ficha__materias strong { color: var(--t-tinta); }
@@ -1904,7 +1915,7 @@ body.tour-abierto { overflow: hidden; }
   .t-ficha__si { height: 44px; padding: 0 18px; }
   .t-ficha__enlace { padding: 10px 4px; }
   .t-ficha__form { grid-template-columns: 1fr; }
-  .t-ficha__campo input { height: 46px; font-size: 16px; }
+  .t-ficha__campo input, .t-ficha__campo select { height: 46px; font-size: 16px; }
 }
 @media (prefers-reduced-motion: no-preference) {
   .t-ficha:not([hidden]) { animation: t-aparecer 140ms ease both; }
