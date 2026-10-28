@@ -1273,7 +1273,7 @@
     if (!lista.length) {
       const sede = sedeDe(id);
       lista = sede ? todos.get(sede.id) || [] : [];
-      if (lista.length) deLaSede = ` (de la sede: ${sede.nombre})`;
+      if (lista.length) deLaSede = ` (de la sede: ${sede.nombre}, ${dondeSede(sede, id)})`;
     }
     const unir = (f) => lista.map(f).filter(Boolean).join(' / ');
     return [unir((c) => c.nombre) + (lista.length ? deLaSede : ''), unir((c) => c.cargo), unir((c) => (c.celular ? celularLegible(c.celular) : '')), unir((c) => c.correo)];
@@ -1743,21 +1743,34 @@
   }
 
   // La sede de un anexo: la E.P.E.S. que lo precede en la nómina, que lo deja
-  // seguido de su escuela. Coincide con las planillas de directivos en todos
-  // los anexos que traen (44) y con los 41 que nombran su E.P.E.S.
+  // seguido de su escuela. En la nómina entera, no dentro del departamento: un
+  // anexo puede estar en otro (los diez de la E.P.E.S. N° 39, de Patiño, están
+  // en Bermejo), y buscando por departamento quedaban con la N° 25. Coincide
+  // con la delegación zonal de la nómina en los 175 anexos, con el CUE en los
+  // 59 que comparten el de su sede y con las planillas de directivos en los 37
+  // que traen. «E.P.E.S. E.I.B. N° 3 Anexo 11» viene rotulada como E.P.E.S. en
+  // la nómina: por eso también cuenta como anexo el que lo dice en el nombre.
   let sedes = null;
+  const esAnexo = (e) => /^ANEXO/.test(e.tipo || '') || /\banexo\b/i.test(e.nombre || '');
   function sedeDe(id) {
     if (!sedes) {
       sedes = new Map();
-      for (const { escuelas } of Catalogo.buscarEscuelas('').grupos) {
-        let sede = null;
-        for (const e of escuelas) {
-          if (!/^ANEXO/.test(e.tipo || '')) sede = e;
-          else if (sede) sedes.set(e.id, sede);
-        }
+      const nomina = Catalogo.buscarEscuelas('').grupos.flatMap((g) => g.escuelas)
+        .sort((a, b) => (a.orden || 0) - (b.orden || 0));
+      let sede = null;
+      for (const e of nomina) {
+        if (!esAnexo(e)) sede = e;
+        else if (sede) sedes.set(e.id, sede);
       }
     }
     return sedes.get(id) || null;
+  }
+
+  // Dónde queda la sede: su localidad, y el departamento si no es el del anexo
+  function dondeSede(sede, id) {
+    const anexo = Catalogo.escuela(id);
+    const dep = Catalogo.departamento(sede.departamento_id);
+    return sede.localidad + (dep && (!anexo || anexo.departamento_id !== sede.departamento_id) ? `, departamento ${dep.nombre}` : '');
   }
 
   // «3704123456» → «370 412-3456»; los enlaces para llamar y por WhatsApp
@@ -1810,7 +1823,7 @@
       const sede = sedeDe(id);
       const deLaSede = sede ? todos.get(sede.id) || [] : [];
       html = deLaSede.length
-        ? `<p class="t-ficha__nota">No tiene contacto propio. Depende de la <strong>${esc(sede.nombre)}</strong>:</p>${deLaSede.map((c) => uno(c, false)).join('')}`
+        ? `<p class="t-ficha__nota">No tiene contacto propio. Depende de la <strong>${esc(sede.nombre)}</strong> (${esc(dondeSede(sede, id))}):</p>${deLaSede.map((c) => uno(c, false)).join('')}`
         : '<p class="t-ficha__nota">No tiene ningún contacto cargado.</p>';
     }
     if (editable) {
