@@ -676,9 +676,16 @@ para llamarla). En las listas del seguimiento, el nombre de cada escuela abre un
   **Cargas**: docentes, cargas, último envío y las materias que cargó, con «Ver todas sus
   materias →».
 - Un **anexo** sin contacto propio muestra el de su sede («No tiene contacto propio. Depende de
-  la E.P.E.S. N° 2»), sin botones para corregirlo desde ahí. La sede es la E.P.E.S. que lo
-  precede en la nómina: coincide con la planilla de directivos en los 44 anexos que trae y con
-  los 41 que nombran su E.P.E.S.
+  la E.P.E.S. N° 39 (Posta Cambio Zalazar, departamento Patiño)»; el departamento va solo si
+  no es el del anexo), sin botones para corregirlo desde ahí. La sede es la E.P.E.S. que lo
+  precede **en la nómina entera, no dentro de su departamento**: los diez anexos de la N° 39
+  están en Bermejo y ella en Patiño, y buscando por departamento quedaban con la N° 25 (lo vio
+  el equipo el 28/10/2026). Así coincide con la delegación zonal de la nómina en los 175
+  anexos, con el CUE en los 59 que comparten el de su sede y con las planillas de directivos
+  en los 37 que traen. «E.P.E.S. E.I.B. N° 3 Anexo 11» viene rotulada como E.P.E.S. en la
+  nómina: cuenta como anexo porque lo dice el nombre. Los tres «E.P.E.S. E.I.B. N° 13 …»
+  dependen de la E.I.B. N° 5 (lo dicen el orden, el CUE y la delegación; la N° 13 no está en
+  la nómina).
 - El **detalle de una escuela** tiene el mismo contacto en un bloque, y «Editar contactos» abre
   la ficha fija: así se llega también con teclado.
 
@@ -695,8 +702,8 @@ Ministerio (interior y capital, 06/08): `python datos/generar_contactos.py <plan
 (`--revisar` informa sin escribir) arma `sql/privado/14_cargar_contactos.sql`, que se corre una
 vez en el SQL Editor. Ni las planillas ni ese SQL entran a git (`.gitignore`). Las planillas
 no traen correos: solo director, situación de revista y celular. Dan 107 contactos (101 con
-celular); quedan sin contacto las 6 agrarias, la 20, la 49, la 103 y un anexo de la E.I.B. 3,
-que se agregan desde la ficha. Volver a correr el SQL reemplaza lo que vino de la planilla,
+celular); quedan sin contacto las 6 agrarias, la 20, la 49 y la 103, que se agregan desde la
+ficha (el anexo 11 de la E.I.B. 3, que figuraba sin contacto, muestra el de su sede). Volver a correr el SQL reemplaza lo que vino de la planilla,
 salvo en las escuelas donde el equipo ya agregó o corrigió algo: ahí manda lo del equipo.
 Mientras la tabla no exista, el seguimiento anda igual y la ficha dice que los contactos
 todavía no están cargados.
@@ -1176,6 +1183,12 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
   faltan primero, y envíos y detalle pedidos filtrados por departamento; una escuela, sus 16
   materias con la suma justa y sus envíos; la provincia, las 288 y las de afuera. El inicio
   entra sin scroll horizontal en 1440, 1024 y 390 px
+
+- **La sede de los anexos, corregida** (28/10/2026): se buscaba dentro del departamento y los
+  diez anexos de la E.P.E.S. N° 39 (en Bermejo) mostraban el contacto de la N° 25. Ahora se busca
+  en la nómina entera, y la ficha dice dónde queda la sede. Revisados los 175 anexos contra la
+  delegación zonal, el CUE y las planillas: solo cambiaron esos diez y el anexo 11 de la E.I.B. 3.
+  Probado en Chromium: Pozo Molina y El Descanso con la N° 39, El Quemado sigue con la N° 25
 
 **Pendiente**
 - **Correr en el SQL Editor `sql/mantenimiento/2026-10-27_sin_datos_de_ejemplo.sql`**: hasta
