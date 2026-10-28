@@ -77,7 +77,7 @@
     // departamento o el de una escuela (no hay ids repetidos entre los dos).
     // soloFaltan: mostrar solo las escuelas que todavía no cargaron
     // contactos: Map escuela_id → [contacto], o null si la base todavía no los tiene
-    seguimiento: { lugar: null, soloFaltan: false, datos: null, contactos: null, cargando: false, error: null },
+    seguimiento: { lugar: null, soloFaltan: false, datos: null, contactos: null, sedes: null, cargando: false, error: null },
     usuario: null,
     espacio_id: null,
     anio: 1,
@@ -286,6 +286,14 @@
     return porEscuela;
   }
 
+  // Las sedes que corrigió el equipo (sql/14): anexo → E.P.E.S., o null si no
+  // depende de ninguna. Sin la tabla, vale la de la nómina y no se puede cambiar.
+  async function traerSedes() {
+    const { data, error } = await sb.from('sedes_anexos').select('anexo_id, sede_id');
+    if (error) return null;
+    return new Map((data || []).map((x) => [x.anexo_id, x.sede_id]));
+  }
+
   async function cargarSeguimiento() {
     const s = estado.seguimiento;
     Ficha.cerrar();
@@ -295,9 +303,11 @@
     let datos = null;
     let error = null;
     let contactos = null;
+    let sedes = null;
     try {
-      const [envios, c] = await Promise.all([traerEnvios(), traerContactos()]);
+      const [envios, c, x] = await Promise.all([traerEnvios(), traerContactos(), traerSedes()]);
       contactos = c;
+      sedes = x;
       datos = await contarSeguimiento(envios);
     } catch (e) {
       error = (e && e.message) || 'No pudimos traer las cargas. Volvé a intentar.';
@@ -305,6 +315,7 @@
     s.cargando = false;
     s.datos = datos;
     s.contactos = contactos;
+    s.sedes = sedes;
     s.error = error;
     if (estado.pantalla === 'seguimiento') render();
   }
@@ -405,7 +416,7 @@
     // mano: el que entra después tiene que ver los resultados, no el editor
     estado.modo = 'resultados';
     Editor.limpiar();
-    estado.seguimiento = { lugar: null, soloFaltan: false, datos: null, contactos: null, cargando: false, error: null };
+    estado.seguimiento = { lugar: null, soloFaltan: false, datos: null, contactos: null, sedes: null, cargando: false, error: null };
     Ficha.cerrar();
     history.replaceState(null, '', window.location.pathname + window.location.search);
     estado.pantalla = 'ingreso';
@@ -1750,20 +1761,31 @@
   // 59 que comparten el de su sede y con las planillas de directivos en los 37
   // que traen. «E.P.E.S. E.I.B. N° 3 Anexo 11» viene rotulada como E.P.E.S. en
   // la nómina: por eso también cuenta como anexo el que lo dice en el nombre.
-  let sedes = null;
+  // Si aun así no acierta, el equipo la corrige desde la ficha (sql/14), y
+  // esa corrección manda.
+  let sedesNomina = null;
   const esAnexo = (e) => /^ANEXO/.test(e.tipo || '') || /\banexo\b/i.test(e.nombre || '');
-  function sedeDe(id) {
-    if (!sedes) {
-      sedes = new Map();
-      const nomina = Catalogo.buscarEscuelas('').grupos.flatMap((g) => g.escuelas)
-        .sort((a, b) => (a.orden || 0) - (b.orden || 0));
+  const anexoDeLaNomina = (id) => { const e = Catalogo.escuela(id); return !!(e && esAnexo(e)); };
+  function sedeDeLaNomina(id) {
+    if (!sedesNomina) {
+      sedesNomina = new Map();
       let sede = null;
-      for (const e of nomina) {
+      for (const e of nominaOrdenada()) {
         if (!esAnexo(e)) sede = e;
-        else if (sede) sedes.set(e.id, sede);
+        else if (sede) sedesNomina.set(e.id, sede);
       }
     }
-    return sedes.get(id) || null;
+    return sedesNomina.get(id) || null;
+  }
+  const nominaOrdenada = () => Catalogo.buscarEscuelas('').grupos.flatMap((g) => g.escuelas)
+    .sort((a, b) => (a.orden || 0) - (b.orden || 0));
+  const sedeCorregida = (id) => !!(estado.seguimiento.sedes && estado.seguimiento.sedes.has(id));
+  function sedeDe(id) {
+    if (sedeCorregida(id)) {
+      const otra = estado.seguimiento.sedes.get(id);
+      return otra ? Catalogo.escuela(otra) : null;
+    }
+    return sedeDeLaNomina(id);
   }
 
   // Dónde queda la sede: su localidad, y el departamento si no es el del anexo
@@ -1822,8 +1844,10 @@
     if (!propios.length && f.editando !== 'nuevo') {
       const sede = sedeDe(id);
       const deLaSede = sede ? todos.get(sede.id) || [] : [];
+      const nota = editable ? 'No tiene contacto propio. Este es el de su sede:'
+        : `No tiene contacto propio. Depende de la <strong>${esc(sede && sede.nombre)}</strong> (${esc(sede && dondeSede(sede, id))}):`;
       html = deLaSede.length
-        ? `<p class="t-ficha__nota">No tiene contacto propio. Depende de la <strong>${esc(sede.nombre)}</strong> (${esc(dondeSede(sede, id))}):</p>${deLaSede.map((c) => uno(c, false)).join('')}`
+        ? `<p class="t-ficha__nota">${nota}</p>${deLaSede.map((c) => uno(c, false)).join('')}`
         : '<p class="t-ficha__nota">No tiene ningún contacto cargado.</p>';
     }
     if (editable) {
@@ -1833,11 +1857,50 @@
     return html;
   }
 
+  // De qué E.P.E.S. depende un anexo, con «Cambiar» a la derecha del rótulo,
+  // como «+ Agregar». Al cambiar, una lista de las E.P.E.S. por departamento.
+  function sedeHTML(id) {
+    const f = Ficha.estado;
+    const puede = !!estado.seguimiento.sedes;
+    const sede = sedeDe(id);
+    const corregida = sedeCorregida(id);
+    if (puede && f.cambiandoSede) {
+      const actual = sede ? sede.id : '';
+      const opciones = Catalogo.buscarEscuelas('').grupos.map((g) => {
+        const epes = g.escuelas.filter((e) => !esAnexo(e) && e.id !== id)
+          .sort((a, b) => (a.orden || 0) - (b.orden || 0));
+        return epes.length ? `<optgroup label="Departamento ${esc(g.departamento.nombre)}">${epes.map((e) =>
+          `<option value="${esc(e.id)}" ${e.id === actual ? 'selected' : ''}>${esc(e.nombre)} · ${esc(e.localidad || '')}</option>`).join('')}</optgroup>` : '';
+      }).join('');
+      const nomina = sedeDeLaNomina(id);
+      const g = f.guardando;
+      return `<div class="t-ficha__rotulo-linea"><h3 class="t-ficha__rotulo">Sede</h3></div>
+        <form class="t-ficha__form t-ficha__form--sede" data-ficha-sede novalidate aria-label="Cambiar la sede">
+          <label class="t-ficha__campo"><span>¿De qué E.P.E.S. depende?</span>
+            <select name="sede"><option value="" ${actual ? '' : 'selected'}>De ninguna: tiene dirección propia</option>${opciones}</select></label>
+          <div class="t-ficha__form-acciones">
+            <button type="submit" class="t-ficha__si" ${g ? 'disabled' : ''}>${g ? 'Guardando…' : 'Guardar'}</button>
+            <button type="button" class="t-ficha__enlace" data-ficha-accion="cancelar">Cancelar</button>
+            ${corregida && nomina ? `<button type="button" class="t-ficha__enlace" data-ficha-accion="sede-nomina" ${g ? 'disabled' : ''}>Volver a la de la nómina (${esc(nomina.nombre)})</button>` : ''}
+          </div>
+        </form>
+        ${f.errorSede ? `<p class="t-ficha__error" role="alert">${esc(f.errorSede)}</p>` : ''}`;
+    }
+    const cambiar = puede && f.editando == null && f.quitando == null
+      ? `<button type="button" class="t-ficha__enlace" data-ficha-accion="cambiar-sede">Cambiar</button>` : '';
+    const texto = sede
+      ? `<strong>${esc(sede.nombre)}</strong> · ${esc(dondeSede(sede, id))}`
+      : 'No depende de ninguna E.P.E.S.';
+    return `<div class="t-ficha__rotulo-linea"><h3 class="t-ficha__rotulo">Sede</h3>${cambiar}</div>
+      <p class="t-ficha__nota">${texto}${corregida ? ' <span class="t-ficha__marca">corregida por el equipo</span>' : ''}</p>
+      ${f.errorSede ? `<p class="t-ficha__error" role="alert">${esc(f.errorSede)}</p>` : ''}`;
+  }
+
   // El rótulo «Contacto» con «+ Agregar» a la derecha, chico, en vez de un
   // botón más al final de la lista
   function rotuloContacto(editable) {
     const f = Ficha.estado;
-    const agregar = editable && estado.seguimiento.contactos && f.editando == null && f.quitando == null
+    const agregar = editable && estado.seguimiento.contactos && f.editando == null && f.quitando == null && !f.cambiandoSede
       ? '<button type="button" class="t-ficha__enlace" data-ficha-accion="agregar">+ Agregar</button>' : '';
     return `<div class="t-ficha__rotulo-linea"><h3 class="t-ficha__rotulo">Contacto</h3>${agregar}</div>`;
   }
@@ -1884,7 +1947,7 @@
     velo.className = 't-ficha-velo';
     velo.hidden = true;
     document.body.append(velo, caja);
-    const f = { id: null, fija: false, editando: null, quitando: null, error: null, guardando: false };
+    const f = { id: null, fija: false, editando: null, quitando: null, error: null, guardando: false, cambiandoSede: false, errorSede: null };
     let ancla = null;
     let reloj = null;
 
@@ -1899,9 +1962,10 @@
             <div class="t-ficha__titulo">${esc(e.nombre)}</div>
             <div class="t-ficha__sub">${esc([e.localidad, g && g.id ? `departamento ${g.nombre}` : ''].filter(Boolean).join(' · '))}</div>
           </div>
-          ${f.fija ? `<button type="button" class="t-ficha__cerrar" data-ficha-accion="cerrar" aria-label="Cerrar">${Icono.cerrar}</button>` : ''}
+          <button type="button" class="t-ficha__cerrar" data-ficha-accion="cerrar" aria-label="Cerrar" ${f.fija ? '' : 'hidden'}>${Icono.cerrar}</button>
         </div>
         <div class="t-ficha__cuerpo">
+          ${anexoDeLaNomina(e.id) ? `<section>${sedeHTML(e.id)}</section>` : ''}
           <section>${rotuloContacto(true)}${contactosHTML(e.id, true)}</section>
           <section><h3 class="t-ficha__rotulo">Cargas</h3>${cargasHTML(e)}
             ${enSuVista ? '' : `<button type="button" class="t-seg-enlace t-ficha__ir" data-ficha-accion="ir" data-id="${esc(e.id)}">Ver todas sus materias →</button>`}
@@ -1930,7 +1994,7 @@
     function abrir(id, el, fija) {
       clearTimeout(reloj);
       const otra = f.id !== id;
-      if (otra) Object.assign(f, { editando: null, quitando: null, error: null, guardando: false });
+      if (otra) Object.assign(f, { editando: null, quitando: null, error: null, guardando: false, cambiandoSede: false, errorSede: null });
       f.id = id;
       f.fija = f.fija && !otra ? true : fija;
       ancla = el;
@@ -1941,22 +2005,22 @@
     function cerrar() {
       clearTimeout(reloj);
       const habia = f.id && f.fija;
-      f.id = null; f.fija = false; f.editando = null; f.quitando = null; f.error = null;
+      f.id = null; f.fija = false; f.editando = null; f.quitando = null; f.error = null; f.cambiandoSede = false; f.errorSede = null;
       caja.hidden = true; velo.hidden = true; caja.innerHTML = '';
       if (habia && ancla && ancla.isConnected) ancla.focus();
       ancla = null;
     }
     // Fijarla no la redibuja: si lo hiciera al tomar el foco, el botón que se
-    // está tocando desaparecería antes del clic. Solo suma la cruz.
+    // está tocando desaparecería antes del clic. Solo muestra la cruz, que ya
+    // tenía su lugar guardado: si apareciera de la nada, un título largo
+    // pasaría a dos renglones y correría hacia abajo lo que se estaba tocando.
     function fijar() {
       if (f.fija || !f.id) return;
       f.fija = true;
       caja.classList.add('t-ficha--fija');
       velo.hidden = false;
-      const cabeza = caja.querySelector('.t-ficha__cabeza');
-      if (cabeza && !cabeza.querySelector('.t-ficha__cerrar')) {
-        cabeza.insertAdjacentHTML('beforeend', `<button type="button" class="t-ficha__cerrar" data-ficha-accion="cerrar" aria-label="Cerrar">${Icono.cerrar}</button>`);
-      }
+      const x = caja.querySelector('.t-ficha__cerrar');
+      if (x) x.hidden = false;
     }
 
     async function guardar(form) {
@@ -1993,6 +2057,25 @@
       estado.seguimiento.contactos.set(f.id, lista);
       despuesDeCambiar();
     }
+    // La sede: guardar la elegida (o ninguna), o volver a la de la nómina
+    async function guardarSede(form, nomina) {
+      const sede = nomina ? null : new FormData(form).get('sede') || null;
+      f.guardando = true; f.errorSede = null; dibujar();
+      const { data, error } = nomina
+        ? await sb.rpc('restaurar_sede', { p_anexo_id: f.id })
+        : await sb.rpc('guardar_sede', { p_anexo_id: f.id, p_sede_id: sede });
+      f.guardando = false;
+      if (error || !data || data.error) {
+        f.errorSede = (data && data.error) || 'No pudimos guardar la sede. Revisá la conexión y volvé a intentar.';
+        dibujar();
+        return;
+      }
+      if (nomina) estado.seguimiento.sedes.delete(f.id);
+      else estado.seguimiento.sedes.set(f.id, data.sede_id || null);
+      f.cambiandoSede = false;
+      despuesDeCambiar();
+    }
+
     // La vista de la escuela muestra los mismos contactos: se redibuja detrás
     function despuesDeCambiar() {
       const id = f.id;
@@ -2011,7 +2094,9 @@
         case 'corregir': f.fija = true; f.editando = Number(id); f.quitando = null; f.error = null; dibujar(); focoPrimerCampo(); break;
         case 'pedir-quitar': f.fija = true; f.quitando = Number(id); f.editando = null; f.error = null; dibujar(); break;
         case 'quitar': quitar(Number(id)); break;
-        case 'cancelar': f.editando = null; f.quitando = null; f.error = null; dibujar(); break;
+        case 'cancelar': f.editando = null; f.quitando = null; f.error = null; f.cambiandoSede = false; f.errorSede = null; dibujar(); break;
+        case 'cambiar-sede': f.fija = true; f.cambiandoSede = true; f.editando = null; f.quitando = null; f.errorSede = null; dibujar(); { const c = caja.querySelector('.t-ficha__form--sede select'); if (c) c.focus(); } break;
+        case 'sede-nomina': guardarSede(null, true); break;
         case 'ir': {
           cerrar();
           estado.seguimiento.lugar = id;
@@ -2024,7 +2109,7 @@
       }
     });
     const focoPrimerCampo = () => { const c = caja.querySelector('.t-ficha__form input'); if (c) c.focus(); };
-    caja.addEventListener('submit', (e) => { e.preventDefault(); guardar(e.target); });
+    caja.addEventListener('submit', (e) => { e.preventDefault(); if ('fichaSede' in e.target.dataset) guardarSede(e.target, false); else guardar(e.target); });
     caja.addEventListener('focusin', fijar);
     caja.addEventListener('pointerenter', () => clearTimeout(reloj));
     caja.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse' && !f.fija) reloj = setTimeout(cerrar, 250); });
