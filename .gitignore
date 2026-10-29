@@ -28,3 +28,5 @@ __pycache__/
 datos/directivos/
 sql/privado/
 DIRECTIVOS*.xlsx
+# Correos oficiales de escuelas y delegaciones (datos/generar_correos.py)
+CORREOS*.docx
