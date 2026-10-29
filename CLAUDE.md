@@ -102,6 +102,7 @@ fijada, nunca por bundler.
     ├── 14_sedes_anexos.sql  de qué E.P.E.S. depende cada anexo, cuando el equipo la corrige
     ├── 15_unificar_escuelas.sql  unir una escuela escrita a mano con la de la nómina
     ├── 16_editar_escuelas.sql  editar escuelas y departamentos desde el panel, y publicarlos
+    ├── 17_textos_libres.sql  juntar lo escrito a mano que es lo mismo, y los «no lo trabajo»
     ├── privado/            lo que genera generar_contactos.py: datos personales, no se versiona
     ├── mantenimiento/      scripts de una sola vez, con fecha; no forman parte de la instalación
     └── generar_cargas.py   regenera 06, 07 y 08 cuando cambian los JSON
@@ -1168,6 +1169,55 @@ anti-duplicado dentro de un mismo aporte, y el agrupamiento de textos libres en 
 
 Las dos implementaciones **tienen que dar exactamente el mismo resultado**.
 
+### Lo escrito a mano que es lo mismo (sql/17)
+
+Normalizar ya junta «Múltiplos y divisores» con «MULTIPLOS Y DIVISORES.», pero no
+«Multiplos y divisiores» ni «Criterio de divisibilidad»: hasta el 29/10/2026 aparecían en el
+panel como contenidos distintos, con un docente cada uno. Lo pidió el equipo ese día
+(«empezá por lo obvio y después verificamos juntos»). No hay pantalla para esto (ver «Lo que
+NO va»): lo decide quien mantiene el sistema, saber por saber, y queda en un script de
+`sql/mantenimiento/`.
+
+`sql/17_textos_libres.sql` agrega dos listas:
+
+- **`equivalencias_texto_libre`**: en un saber, una forma escrita (variante, normalizada) es
+  la misma que otra (canónico). La respuesta pasa a decir el canónico; si el mismo envío ya lo
+  tenía, la variante sobra y se borra. Si el canónico es una sugerencia del saber, cuenta como
+  del catálogo, igual que en `registrar_aporte()`. `tipo` dice por qué: `escritura` (tipeo,
+  plural, artículos, orden, puntuación) o `notacion` (N y «naturales», Z y «enteros», MCD y
+  DCM, la sigla y el nombre completo). **No se junta** lo que cambia el alcance («operaciones
+  básicas» con «operaciones», «en N» con «en Z»), lo de dos saberes distintos, ni lo escrito a
+  mano con una sugerencia parecida.
+- **`textos_no_trabajo`**: respuestas que dicen que el saber no se trabaja («No», «No trabajo
+  estos saberes»). Se borran como contenido y, si en ese envío no queda otro contenido del
+  saber, el saber pasa a `saberes_no_trabajados`, como si hubiera tocado el botón. «No» suele
+  ser la respuesta a la pregunta del campo («¿Trabajás otro…?»): con otros contenidos elegidos
+  solo se borra, y sin ninguno es un saber que no trabaja. Los comentarios, los «todavía no»
+  (lo va a trabajar) y los «no» de una parte del saber no van en la lista.
+
+`aplicar_textos_libres()` lo aplica a todo lo cargado, y un trigger (`after insert` en
+`selecciones`, por sentencia) lo aplica a cada envío y reenvío: un reenvío borra las
+selecciones y vuelve a traer el texto como lo escribió el docente. Si el trigger falla, el
+envío entra igual sin unificar (deja un warning) y lo arregla la próxima corrida. Otro trigger
+evita que un saber quede dos veces en «no trabajo» cuando el docente también tocó el botón: si
+no, el envío fallaba por la clave.
+
+Todo queda en `textos_libres_cambios`, con el texto como estaba, y se deshace de a una:
+`separar_variante(saber_id, variante)` y `restaurar_texto_no(texto)`. Lo borrado vuelve solo si
+el docente no reenvió esa materia después. Se corre solo desde el SQL Editor: ni `anon` ni
+`authenticated` pueden leer las tablas ni llamar las funciones.
+
+La primera lista (`sql/mantenimiento/2026-10-29_unificar_textos_libres.sql`) salió de revisar
+los 2.952 textos distintos (3.249 respuestas) que había el 29/10: 182 formas en 126 grupos
+(198 respuestas) y 33 textos de «no trabajo» (121 respuestas). Para una vuelta nueva: otro
+script en `mantenimiento/` con las equivalencias que falten; lo ya unificado no se toca.
+
+**El 35 % de lo escrito a mano estaba en seis saberes sin sugerencias**, agregados desde el
+editor sin contenidos (`matematica--e1--n2` a `n6` y `lenguas-extranjeras--e4--n1`): el
+docente solo veía el campo para escribir. Si el equipo les suma sugerencias, conviene usar las
+formas más escritas («Criterios de divisibilidad», «Múltiplos y divisores»): lo ya cargado con
+ese texto se cuenta junto con la sugerencia, porque el panel agrupa por texto normalizado.
+
 ### Volúmenes
 
 Unos 15.000 aportes y 600.000 selecciones. Para PostgreSQL es poco; el punto de atención es la
@@ -1503,6 +1553,21 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
   recibe la imagen y el mensaje juntos; la ficha y el detalle muestran el bloque. El PDF quedó
   con menos texto y sigue en una hoja para una E.P.E.S. con pocos anexos. Recorrido en `v8`
 
+- **Lo escrito a mano, unificado** (29/10/2026): ver «Lo escrito a mano que es lo mismo».
+  Probado contra PostgreSQL 16 con los 2.952 textos reales repartidos en envíos por
+  `registrar_aporte()` (de dos maneras: cada forma en los mismos docentes, y al azar entre
+  docentes, con sugerencias elegidas y el botón «no trabajo» mezclados). El resultado coincide
+  exactamente con una simulación aparte de las reglas, y es el mismo aplicándolo después en
+  bloque o envío por envío con el trigger; repetirlo no cambia nada. Un envío como `anon` con
+  una variante, la forma correcta, «No.» y «NO TRABAJO» con el botón tocado entra y queda
+  unificado, y su reenvío también; con el trigger roto a propósito el envío entra igual;
+  `anon` y `authenticated` no ven las tablas ni llaman las funciones; deshacer todas las
+  equivalencias y todos los «no» deja los 285 envíos exactamente como estaban
+
 **Pendiente**
+- Correr en Supabase `sql/17_textos_libres.sql` y después
+  `sql/mantenimiento/2026-10-29_unificar_textos_libres.sql`. El equipo revisa la lista (Excel
+  «unificacion-textos-libres») y lo que no corresponda se separa con `separar_variante()` o
+  `restaurar_texto_no()`
 - El formulario escribe de verdad por defecto; `?demo` en el link es solo para mostrarlo sin
   guardar. Repartir el link sin `?demo`
