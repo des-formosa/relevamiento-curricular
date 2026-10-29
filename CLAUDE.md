@@ -517,7 +517,7 @@ confundía. Quedó así:
 El recorrido guiado pasó a `v4`, con un paso para «Descargar para revisar», a `v5` cuando
 «Descargar resultados» pasó a ser el reporte de la materia (25/09/2026), y a `v6` cuando se
 sumaron los recorridos de Seguimiento y Escuelas (30/10/2026), y a `v7` con el reporte para la
-escuela. «¿Cómo se usa?» aparece en
+escuela, y a `v8` con mandarle el avance al director (29/10/2026). «¿Cómo se usa?» aparece en
 Resultados, Catálogo, Seguimiento y Escuelas, y abre el recorrido de la pantalla que se mira.
 
 **Después, es prácticamente una sola pantalla:**
@@ -684,21 +684,26 @@ PDF de una hoja, A4 vertical, armado como los demás (`documentoEscuela()`, impr
 fecha»). Se baja con «Reporte para la escuela (PDF)» en la barra, cuando hay una escuela
 elegida, o desde la ficha. Lleva:
 
-- la marca, «Cómo va la carga en la escuela», el nombre, dónde queda, de qué E.P.E.S. depende
-  si es un anexo, y la fecha;
-- una frase con la respuesta: «Cargaron 5 docentes de la escuela: 8 cargas en 7 materias. El
-  último envío fue el 27 de octubre», y cuántas escuelas de su departamento ya cargaron;
-- **cómo cargan los docentes**, en un recuadro arriba: el link del formulario (se puede tocar
-  en el PDF), sin usuario ni contraseña, una vez por materia y año, unos 10 minutos. Va arriba
-  porque es lo que el director reenvía; abajo se pasaba a una segunda hoja;
-- **materia por materia**: las 16, agrupadas por área, con una casilla por año. Cada casilla
-  dice cuántos docentes la cargaron (en azul), «sin cargas» (en blanco, con borde) o «no se
-  dicta» (en gris, según `anios_dictados`). Es la parte gráfica: se ve de un golpe qué falta.
-  **No dice «de 16 materias»**: ninguna escuela dicta todas, y sonaría a reproche. La lectura
-  aclara que si la escuela no dicta una materia, no hace falta cargarla;
-- **sus anexos**, si es una E.P.E.S.: cada uno con docentes, materias y último envío, o «Sin
+- la marca, «Avance de la carga», el nombre, la localidad, de qué E.P.E.S. es anexo (si lo
+  es) y la fecha;
+- una frase con la respuesta: «Ya cargaron 5 docentes, en 7 materias»;
+- **para cargar**, en una línea arriba: el link del formulario (se puede tocar en el PDF), sin
+  usuario ni contraseña, unos 10 minutos por materia. Va arriba porque es lo que el director
+  reenvía;
+- **docentes que cargaron cada materia**: las 16, agrupadas por área, con una casilla por año.
+  Cada casilla tiene el número de docentes que la cargaron (en azul), «sin cargas» (en blanco,
+  con borde) o «no se dicta» (en gris, según `anios_dictados`). Es la parte gráfica: se ve de
+  un golpe qué falta. **No dice «de 16 materias»**: ninguna escuela dicta todas, y sonaría a
+  reproche. Una línea abajo aclara que si la escuela no dicta una materia, no hace falta
+  cargarla;
+- **sus anexos**, si es una E.P.E.S.: cada uno con localidad, docentes y materias, o «Sin
   cargas todavía». Son los de la sede corregida o de la nómina, estén en el departamento que
   estén (los diez de la N° 39 van en el reporte de la N° 39).
+
+La primera versión tenía más texto (el último envío, cuántas escuelas del departamento ya
+cargaron, un párrafo sobre cómo cargar y otro sobre cómo leer la grilla, «3 docentes» en cada
+casilla) y el equipo pidió el 29/10/2026 que fuera más simple para los directores: se sacó todo
+eso.
 
 **Sin nombres de docentes**: cuenta, como la pantalla. Para eso `traerEnvios()` pide también
 el `anio` de cada envío (`porMateria` lleva `porAnio`). Con **un departamento** elegido, el
@@ -707,6 +712,31 @@ cada E.P.E.S. con sus anexos, y los anexos que no dependen de ninguna. Si un ane
 departamento depende de una E.P.E.S. de otro, entra el reporte de esa E.P.E.S.: si no, ese
 anexo quedaría afuera. Con toda la provincia no se ofrece, porque serían cientos de hojas. Una
 E.P.E.S. con pocos anexos entra en una hoja; con diez, la lista de anexos sigue en la segunda.
+
+**Mandarle el avance al director** (29/10/2026, pedido del equipo: «que el botón ya adjunte el
+PDF o imagen y el texto»: los directores no tienen cuenta ni tiempo para entrar a un link). En
+la ficha de la escuela y en su detalle, un bloque «Mandarle el avance al director». Lo que se
+manda es una **imagen**, no el PDF: en WhatsApp se ve en el chat sin abrir nada. La dibuja
+`imagenAvance()` en un canvas (sin librerías: los estilos del PDF son de impresión y una
+librería que captura la pantalla no los ve), con lo mismo que el PDF en una columna de
+1080 px y letra para leer en el celular. La acompaña un mensaje corto (`mensajeDirector()`),
+de tres renglones: cómo va, que lo revise con sus docentes y el link para cargar.
+
+**Ninguna página puede mandar sola un archivo por WhatsApp** a un número (haría falta la API
+de WhatsApp Business, con servidor y pago). Por eso:
+- **En la computadora**, «Por WhatsApp» abre el chat del director (`wa.me/549…`, el celular del
+  contacto con cargo de director, o el primero con celular; el de la sede si es un anexo sin
+  contacto propio) con el mensaje ya escrito, y deja la imagen copiada: en el chat se pega con
+  Ctrl+V y se manda. «Por correo» hace lo mismo con el correo oficial (`mailto:`, con asunto y
+  cuerpo; nunca el de la delegación). Sin celular, WhatsApp abre para elegir a quién. Si el
+  navegador no deja copiar la imagen, se baja y se adjunta, y el bloque lo dice.
+- **En el teléfono** (puntero grueso y `navigator.canShare`), un solo botón, «Mandar al
+  director», abre el menú de compartir del celular con la imagen y el mensaje juntos: se elige
+  WhatsApp (o el correo) y el director. La imagen se prepara al mostrar el botón, porque el
+  celular pide compartir enseguida después del toque.
+
+El PDF sigue, como «PDF para imprimir». Las escuelas escritas a mano por docentes no tienen el
+bloque: no tienen director cargado.
 
 **La ficha de la escuela** (27/10/2026, pedido del equipo: ver el contacto de cada escuela
 para llamarla). En las listas del seguimiento, el nombre de cada escuela abre una ficha:
@@ -1011,11 +1041,11 @@ nadie lee, el panel se explica solo: ilumina una parte de la pantalla y dice qu�
 - **Resultados**, diez pasos (el de «Datos de ejemplo» se sacó con el interruptor; el último,
   sumado el 30/10/2026, señala la cabecera y cuenta para qué son Seguimiento y Escuelas).
 - **Catálogo**, once (el último agregado: el orden de los saberes).
-- **Seguimiento** (30/10/2026), nueve: el alcance, la línea con la respuesta, las tres listas,
+- **Seguimiento** (30/10/2026), diez: el alcance, la línea con la respuesta, las tres listas,
   los departamentos, la ficha de cada escuela (contacto, WhatsApp, correo oficial, delegación,
   sede de un anexo), el reporte para la escuela (opcional: solo con una escuela o un
-  departamento elegido; si no, lo menciona el paso del Excel), el Excel para llamar y las
-  escritas a mano.
+  departamento elegido; si no, lo menciona el paso del Excel), mandarle el avance al director
+  (opcional: con una escuela elegida), el Excel para llamar y las escritas a mano.
 - **Escuelas** (30/10/2026), ocho: que editar no es publicar, buscar y filtrar, los
   departamentos, corregir una escuela, dar de baja (que no borra), agregar una escuela o un
   anexo, y publicar.
@@ -1454,6 +1484,13 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
   cierra; con toda la provincia no aparece el botón; no hay nombres de docentes. La E.P.E.S.
   N° 25 con tres anexos entra en una hoja. La barra no hace scroll horizontal en 1280, 1024 ni
   390 px. Recorrido en `v7`, con el paso nuevo
+
+- **Mandarle el avance al director, y el reporte más simple** (29/10/2026): ver «Mandarle el
+  avance al director». Probado en Chromium con un Supabase simulado: en la computadora,
+  «Por WhatsApp» abre `wa.me/5493704123456` con el mensaje y deja en el portapapeles la imagen
+  de la N° 39 (1080 × 2650, con sus 16 materias y sus 10 anexos); en el teléfono, compartir
+  recibe la imagen y el mensaje juntos; la ficha y el detalle muestran el bloque. El PDF quedó
+  con menos texto y sigue en una hoja para una E.P.E.S. con pocos anexos. Recorrido en `v8`
 
 **Pendiente**
 - El formulario escribe de verdad por defecto; `?demo` en el link es solo para mostrarlo sin
