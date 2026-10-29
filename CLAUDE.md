@@ -1381,13 +1381,12 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
   288 escuelas y 0 sin orden. Mientras nadie toque «Publicar», los docentes siguen viendo
   `datos/escuelas.json`
 
+- **Todo lo de la base al día** (30/10/2026): el equipo corrió en Supabase los correos
+  oficiales (`sql/privado/15_cargar_correos.sql`), la última versión de
+  `sql/15_unificar_escuelas.sql` (con `editar_escuela_agregada()`) y
+  `sql/mantenimiento/2026-10-27_sin_datos_de_ejemplo.sql`: ya no quedan datos inventados en la
+  base
+
 **Pendiente**
-- **Correr en el SQL Editor `sql/privado/15_cargar_correos.sql`** (el equipo lo tiene como
-  «6 - correos oficiales.sql»): hasta entonces la ficha no muestra los correos oficiales
-- **Volver a correr `sql/15_unificar_escuelas.sql`**: trae `editar_escuela_agregada()`. Hasta
-  entonces el lápiz avisa que falta ese paso
-- **Correr en el SQL Editor `sql/mantenimiento/2026-10-27_sin_datos_de_ejemplo.sql`**: hasta
-  entonces los datos inventados siguen en la base, aunque el panel ya no los muestra en ningún
-  lado
 - El formulario escribe de verdad por defecto; `?demo` en el link es solo para mostrarlo sin
   guardar. Repartir el link sin `?demo`
