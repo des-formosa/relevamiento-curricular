@@ -1562,12 +1562,13 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
   una variante, la forma correcta, «No.» y «NO TRABAJO» con el botón tocado entra y queda
   unificado, y su reenvío también; con el trigger roto a propósito el envío entra igual;
   `anon` y `authenticated` no ven las tablas ni llaman las funciones; deshacer todas las
-  equivalencias y todos los «no» deja los 285 envíos exactamente como estaban
+  equivalencias y todos los «no» deja los 285 envíos exactamente como estaban. **Instalado en
+  Supabase** (29/10/2026): el equipo corrió `sql/17` y el script de mantenimiento, y desde ahí
+  el trigger unifica cada envío nuevo
 
 **Pendiente**
-- Correr en Supabase `sql/17_textos_libres.sql` y después
-  `sql/mantenimiento/2026-10-29_unificar_textos_libres.sql`. El equipo revisa la lista (Excel
-  «unificacion-textos-libres») y lo que no corresponda se separa con `separar_variante()` o
+- El equipo revisa la lista (Excel «unificacion-textos-libres», con una columna
+  «Observaciones») y lo que no corresponda se separa con `separar_variante()` o
   `restaurar_texto_no()`
 - El formulario escribe de verdad por defecto; `?demo` en el link es solo para mostrarlo sin
   guardar. Repartir el link sin `?demo`
