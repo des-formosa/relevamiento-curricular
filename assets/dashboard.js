@@ -81,7 +81,8 @@
     seguimiento: { lugar: null, soloFaltan: false, agregadas: false, datos: null, contactos: null, sedes: null, cargando: false, error: null },
     // Unificar una agregada con la de la nómina: elegidas (id → destino que
     // se eligió en la lista), confirmando ({ id, destino }), aviso del último
-    unificar: { elegidas: new Map(), confirmando: null, guardando: false, error: null, aviso: null },
+    // editando: la escrita que se está corrigiendo (nombre, localidad, departamento)
+    unificar: { elegidas: new Map(), confirmando: null, editando: null, guardando: false, error: null, aviso: null },
     usuario: null,
     espacio_id: null,
     anio: 1,
@@ -1671,7 +1672,35 @@
   // el texto. Sin número: la única de la nómina en esa localidad, o la que
   // comparta casi todas las palabras del nombre. Si no hay una clara, ninguna.
   const PALABRAS_VACIAS = new Set(['e', 'p', 's', 'n', 'nro', 'numero', 'de', 'del', 'la', 'el', 'los', 'las', 'escuela', 'epes', 'colegio', 'secundaria', 'provincial', 'educacion', 'anexo', 'y']);
+  // Las palabras que distinguen un nombre: sin «escuela», «de», «n°»…
+  const palabrasDe = (t) => new Set(normalizarTexto(t).split(' ').filter((w) => w && !PALABRAS_VACIAS.has(w)));
+
+  // Si no hay una de la nómina clara, otra escrita a mano que parezca la
+  // misma («instituto san martin» e «Inst. Gral. San Martín»), aunque esté en
+  // otro departamento: el docente pudo elegirlo mal. Las abreviaturas cuentan
+  // por la palabra entera («inst» por «instituto»).
+  function sugerirOtraEscrita(e, depId) {
+    const p = palabrasDe(e.nombre);
+    if (!p.size) return null;
+    const coincide = (w, q) => q.has(w) || [...q].some((x) => x.length >= 3 && w.length >= 3 && (x.startsWith(w) || w.startsWith(x)));
+    let mejor = null;
+    let puntaje = 0;
+    for (const x of estado.escuelasAgregadas) {
+      if (x.id === e.id) continue;
+      const q = palabrasDe(x.nombre);
+      if (!q.size) continue;
+      const comunes = [...p].filter((w) => coincide(w, q)).length;
+      const valor = comunes / Math.max(p.size, q.size) + (x.departamento_id === depId ? 0.05 : 0);
+      if (valor > puntaje) { puntaje = valor; mejor = x; }
+    }
+    return puntaje >= 0.75 ? mejor : null;
+  }
+
   function sugerirDestino(e, depId) {
+    return sugerirDeLaNomina(e, depId) || sugerirOtraEscrita(e, depId);
+  }
+
+  function sugerirDeLaNomina(e, depId) {
     const texto = normalizarTexto(e.nombre);
     const delDep = ((Catalogo.buscarEscuelas('', depId).grupos[0] || {}).escuelas || []);
     const num = (texto.match(/\b(\d{1,3})\b/) || [])[1];
@@ -1685,29 +1714,34 @@
       const enLaLocalidad = delDep.filter((x) => normalizarTexto(x.localidad || '') === loc);
       if (enLaLocalidad.length === 1) return enLaLocalidad[0];
     }
-    const palabras = (t) => new Set(normalizarTexto(t).split(' ').filter((w) => w && !PALABRAS_VACIAS.has(w)));
-    const p = palabras(e.nombre);
+    const p = palabrasDe(e.nombre);
     if (!p.size) return null;
     const parecidas = delDep.filter((x) => {
-      const q = palabras(`${x.nombre} ${x.localidad || ''}`);
+      const q = palabrasDe(`${x.nombre} ${x.localidad || ''}`);
       return [...p].filter((w) => q.has(w)).length / p.size >= 0.8;
     });
     return parecidas.length === 1 ? parecidas[0] : null;
   }
 
-  // La lista para elegir: la sugerida arriba, después las de su departamento
-  // y las demás, y al final las otras agregadas (para juntar dos que
-  // escribieron distinto la misma escuela que falta)
+  // La lista para elegir: la sugerida arriba; después las otras escritas a
+  // mano (para juntar dos que escribieron distinto la misma escuela que falta
+  // en la nómina), las de su departamento primero; y la nómina, su
+  // departamento primero.
   function opcionesDestino(e, depId, elegida, sugerida) {
     const opcion = (x, extra) => `<option value="${esc(x.id)}" ${x.id === elegida ? 'selected' : ''}>${esc(x.nombre)}${x.localidad ? ` · ${esc(x.localidad)}` : ''}${extra || ''}</option>`;
     const grupos = Catalogo.buscarEscuelas('').grupos;
     const orden = grupos.filter((g) => g.departamento.id === depId).concat(grupos.filter((g) => g.departamento.id !== depId));
-    const otras = estado.escuelasAgregadas.filter((x) => x.id !== e.id);
+    const otra = (x) => x.id !== e.id && (!sugerida || x.id !== sugerida.id);
+    const otras = estado.escuelasAgregadas.filter((x) => otra(x) && x.departamento_id === depId)
+      .concat(estado.escuelasAgregadas.filter((x) => otra(x) && x.departamento_id !== depId));
+    const escrita = (x) => !Catalogo.escuela(x.id);
     return `<option value="" ${elegida ? '' : 'selected'}>Elegí cuál es…</option>
-      ${sugerida ? `<optgroup label="Parece ser">${opcion(sugerida)}</optgroup>` : ''}
-      ${orden.map((g) => `<optgroup label="Departamento ${esc(g.departamento.nombre)}">${g.escuelas.filter((x) => !sugerida || x.id !== sugerida.id).map((x) => opcion(x)).join('')}</optgroup>`).join('')}
-      ${otras.length ? `<optgroup label="Otras agregadas por docentes">${otras.map((x) => opcion(x, ' (agregada)')).join('')}</optgroup>` : ''}`;
+      ${sugerida ? `<optgroup label="Parece ser">${opcion(sugerida, escrita(sugerida) ? ' (también escrita a mano)' : '')}</optgroup>` : ''}
+      ${otras.length ? `<optgroup label="Otras escritas a mano">${otras.map((x) => opcion(x, ` (${esc(nombreDepartamento(x.departamento_id))})`)).join('')}</optgroup>` : ''}
+      ${orden.map((g) => `<optgroup label="Nómina · ${esc(g.departamento.nombre)}">${g.escuelas.filter((x) => !sugerida || x.id !== sugerida.id).map((x) => opcion(x)).join('')}</optgroup>`).join('')}`;
   }
+
+  const nombreDepartamento = (id) => { const d = Catalogo.departamento(id); return d ? d.nombre : 'sin departamento'; };
 
   function nombreEscuela(id) {
     const e = Catalogo.escuela(id) || estado.escuelasAgregadas.find((x) => x.id === id);
@@ -1725,12 +1759,29 @@
     const filas = pendientes.map(({ e, g: suGrupo }) => {
       const cargas = `${numero(e.cargas)} ${plural(e.cargas, 'carga', 'cargas')} de ${numero(e.docentes)} ${plural(e.docentes, 'docente', 'docentes')}`;
       const donde = [e.localidad, suGrupo.id ? `departamento ${suGrupo.nombre}` : ''].filter(Boolean).join(' · ');
-      const escrita = `<div class="t-unif__escrita"><strong>«${esc(e.nombre)}»</strong><span>${esc(donde)}${donde ? ' · ' : ''}${cargas}</span></div>`;
+      const lapiz = puede && !u.confirmando && !u.editando
+        ? `<button type="button" class="t-ficha__icono" data-accion="unif-editar" data-id="${esc(e.id)}" title="Corregir cómo quedó escrita" aria-label="Corregir «${esc(e.nombre)}»">${IconoFicha.corregir}</button>` : '';
+      const escrita = `<div class="t-unif__escrita"><div class="t-unif__nombre"><strong>«${esc(e.nombre)}»</strong>${lapiz}</div><span>${esc(donde)}${donde ? ' · ' : ''}${cargas}</span></div>`;
       if (!puede) return `<li class="t-unif__fila" data-agregada="${esc(e.id)}">${escrita}</li>`;
+      if (u.editando === e.id) {
+        const depActual = suGrupo.id || '';
+        return `<li class="t-unif__fila t-unif__fila--confirmando" data-agregada="${esc(e.id)}">
+          <form class="t-ficha__form t-unif__editar" data-form="unif-editar" data-id="${esc(e.id)}" novalidate aria-label="Corregir la escuela escrita a mano">
+            <label class="t-ficha__campo t-unif__editar-nombre"><span>Nombre de la escuela</span><input name="nombre" type="text" value="${esc(e.nombre)}" autocomplete="off"></label>
+            <label class="t-ficha__campo"><span>Localidad</span><input name="localidad" type="text" value="${esc(e.localidad || '')}" autocomplete="off"></label>
+            <label class="t-ficha__campo"><span>Departamento</span><select name="departamento">${Catalogo.departamentos().map((d) =>
+              `<option value="${esc(d.id)}" ${d.id === depActual ? 'selected' : ''}>${esc(d.nombre)}</option>`).join('')}</select></label>
+            <div class="t-ficha__form-acciones">
+              <button type="submit" class="t-ficha__si" ${u.guardando ? 'disabled' : ''}>${u.guardando ? 'Guardando…' : 'Guardar'}</button>
+              <button type="button" class="t-ficha__enlace" data-accion="unif-cancelar">Cancelar</button>
+              <span class="t-unif__editar-nota">${cargas}. Si es la misma que otra, mejor unificalas.</span>
+            </div>
+          </form></li>`;
+      }
       if (u.confirmando && u.confirmando.id === e.id) {
         return `<li class="t-unif__fila t-unif__fila--confirmando" data-agregada="${esc(e.id)}">${escrita}
           <div class="t-unif__confirmar">
-            <p>${plural(e.cargas, 'Su carga pasa', `Sus ${numero(e.cargas)} cargas pasan`)} a <strong>${esc(nombreEscuela(u.confirmando.destino))}</strong> y «${esc(e.nombre)}» deja de aparecer aparte. Si alguien vuelve a escribirla así, su carga va directo ahí.</p>
+            <p>${plural(e.cargas, 'Su carga pasa', `Sus ${numero(e.cargas)} cargas pasan`)} a <strong>${esc(nombreEscuela(u.confirmando.destino))}</strong>${Catalogo.escuela(u.confirmando.destino) ? '' : ' (también escrita a mano)'} y «${esc(e.nombre)}» deja de aparecer aparte. Si alguien vuelve a escribirla así, su carga va directo ahí.</p>
             <div class="t-ficha__form-acciones">
               <button type="button" class="t-ficha__si" data-accion="unif-confirmar" ${u.guardando ? 'disabled' : ''}>${u.guardando ? 'Unificando…' : 'Unificar'}</button>
               <button type="button" class="t-ficha__enlace" data-accion="unif-cancelar">Cancelar</button>
@@ -1741,9 +1792,9 @@
       const elegida = u.elegidas.has(e.id) ? u.elegidas.get(e.id) : (sugerida ? sugerida.id : '');
       return `<li class="t-unif__fila" data-agregada="${esc(e.id)}">${escrita}
         <div class="t-unif__elegir">
-          <label class="t-ficha__campo"><span>Es de la nómina${sugerida && elegida === sugerida.id ? ' (sugerida, revisala)' : ''}</span>
+          <label class="t-ficha__campo"><span>Es la misma que${sugerida && elegida === sugerida.id ? ' (sugerida, revisala)' : ''}</span>
             <select data-cambio="unif-destino" data-id="${esc(e.id)}">${opcionesDestino(e, suGrupo.id, elegida, sugerida)}</select></label>
-          <button type="button" class="t-ficha__si" data-accion="unif-pedir" data-id="${esc(e.id)}" ${u.confirmando || u.guardando ? 'disabled' : ''}>Unificar</button>
+          <button type="button" class="t-ficha__si" data-accion="unif-pedir" data-id="${esc(e.id)}" ${u.confirmando || u.editando || u.guardando ? 'disabled' : ''}>Unificar</button>
         </div></li>`;
     }).join('');
     const hechas = unificadasDe(g);
@@ -1751,7 +1802,7 @@
         <h2 class="t-seg-titulo">Agregadas por docentes <span>${pendientes.length ? `${numero(pendientes.length)} ${plural(pendientes.length, 'escrita', 'escritas')} a mano${g ? ` en el departamento ${esc(g.nombre)}` : ''}` : ''}</span></h2>
         ${sinBase}${aviso}${error}
         ${pendientes.length
-          ? `<p class="t-seg-nota">Si una ya está en la nómina, elegí cuál es y unificala: sus cargas pasan a esa escuela. Si de verdad falta en la nómina, dejala como está.</p>
+          ? `<p class="t-seg-nota">Si una ya está en la nómina, o si dos docentes escribieron distinto la misma escuela, elegí cuál es y unificalas: las cargas pasan a esa. Con el lápiz se corrige cómo quedó escrita.</p>
         <ul class="t-unif">${filas}</ul>`
           : `<p class="t-seg-vacia">No queda ninguna escuela escrita a mano${g ? ` en el departamento ${esc(g.nombre)}` : ''} para revisar.</p>`}
       </section>
@@ -1780,6 +1831,26 @@
     const repetidas = data.reemplazadas
       ? ` ${numero(data.reemplazadas)} ${plural(data.reemplazadas, 'docente había', 'docentes habían')} cargado la misma materia en las dos: quedó su envío más nuevo.` : '';
     u.aviso = { agregada_id: id, texto: `Listo: «${esc(agregada.nombre)}» quedó unificada con <strong>${esc(nombreEscuela(destino))}</strong>.${repetidas}` };
+    await cargarEscuelasAgregadas();
+    await cargarSeguimiento();
+  }
+
+  async function editarAgregada(form) {
+    const u = estado.unificar;
+    const datos = Object.fromEntries(new FormData(form).entries());
+    u.guardando = true; u.error = null; render();
+    const { data, error } = await sb.rpc('editar_escuela_agregada', {
+      p_id: form.dataset.id, p_nombre: datos.nombre, p_localidad: datos.localidad, p_departamento_id: datos.departamento,
+    });
+    u.guardando = false;
+    if (error || !data || data.error) {
+      u.error = (data && data.error)
+        || (error && /editar_escuela_agregada/.test(error.message || '') ? 'Para corregir falta un paso en la base: volvé a correr sql/15_unificar_escuelas.sql entero.' : 'No pudimos guardar la corrección. Revisá la conexión y volvé a intentar.');
+      render();
+      return;
+    }
+    u.editando = null;
+    u.aviso = { agregada_id: null, texto: `Corregida: ahora dice «${esc(data.nombre)}»${data.localidad ? `, ${esc(data.localidad)}` : ''}, departamento ${esc(nombreDepartamento(data.departamento_id))}.` };
     await cargarEscuelasAgregadas();
     await cargarSeguimiento();
   }
@@ -2455,7 +2526,7 @@
         const agregadas = d.solo === 'agregadas';
         if (s.soloFaltan !== solo || s.agregadas !== agregadas) {
           s.soloFaltan = solo; s.agregadas = agregadas;
-          Object.assign(estado.unificar, { confirmando: null, error: null, aviso: null });
+          Object.assign(estado.unificar, { confirmando: null, editando: null, error: null, aviso: null });
           escribirHashSeguimiento(); render();
         }
         break;
@@ -2470,7 +2541,14 @@
         render();
         break;
       }
-      case 'unif-cancelar': estado.unificar.confirmando = null; estado.unificar.error = null; render(); break;
+      case 'unif-cancelar': Object.assign(estado.unificar, { confirmando: null, editando: null, error: null }); render(); break;
+      case 'unif-editar': {
+        Object.assign(estado.unificar, { editando: d.id, confirmando: null, error: null, aviso: null });
+        render();
+        const campo = app.querySelector('.t-unif__editar input[name="nombre"]');
+        if (campo) { campo.focus(); campo.select(); }
+        break;
+      }
       case 'unif-confirmar': unificar(); break;
       case 'unif-deshacer': deshacerUnificacion(d.id); break;
       case 'seg-lugar':
@@ -2546,6 +2624,8 @@
   });
 
   app.addEventListener('submit', (e) => {
+    const correccion = e.target.closest('[data-form="unif-editar"]');
+    if (correccion) { e.preventDefault(); editarAgregada(correccion); return; }
     const form = e.target.closest('[data-form="ingreso"]');
     if (!form) return;
     e.preventDefault();

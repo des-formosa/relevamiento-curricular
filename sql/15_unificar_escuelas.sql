@@ -17,7 +17,13 @@
 --   - se puede deshacer: vuelven las cargas que se movieron, salvo las que se
 --     descartaron por repetidas.
 --
--- Se escribe solo por unificar_escuela() y separar_escuela(); la lee el equipo.
+-- Además, una escrita se puede corregir (nombre, localidad, departamento) con
+-- editar_escuela_agregada(), y dos escritas que son la misma escuela que falta
+-- en la nómina («instituto san martin» y «Inst. San Martín») se unifican entre
+-- sí igual que con una de la nómina.
+--
+-- Se escribe solo por unificar_escuela(), separar_escuela() y
+-- editar_escuela_agregada(); la lee el equipo.
 --
 -- Se puede correr más de una vez.
 -- ============================================================================
@@ -218,11 +224,87 @@ begin
 end;
 $$;
 
+-- ----------------------------------------------------------------------------
+-- editar_escuela_agregada(id, nombre, localidad, departamento)
+--
+-- Corrige cómo quedó escrita: el nombre, la localidad o el departamento (un
+-- docente pudo elegir mal el departamento). El id no cambia, y como
+-- registrar_aporte() arma el id de una escrita con su nombre original, un
+-- docente que la vuelva a escribir como antes también llega acá.
+-- Devuelve la escuela como quedó, o { error }.
+-- ----------------------------------------------------------------------------
+
+create or replace function public.editar_escuela_agregada(
+  p_id               text,
+  p_nombre           text,
+  p_localidad        text,
+  p_departamento_id  text
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_nombre     text := regexp_replace(btrim(coalesce(p_nombre, '')), '\s+', ' ', 'g');
+  v_localidad  text := nullif(regexp_replace(btrim(coalesce(p_localidad, '')), '\s+', ' ', 'g'), '');
+  v_norm       text;
+  v_origen     text;
+  v_otra       text;
+begin
+  if not public.es_equipo() then
+    return jsonb_build_object('error', 'Tu usuario no puede corregir escuelas.');
+  end if;
+  select e.origen into v_origen from public.escuelas e where e.id = p_id;
+  if v_origen is null then
+    return jsonb_build_object('error', 'No encontramos esa escuela. Volvé a abrir el seguimiento.');
+  end if;
+  if v_origen <> 'agregada_por_docente' then
+    return jsonb_build_object('error', 'Solo se pueden corregir las escuelas que escribieron los docentes.');
+  end if;
+  if exists (select 1 from public.escuelas_unificadas where agregada_id = p_id) then
+    return jsonb_build_object('error', 'Esa escuela ya está unificada con otra: corregí aquella.');
+  end if;
+  v_norm := public.normalizar_texto(v_nombre);
+  if v_norm = '' then
+    return jsonb_build_object('error', 'Escribí el nombre de la escuela.');
+  end if;
+  if char_length(v_nombre) > 200 or char_length(coalesce(v_localidad, '')) > 100 then
+    return jsonb_build_object('error', 'El nombre o la localidad son demasiado largos.');
+  end if;
+  if not exists (select 1 from public.departamentos where id = p_departamento_id) then
+    return jsonb_build_object('error', 'Elegí el departamento.');
+  end if;
+
+  -- Si así ya se llama otra en ese departamento, lo que corresponde es unificar
+  select e.origen into v_otra
+    from public.escuelas e
+   where e.departamento_id = p_departamento_id
+     and e.nombre_normalizado = v_norm
+     and e.id <> p_id
+     and not exists (select 1 from public.escuelas_unificadas u where u.agregada_id = e.id)
+   order by (e.origen = 'oficial') desc
+   limit 1;
+  if v_otra = 'oficial' then
+    return jsonb_build_object('error', 'Así se llama una escuela de la nómina en ese departamento: en vez de corregirla, unificala con esa.');
+  elsif v_otra is not null then
+    return jsonb_build_object('error', 'Ya hay otra escrita igual en ese departamento: unificalas.');
+  end if;
+
+  update public.escuelas
+     set nombre = v_nombre, localidad = v_localidad, departamento_id = p_departamento_id, nombre_normalizado = v_norm
+   where id = p_id;
+  return jsonb_build_object('id', p_id, 'nombre', v_nombre, 'localidad', v_localidad, 'departamento_id', p_departamento_id);
+end;
+$$;
+
 revoke execute on function public.unificar_escuela(text, text) from public, anon;
 revoke execute on function public.separar_escuela(text) from public, anon;
 revoke execute on function public.redirigir_escuela_unificada() from public, anon, authenticated;
 grant  execute on function public.unificar_escuela(text, text) to authenticated;
 grant  execute on function public.separar_escuela(text) to authenticated;
+revoke execute on function public.editar_escuela_agregada(text, text, text, text) from public, anon;
+grant  execute on function public.editar_escuela_agregada(text, text, text, text) to authenticated;
 
 -- Que la API de Supabase vea enseguida las tablas y funciones nuevas
 notify pgrst, 'reload schema';
