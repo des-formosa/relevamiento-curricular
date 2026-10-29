@@ -132,7 +132,7 @@ const Tour = (function () {
         objetivo: '[data-accion="seg-mandar"]',
         opcional: true,
         titulo: 'Mandarle el avance al director',
-        texto: '«Por WhatsApp» abre el chat del director con un mensaje corto ya escrito y deja copiada una imagen del avance: en el chat, pegala con Ctrl+V y mandá. «Por correo» hace lo mismo con su correo oficial. En el celular, un solo botón abre el menú de compartir con la imagen y el mensaje juntos.',
+        texto: '«Por WhatsApp» abre el chat del director con un mensaje corto ya escrito y deja copiada una imagen del avance: en el chat, pegala con Ctrl+V y mandá. «Por correo» hace lo mismo con su correo oficial. En el celular, abre la aplicación directo en su chat: la imagen se pega manteniendo apretado donde se escribe.',
       },
       {
         objetivo: '[data-accion="abrir-control"]',

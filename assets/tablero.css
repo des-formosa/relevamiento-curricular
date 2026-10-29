@@ -1993,7 +1993,7 @@ body.tour-abierto { overflow: hidden; }
 .t-mandar__boton { height: 36px; }
 .t-mandar__boton--claro { background: var(--blanco); color: var(--azul); box-shadow: inset 0 0 0 1.5px var(--azul); }
 .t-mandar__boton--claro:hover { background: var(--azul-suave); }
-.t-mandar__estado { margin: 0; }
+.t-mandar__estado, .t-mandar__otra { margin: 0; }
 
 @media (max-width: 899px) {
   /* En el teléfono, una hoja que sube desde abajo, como las ventanas */
