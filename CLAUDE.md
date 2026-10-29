@@ -1211,11 +1211,13 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
   con la de hoy elegida; guardar, «de ninguna», volver a la de la nómina y cancelar; al recargar,
   el detalle de la escuela muestra la corregida; sin la tabla, sin «Cambiar»; en el teléfono la
   lista entra y es alta para el dedo. De paso se arregló que el primer clic dentro de una ficha
-  de título largo cayera en otro lado (ver «La ficha de la escuela»)
+  de título largo cayera en otro lado (ver «La ficha de la escuela»). **Instalado en Supabase**
+  (29/10/2026). La primera corrida falló con «type public.sedes_anexos does not exist»:
+  `guardar_sede()` declaraba una variable del tipo de la tabla, y PL/pgSQL no la acepta si la
+  tabla todavía no existe al crear la función. Ahora devuelve el jsonb armado a mano y el
+  archivo termina con una consulta que confirma la instalación
 
 **Pendiente**
-- **Correr en el SQL Editor `sql/14_sedes_anexos.sql`**: hasta entonces la ficha muestra la
-  sede de la nómina y no ofrece «Cambiar»
 - **Correr en el SQL Editor `sql/mantenimiento/2026-10-27_sin_datos_de_ejemplo.sql`**: hasta
   entonces los datos inventados siguen en la base, aunque el panel ya no los muestra en ningún
   lado
