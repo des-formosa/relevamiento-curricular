@@ -800,7 +800,7 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
   }
   .t-contexto__texto { font-size: 17px; line-height: 1.4; }
   .t-vistas { align-self: stretch; }
-  .t-vista { flex: 1 1 0; justify-content: center; height: 46px; font-size: 16px; }
+  .t-vista { flex: 1 1 0; justify-content: center; height: auto; min-height: 46px; padding: 6px 2px; text-align: center; line-height: 1.2; font-size: 16px; }
 
   /* Cuerpo: los tres trimestres, uno debajo del otro */
   .t-cuerpo { padding: 0 16px 24px; }
@@ -1768,6 +1768,38 @@ body.tour-abierto { overflow: hidden; }
 .t-seg-volver { flex-shrink: 0; font-size: 16.5px; }
 .t-seg-tabla--faltan .t-seg-localidad { width: 40%; }
 .t-seg-vacia { margin: 0; font-family: var(--texto); font-size: 17px; color: var(--tinta-2); }
+
+/* Unificar las escritas a mano con la de la nómina: una fila por escrita,
+   lo que escribió el docente a la izquierda y la lista para elegir a la derecha */
+.t-seg-nota { margin: 0; color: var(--tinta-2); line-height: 1.45; max-width: 760px; }
+.t-unif { margin: 0; padding: 0; list-style: none; background: var(--blanco); border: 1px solid var(--t-borde); }
+.t-unif__fila {
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: 10px 24px; align-items: center;
+  padding: 14px 16px; border-top: 1px solid var(--linea);
+}
+.t-unif__fila:first-child { border-top: none; }
+.t-unif__fila--confirmando { background: var(--gris-claro-3); }
+.t-unif__escrita { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.t-unif__escrita strong { color: var(--t-tinta); overflow-wrap: anywhere; }
+.t-unif__escrita span { font-size: 14px; color: var(--t-gris-2); }
+.t-unif__elegir { display: flex; align-items: flex-end; gap: 10px; min-width: 0; }
+.t-unif__elegir .t-ficha__campo { flex: 1; }
+.t-unif__elegir .t-ficha__si { flex-shrink: 0; height: 36px; }
+.t-unif__confirmar { display: flex; flex-direction: column; gap: 8px; }
+.t-unif__confirmar p { margin: 0; color: var(--t-tinta); line-height: 1.4; }
+.t-unif-aviso {
+  display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 16px;
+  margin: 0; padding: 10px 14px; border-left: 3px solid var(--azul); background: var(--blanco);
+  color: var(--t-tinta); line-height: 1.4;
+}
+.t-unif--hechas li { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 16px; padding: 10px 16px; border-top: 1px solid var(--linea); color: var(--tinta-2); }
+.t-unif--hechas li:first-child { border-top: none; }
+@media (max-width: 899px) {
+  .t-unif__fila { grid-template-columns: 1fr; }
+  .t-unif__elegir { flex-direction: column; align-items: stretch; }
+  .t-unif__elegir .t-ficha__si { height: 44px; }
+  .t-unif__elegir select { height: 46px; font-size: 16px; }
+}
 
 /* En el teléfono cada escuela es un renglón de texto: el nombre, la
    localidad y debajo los números con su rótulo */

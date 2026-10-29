@@ -99,6 +99,7 @@ fijada, nunca por bundler.
     ├── 12_reemplazar_materia.sql  subir la planilla de una materia y reemplazarla
     ├── 13_contactos_escuelas.sql  contactos de cada escuela, solo para el equipo
     ├── 14_sedes_anexos.sql  de qué E.P.E.S. depende cada anexo, cuando el equipo la corrige
+    ├── 15_unificar_escuelas.sql  unir una escuela escrita a mano con la de la nómina
     ├── privado/            lo que genera generar_contactos.py: datos personales, no se versiona
     ├── mantenimiento/      scripts de una sola vez, con fecha; no forman parte de la instalación
     └── generar_cargas.py   regenera 06, 07 y 08 cuando cambian los JSON
@@ -722,6 +723,38 @@ salvo en las escuelas donde el equipo ya agregó o corrigió algo: ahí manda lo
 Mientras la tabla no exista, el seguimiento anda igual y la ficha dice que los contactos
 todavía no están cargados.
 
+**Unificar las escritas a mano** (29/10/2026, pedido del equipo técnico: «ponían que no
+estaban en el sistema pero están, y necesitamos unificar los datos»). Con «no encuentro mi
+escuela» algunos docentes escribieron a mano una escuela que sí está en la nómina («epes 2
+pirane»), y sus cargas quedaban aparte. Una tercera solapa, **«Agregadas por docentes (N)»**,
+aparece al lado de las otras dos cuando hay alguna (también con un departamento elegido;
+`&agregadas=1` en el hash):
+
+- Una fila por escrita: lo que escribió el docente, entre comillas, con su localidad,
+  departamento y cuántas cargas de cuántos docentes; a la derecha, «Es de la nómina» con la
+  lista de las 288 (su departamento primero, y al final las otras escritas, para juntar dos que
+  escribieron distinto una escuela que de verdad falta) y «Unificar».
+- **Viene elegida la que parece ser**, rotulada «(sugerida, revisala)», si hay una clara
+  (`sugerirDestino()`): con número, la E.P.E.S. de ese número en el mismo departamento, y entre
+  la común, la E.I.B. y la agraria, la que diga el texto; sin número, la única de la nómina en
+  esa localidad, o la que comparte casi todas las palabras del nombre. Si no hay una clara,
+  «Elegí cuál es…».
+- «Unificar» pide confirmar en la misma fila («Sus 2 cargas pasan a E.P.E.S. N° 2 y «epes 2
+  pirane» deja de aparecer aparte»). Hecho, un aviso lo dice, con «Deshacer», y la escrita pasa
+  a **«Ya unificadas»**, abajo, cada una con su «Deshacer».
+- La ficha de una escrita tiene «Unificarla con una de la nómina →», que lleva ahí.
+
+En la base (`sql/15_unificar_escuelas.sql`), `unificar_escuela()` pasa las cargas de la escrita
+a la elegida; si un docente cargó la misma materia y año en las dos, queda el envío más nuevo,
+como al reenviar (el otro se borra, y lo dice el aviso). Pasan también sus contactos. La
+escrita no se borra —la base la necesita— pero queda anotada en `escuelas_unificadas` y deja
+de ofrecerse en Resultados y en el seguimiento. **Si otro docente vuelve a escribirla igual**,
+`registrar_aporte()` la encuentra por el nombre y un trigger en `aportes`
+(`redirigir_escuela_unificada`) manda el envío a la elegida; un reenvío reemplaza al de ahí.
+`separar_escuela()` deshace: vuelven las cargas movidas y las que llegaron después por el nombre
+(anotadas en `aportes_unificados`); las descartadas por repetidas no. Mientras el SQL no
+esté, la solapa no aparece.
+
 No tiene recorrido guiado: si algo necesitara explicación, estaría mal.
 
 ### Editar el catálogo (assets/editor.js + sql/09_edicion_catalogo.sql)
@@ -1217,7 +1250,22 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
   tabla todavía no existe al crear la función. Ahora devuelve el jsonb armado a mano y el
   archivo termina con una consulta que confirma la instalación
 
+- **Unificar las escuelas escritas a mano** (29/10/2026): ver «Unificar las escritas a mano».
+  `sql/15` probado contra PostgreSQL 16 con envíos de verdad por `registrar_aporte()`: se puede
+  repetir; tres docentes en «epes 2 pirane», dos de ellos también en la E.P.E.S. N° 2, quedan
+  todos en la N° 2 con el envío más nuevo de cada uno; un envío nuevo con el mismo nombre va
+  directo a la N° 2 y un reenvío reemplaza; deshacer devuelve las movidas y las llegadas
+  después; los errores (escuela oficial, inexistente, ya unificada, sin elegir) y un usuario
+  que no es del equipo reciben su mensaje; `anon` no lee ni ejecuta. En Chromium con un
+  Supabase simulado: la solapa cuenta las escritas, sugiere la N° 2, la N° 41 y la E.I.B. N° 3
+  (no la común), avisa si no se eligió nada, cancelar no toca la base, unificar las suma a la
+  N° 2 y la pasa a «Ya unificadas», deshacer la devuelve, con un departamento solo las suyas, la
+  ficha lleva ahí, sin la tabla no aparece la solapa y en el teléfono no hay scroll horizontal.
+  De paso, las solapas del seguimiento en el teléfono crecen en alto en vez de pisar el texto
+
 **Pendiente**
+- **Correr en el SQL Editor `sql/15_unificar_escuelas.sql`**: hasta entonces la solapa
+  «Agregadas por docentes» no aparece
 - **Correr en el SQL Editor `sql/mantenimiento/2026-10-27_sin_datos_de_ejemplo.sql`**: hasta
   entonces los datos inventados siguen en la base, aunque el panel ya no los muestra en ningún
   lado

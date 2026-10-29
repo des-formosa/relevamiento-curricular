@@ -75,9 +75,13 @@
     // Seguimiento de la carga: cuántos docentes cargaron en cada escuela, de
     // todas las materias. lugar = null (toda la provincia), el id de un
     // departamento o el de una escuela (no hay ids repetidos entre los dos).
-    // soloFaltan: mostrar solo las escuelas que todavía no cargaron
+    // soloFaltan: mostrar solo las escuelas que todavía no cargaron;
+    // agregadas: las que escribieron los docentes, para unificarlas con la nómina
     // contactos: Map escuela_id → [contacto], o null si la base todavía no los tiene
-    seguimiento: { lugar: null, soloFaltan: false, datos: null, contactos: null, sedes: null, cargando: false, error: null },
+    seguimiento: { lugar: null, soloFaltan: false, agregadas: false, datos: null, contactos: null, sedes: null, cargando: false, error: null },
+    // Unificar una agregada con la de la nómina: elegidas (id → destino que
+    // se eligió en la lista), confirmando ({ id, destino }), aviso del último
+    unificar: { elegidas: new Map(), confirmando: null, guardando: false, error: null, aviso: null },
     usuario: null,
     espacio_id: null,
     anio: 1,
@@ -89,7 +93,8 @@
     cargandoDatos: false,
     errorDatos: null,
     abiertos: new Set(),
-    escuelasAgregadas: [],
+    escuelasAgregadas: [],            // las que escribieron los docentes y no se unificaron
+    unificadas: null,                 // [{ agregada, destino_id, … }], o null sin sql/15
     ingreso: { email: '', error: null, enviando: false },
     // Descargar: que = 'materia' (todos los años) | 'anio' (el que se mira) |
     //   'control' (seguimiento de la carga, uso interno) | 'curricula' (sin resultados);
@@ -124,6 +129,7 @@
     const h = new URLSearchParams();
     h.set('seguimiento', estado.seguimiento.lugar || '');
     if (estado.seguimiento.soloFaltan) h.set('faltan', '1');
+    if (estado.seguimiento.agregadas) h.set('agregadas', '1');
     history.replaceState(null, '', '#' + h.toString());
   }
 
@@ -172,9 +178,18 @@
     return { contexto: crudo.contexto || { docentes: 0, escuelas: 0, respuestas: 0 }, saberes, porTrimestre };
   }
 
+  // Las que escribieron los docentes. Las ya unificadas con una de la nómina
+  // (sql/15) no se ofrecen: sus cargas están en la otra.
   async function cargarEscuelasAgregadas() {
-    const { data } = await sb.from('escuelas').select('id, nombre, localidad, departamento_id').eq('origen', 'agregada_por_docente').order('nombre');
-    estado.escuelasAgregadas = data || [];
+    const [{ data }, unif] = await Promise.all([
+      sb.from('escuelas').select('id, nombre, localidad, departamento_id').eq('origen', 'agregada_por_docente').order('nombre'),
+      sb.from('escuelas_unificadas').select('agregada_id, destino_id, cargas_movidas, unificada_en').order('unificada_en', { ascending: false }),
+    ]);
+    const todas = data || [];
+    const porId = new Map(todas.map((e) => [e.id, e]));
+    estado.unificadas = unif.error ? null : (unif.data || []).map((u) => Object.assign({ agregada: porId.get(u.agregada_id) || { id: u.agregada_id, nombre: u.agregada_id } }, u));
+    const unidas = new Set((estado.unificadas || []).map((u) => u.agregada_id));
+    estado.escuelasAgregadas = todas.filter((e) => !unidas.has(e.id));
   }
 
   /* ---------- Seguimiento de la carga ---------- */
@@ -253,7 +268,8 @@
         g = porDepartamento.get('') || { id: '', nombre: 'Sin departamento', escuelas: [], extras: [] };
         if (!porDepartamento.has('')) { porDepartamento.set('', g); grupos.push(g); }
       }
-      g.extras.push(fila(e, e.origen === 'agregada_por_docente' ? 'la agregó un docente' : 'ya no está en la nómina'));
+      g.extras.push(Object.assign(fila(e, e.origen === 'agregada_por_docente' ? 'la agregó un docente' : 'ya no está en la nómina'),
+        { agregada: e.origen === 'agregada_por_docente' }));
     }
 
     for (const g of grupos) {
@@ -342,6 +358,7 @@
     const hash = new URLSearchParams(window.location.hash.replace(/^#/, ''));
     if (hash.has('seguimiento')) {
       estado.seguimiento.soloFaltan = hash.get('faltan') === '1';
+      estado.seguimiento.agregadas = hash.get('agregadas') === '1';
       irAlSeguimiento(hash.get('seguimiento'));
       return;
     }
@@ -416,7 +433,7 @@
     // mano: el que entra después tiene que ver los resultados, no el editor
     estado.modo = 'resultados';
     Editor.limpiar();
-    estado.seguimiento = { lugar: null, soloFaltan: false, datos: null, contactos: null, sedes: null, cargando: false, error: null };
+    estado.seguimiento = { lugar: null, soloFaltan: false, agregadas: false, datos: null, contactos: null, sedes: null, cargando: false, error: null };
     Ficha.cerrar();
     history.replaceState(null, '', window.location.pathname + window.location.search);
     estado.pantalla = 'ingreso';
@@ -1621,16 +1638,159 @@
           ? `<strong>${numero(c.faltan)} ${plural(c.faltan, 'escuela todavía no cargó', 'escuelas todavía no cargaron')}</strong>.`
           : 'Ya cargaron todas las escuelas.');
     }
-    // Dos formas de ver la misma lista, como Detalle y Mapa de calor
-    const solapa = (solo, titulo) =>
-      `<button type="button" class="t-vista ${estado.seguimiento.soloFaltan === solo ? 't-vista--activa' : ''}" data-accion="seg-solo" data-solo="${solo ? '1' : ''}" aria-pressed="${estado.seguimiento.soloFaltan === solo}">${titulo}</button>`;
+    // Dos formas de ver la misma lista, como Detalle y Mapa de calor, y las
+    // que escribieron los docentes, si hay alguna para unificar o ya unificada
+    const s = estado.seguimiento;
+    const vista = s.agregadas ? 'agregadas' : s.soloFaltan ? '1' : '';
+    const solapa = (valor, titulo) =>
+      `<button type="button" class="t-vista ${vista === valor ? 't-vista--activa' : ''}" data-accion="seg-solo" data-solo="${valor}" aria-pressed="${vista === valor}">${titulo}</button>`;
+    const agregadas = agregadasPendientes(g ? [g] : d.grupos).length;
+    const conAgregadas = estado.unificadas && (agregadas || unificadasDe(g).length || s.agregadas);
     return `<div class="t-contexto">
       <div class="t-contexto__texto">${texto}</div>
       <div class="t-vistas">
-        ${solapa(false, 'Todas las escuelas')}
-        ${solapa(true, `Solo las que no cargaron (${numero(c.faltan)})`)}
+        ${solapa('', 'Todas las escuelas')}
+        ${solapa('1', `Solo las que no cargaron (${numero(c.faltan)})`)}
+        ${conAgregadas ? solapa('agregadas', `Agregadas por docentes (${numero(agregadas)})`) : ''}
       </div>
     </div>`;
+  }
+
+  /* ---------- Unificar las agregadas con la nómina ---------- */
+
+  const agregadasPendientes = (grupos) => grupos.flatMap((g) => g.extras.filter((e) => e.agregada).map((e) => ({ e, g })));
+  const unificadasDe = (g) => (estado.unificadas || []).filter((u) => !g || u.agregada.departamento_id === g.id);
+
+  // Cuál de la nómina parece ser, para que venga elegida (se puede cambiar).
+  // Con número («epes 41», «escuela n° 41»): la E.P.E.S. con ese número del
+  // mismo departamento, y entre la común, la E.I.B. y la agraria, la que diga
+  // el texto. Sin número: la única de la nómina en esa localidad, o la que
+  // comparta casi todas las palabras del nombre. Si no hay una clara, ninguna.
+  const PALABRAS_VACIAS = new Set(['e', 'p', 's', 'n', 'nro', 'numero', 'de', 'del', 'la', 'el', 'los', 'las', 'escuela', 'epes', 'colegio', 'secundaria', 'provincial', 'educacion', 'anexo', 'y']);
+  function sugerirDestino(e, depId) {
+    const texto = normalizarTexto(e.nombre);
+    const delDep = ((Catalogo.buscarEscuelas('', depId).grupos[0] || {}).escuelas || []);
+    const num = (texto.match(/\b(\d{1,3})\b/) || [])[1];
+    if (num) {
+      const tipo = /\b(eib|bilingue|intercultural)\b/.test(texto) ? 'EPES EIB' : /\bagraria\b/.test(texto) ? 'EPES AGRARIA' : 'EPES';
+      const conNumero = delDep.filter((x) => !esAnexo(x) && x.numero === num);
+      return conNumero.find((x) => x.tipo === tipo) || (conNumero.length === 1 ? conNumero[0] : null);
+    }
+    const loc = normalizarTexto(e.localidad || '');
+    if (loc) {
+      const enLaLocalidad = delDep.filter((x) => normalizarTexto(x.localidad || '') === loc);
+      if (enLaLocalidad.length === 1) return enLaLocalidad[0];
+    }
+    const palabras = (t) => new Set(normalizarTexto(t).split(' ').filter((w) => w && !PALABRAS_VACIAS.has(w)));
+    const p = palabras(e.nombre);
+    if (!p.size) return null;
+    const parecidas = delDep.filter((x) => {
+      const q = palabras(`${x.nombre} ${x.localidad || ''}`);
+      return [...p].filter((w) => q.has(w)).length / p.size >= 0.8;
+    });
+    return parecidas.length === 1 ? parecidas[0] : null;
+  }
+
+  // La lista para elegir: la sugerida arriba, después las de su departamento
+  // y las demás, y al final las otras agregadas (para juntar dos que
+  // escribieron distinto la misma escuela que falta)
+  function opcionesDestino(e, depId, elegida, sugerida) {
+    const opcion = (x, extra) => `<option value="${esc(x.id)}" ${x.id === elegida ? 'selected' : ''}>${esc(x.nombre)}${x.localidad ? ` · ${esc(x.localidad)}` : ''}${extra || ''}</option>`;
+    const grupos = Catalogo.buscarEscuelas('').grupos;
+    const orden = grupos.filter((g) => g.departamento.id === depId).concat(grupos.filter((g) => g.departamento.id !== depId));
+    const otras = estado.escuelasAgregadas.filter((x) => x.id !== e.id);
+    return `<option value="" ${elegida ? '' : 'selected'}>Elegí cuál es…</option>
+      ${sugerida ? `<optgroup label="Parece ser">${opcion(sugerida)}</optgroup>` : ''}
+      ${orden.map((g) => `<optgroup label="Departamento ${esc(g.departamento.nombre)}">${g.escuelas.filter((x) => !sugerida || x.id !== sugerida.id).map((x) => opcion(x)).join('')}</optgroup>`).join('')}
+      ${otras.length ? `<optgroup label="Otras agregadas por docentes">${otras.map((x) => opcion(x, ' (agregada)')).join('')}</optgroup>` : ''}`;
+  }
+
+  function nombreEscuela(id) {
+    const e = Catalogo.escuela(id) || estado.escuelasAgregadas.find((x) => x.id === id);
+    return e ? e.nombre : id;
+  }
+
+  function vistaAgregadas(grupos, g) {
+    const u = estado.unificar;
+    const pendientes = agregadasPendientes(grupos);
+    const aviso = u.aviso ? `<p class="t-unif-aviso" role="status"><span>${u.aviso.texto}</span>
+        ${u.aviso.agregada_id ? `<button type="button" class="t-ficha__enlace" data-accion="unif-deshacer" data-id="${esc(u.aviso.agregada_id)}" ${u.guardando ? 'disabled' : ''}>Deshacer</button>` : ''}</p>` : '';
+    const error = u.error ? `<p class="t-ficha__error" role="alert">${esc(u.error)}</p>` : '';
+    const filas = pendientes.map(({ e, g: suGrupo }) => {
+      const cargas = `${numero(e.cargas)} ${plural(e.cargas, 'carga', 'cargas')} de ${numero(e.docentes)} ${plural(e.docentes, 'docente', 'docentes')}`;
+      const donde = [e.localidad, suGrupo.id ? `departamento ${suGrupo.nombre}` : ''].filter(Boolean).join(' · ');
+      const escrita = `<div class="t-unif__escrita"><strong>«${esc(e.nombre)}»</strong><span>${esc(donde)}${donde ? ' · ' : ''}${cargas}</span></div>`;
+      if (u.confirmando && u.confirmando.id === e.id) {
+        return `<li class="t-unif__fila t-unif__fila--confirmando" data-agregada="${esc(e.id)}">${escrita}
+          <div class="t-unif__confirmar">
+            <p>${plural(e.cargas, 'Su carga pasa', `Sus ${numero(e.cargas)} cargas pasan`)} a <strong>${esc(nombreEscuela(u.confirmando.destino))}</strong> y «${esc(e.nombre)}» deja de aparecer aparte. Si alguien vuelve a escribirla así, su carga va directo ahí.</p>
+            <div class="t-ficha__form-acciones">
+              <button type="button" class="t-ficha__si" data-accion="unif-confirmar" ${u.guardando ? 'disabled' : ''}>${u.guardando ? 'Unificando…' : 'Unificar'}</button>
+              <button type="button" class="t-ficha__enlace" data-accion="unif-cancelar">Cancelar</button>
+            </div>
+          </div></li>`;
+      }
+      const sugerida = sugerirDestino(e, suGrupo.id);
+      const elegida = u.elegidas.has(e.id) ? u.elegidas.get(e.id) : (sugerida ? sugerida.id : '');
+      return `<li class="t-unif__fila" data-agregada="${esc(e.id)}">${escrita}
+        <div class="t-unif__elegir">
+          <label class="t-ficha__campo"><span>Es de la nómina${sugerida && elegida === sugerida.id ? ' (sugerida, revisala)' : ''}</span>
+            <select data-cambio="unif-destino" data-id="${esc(e.id)}">${opcionesDestino(e, suGrupo.id, elegida, sugerida)}</select></label>
+          <button type="button" class="t-ficha__si" data-accion="unif-pedir" data-id="${esc(e.id)}" ${u.confirmando || u.guardando ? 'disabled' : ''}>Unificar</button>
+        </div></li>`;
+    }).join('');
+    const hechas = unificadasDe(g);
+    return `<section class="t-seg-bloque">
+        <h2 class="t-seg-titulo">Agregadas por docentes <span>${pendientes.length ? `${numero(pendientes.length)} ${plural(pendientes.length, 'escrita', 'escritas')} a mano${g ? ` en el departamento ${esc(g.nombre)}` : ''}` : ''}</span></h2>
+        ${aviso}${error}
+        ${pendientes.length
+          ? `<p class="t-seg-nota">Si una ya está en la nómina, elegí cuál es y unificala: sus cargas pasan a esa escuela. Si de verdad falta en la nómina, dejala como está.</p>
+        <ul class="t-unif">${filas}</ul>`
+          : `<p class="t-seg-vacia">No queda ninguna escuela escrita a mano${g ? ` en el departamento ${esc(g.nombre)}` : ''} para revisar.</p>`}
+      </section>
+      ${hechas.length ? `<section class="t-seg-bloque">
+        <h2 class="t-seg-titulo">Ya unificadas <span>${numero(hechas.length)}</span></h2>
+        <ul class="t-unif t-unif--hechas">${hechas.map((x) => `<li class="t-unif__hecha">
+          <span>«${esc(x.agregada.nombre)}» → <strong>${esc(nombreEscuela(x.destino_id))}</strong> · ${esc(cuandoFue(Date.parse(x.unificada_en)))}</span>
+          <button type="button" class="t-ficha__enlace" data-accion="unif-deshacer" data-id="${esc(x.agregada_id)}" ${u.guardando ? 'disabled' : ''}>Deshacer</button></li>`).join('')}</ul>
+      </section>` : ''}`;
+  }
+
+  async function unificar() {
+    const u = estado.unificar;
+    const { id, destino } = u.confirmando;
+    const agregada = estado.escuelasAgregadas.find((x) => x.id === id) || { nombre: id };
+    u.guardando = true; u.error = null; render();
+    const { data, error } = await sb.rpc('unificar_escuela', { p_agregada_id: id, p_destino_id: destino });
+    u.guardando = false;
+    if (error || !data || data.error) {
+      u.error = (data && data.error) || 'No pudimos unificar la escuela. Revisá la conexión y volvé a intentar.';
+      render();
+      return;
+    }
+    u.confirmando = null;
+    u.elegidas.delete(id);
+    const repetidas = data.reemplazadas
+      ? ` ${numero(data.reemplazadas)} ${plural(data.reemplazadas, 'docente había', 'docentes habían')} cargado la misma materia en las dos: quedó su envío más nuevo.` : '';
+    u.aviso = { agregada_id: id, texto: `Listo: «${esc(agregada.nombre)}» quedó unificada con <strong>${esc(nombreEscuela(destino))}</strong>.${repetidas}` };
+    await cargarEscuelasAgregadas();
+    await cargarSeguimiento();
+  }
+
+  async function deshacerUnificacion(id) {
+    const u = estado.unificar;
+    const hecha = (estado.unificadas || []).find((x) => x.agregada_id === id);
+    u.guardando = true; u.error = null; render();
+    const { data, error } = await sb.rpc('separar_escuela', { p_agregada_id: id });
+    u.guardando = false;
+    if (error || !data || data.error) {
+      u.error = (data && data.error) || 'No pudimos deshacerlo. Revisá la conexión y volvé a intentar.';
+      render();
+      return;
+    }
+    u.aviso = { agregada_id: null, texto: `Deshecho: «${esc(hecha ? hecha.agregada.nombre : id)}» vuelve a estar aparte, con sus cargas.` };
+    await cargarEscuelasAgregadas();
+    await cargarSeguimiento();
   }
 
   // Solo las que todavía no cargaron: el nombre y la localidad, nada más. Que
@@ -1967,6 +2127,9 @@
         <div class="t-ficha__cuerpo">
           ${anexoDeLaNomina(e.id) ? `<section>${sedeHTML(e.id)}</section>` : ''}
           <section>${rotuloContacto(true)}${contactosHTML(e.id, true)}</section>
+          ${e.agregada && estado.unificadas ? `<section><h3 class="t-ficha__rotulo">Agregada por un docente</h3>
+            <p class="t-ficha__nota">La escribió un docente a mano. Si ya está en la nómina, unificala para que sus cargas sumen ahí.</p>
+            <button type="button" class="t-seg-enlace t-ficha__ir" data-ficha-accion="unificar" data-id="${esc(g && g.id ? g.id : '')}">Unificarla con una de la nómina →</button></section>` : ''}
           <section><h3 class="t-ficha__rotulo">Cargas</h3>${cargasHTML(e)}
             ${enSuVista ? '' : `<button type="button" class="t-seg-enlace t-ficha__ir" data-ficha-accion="ir" data-id="${esc(e.id)}">Ver todas sus materias →</button>`}
           </section>
@@ -2097,6 +2260,14 @@
         case 'cancelar': f.editando = null; f.quitando = null; f.error = null; f.cambiandoSede = false; f.errorSede = null; dibujar(); break;
         case 'cambiar-sede': f.fija = true; f.cambiandoSede = true; f.editando = null; f.quitando = null; f.errorSede = null; dibujar(); { const c = caja.querySelector('.t-ficha__form--sede select'); if (c) c.focus(); } break;
         case 'sede-nomina': guardarSede(null, true); break;
+        case 'unificar': {
+          cerrar();
+          Object.assign(estado.seguimiento, { lugar: id || null, soloFaltan: false, agregadas: true });
+          escribirHashSeguimiento();
+          render();
+          window.scrollTo(0, 0);
+          break;
+        }
         case 'ir': {
           cerrar();
           estado.seguimiento.lugar = id;
@@ -2164,7 +2335,7 @@
       contenido = `<div class="t-seg-marco">
         ${escuela ? vistaEscuela(escuela, suGrupo) : `${contextoSeguimiento(d, g)}
         <div class="t-cuerpo t-seg">
-          ${s.soloFaltan
+          ${s.agregadas ? vistaAgregadas(grupos, g) : s.soloFaltan
             ? (grupos.filter((x) => x.faltan).map(tablaFaltan).join('')
               || `<p class="t-seg-vacia">Ya cargaron todas las escuelas${g ? ` del departamento ${esc(g.nombre)}` : ''}.</p>`)
             : `${g ? '' : tablaDepartamentos(d)}${grupos.map(tablaEscuelas).join('')}`}
@@ -2272,10 +2443,29 @@
       case 'ir-seguimiento': irAlSeguimiento(); break;
       case 'seg-reintentar': cargarSeguimiento(); break;
       case 'seg-solo': {
+        const s = estado.seguimiento;
         const solo = d.solo === '1';
-        if (estado.seguimiento.soloFaltan !== solo) { estado.seguimiento.soloFaltan = solo; escribirHashSeguimiento(); render(); }
+        const agregadas = d.solo === 'agregadas';
+        if (s.soloFaltan !== solo || s.agregadas !== agregadas) {
+          s.soloFaltan = solo; s.agregadas = agregadas;
+          Object.assign(estado.unificar, { confirmando: null, error: null, aviso: null });
+          escribirHashSeguimiento(); render();
+        }
         break;
       }
+      case 'unif-pedir': {
+        const u = estado.unificar;
+        const sel = app.querySelector(`select[data-cambio="unif-destino"][data-id="${CSS.escape(d.id)}"]`);
+        const destino = sel ? sel.value : '';
+        u.aviso = null;
+        if (!destino) { u.error = 'Elegí en la lista con qué escuela se unifica.'; render(); break; }
+        u.error = null; u.elegidas.set(d.id, destino); u.confirmando = { id: d.id, destino };
+        render();
+        break;
+      }
+      case 'unif-cancelar': estado.unificar.confirmando = null; estado.unificar.error = null; render(); break;
+      case 'unif-confirmar': unificar(); break;
+      case 'unif-deshacer': deshacerUnificacion(d.id); break;
       case 'seg-lugar':
         Ficha.cerrar();
         estado.seguimiento.lugar = d.id || null;
@@ -2334,6 +2524,7 @@
         cargarDatos();
         break;
       }
+      case 'unif-destino': estado.unificar.elegidas.set(el.dataset.id, el.value); break;
       case 'seg-lugar':
         Ficha.cerrar();
         estado.seguimiento.lugar = el.value || null;
