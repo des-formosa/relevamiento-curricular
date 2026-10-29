@@ -735,10 +735,16 @@ de WhatsApp Business, con servidor y pago). Por eso:
   Ctrl+V y se manda. «Por correo» hace lo mismo con el correo oficial (`mailto:`, con asunto y
   cuerpo; nunca el de la delegación). Sin celular, WhatsApp abre para elegir a quién. Si el
   navegador no deja copiar la imagen, se baja y se adjunta, y el bloque lo dice.
-- **En el teléfono** (puntero grueso y `navigator.canShare`), un solo botón, «Mandar al
-  director», abre el menú de compartir del celular con la imagen y el mensaje juntos: se elige
-  WhatsApp (o el correo) y el director. La imagen se prepara al mostrar el botón, porque el
-  celular pide compartir enseguida después del toque.
+- **En el teléfono** (puntero grueso), «Por WhatsApp» hace lo mismo, pero abre la aplicación
+  directo en el chat del director (`whatsapp://send?phone=549…&text=…`), y la imagen se pega
+  manteniendo apretado donde se escribe y tocando «Pegar». Si no se pega, «¿No se pega? Mandar
+  la imagen» la comparte sola con el menú del celular (el chat recién abierto queda primero).
+  La primera versión abría ese menú con la imagen y el mensaje juntos, y en el equipo lo
+  probaron el 29/10/2026: había que elegir WhatsApp entre todas las aplicaciones y después
+  buscar al director entre los contactos. Ahora el menú queda solo donde no hay chat que abrir:
+  una escuela sin celular cargado, y «Por correo» (se elige la aplicación de correo; el bloque
+  dice a qué dirección mandarlo). La imagen se prepara al mostrar los botones, porque copiar y
+  compartir tienen que pasar enseguida después del toque.
 
 El PDF sigue, como «PDF para imprimir». Las escuelas escritas a mano por docentes no tienen el
 bloque: no tienen director cargado.

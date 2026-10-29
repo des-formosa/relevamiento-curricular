@@ -2112,6 +2112,7 @@
       asunto,
       whatsapp: `${cel ? enlaceWhatsApp(cel.celular) : 'https://wa.me/'}?text=${encodeURIComponent(texto)}`,
       aQuienWhatsApp: cel ? `${cel.nombre || 'el contacto'} (${celularLegible(cel.celular)})` : '',
+      celular: cel ? (cel.celular.length === 10 ? `549${cel.celular}` : cel.celular.replace(/^0+/, '')) : '',
       correo: `mailto:${correo ? correo.correo : ''}?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(texto)}`,
       aQuienCorreo: correo ? correo.correo : '',
     };
@@ -2119,31 +2120,50 @@
 
   // Mandarle el avance al director: una imagen (se ve en el chat sin abrir
   // nada, a diferencia de un PDF) y el mensaje. Ninguna página puede mandar
-  // un archivo por WhatsApp sola, así que:
-  // - en el teléfono, se abre el menú de compartir del celular con la imagen
-  //   y el mensaje juntos: se elige WhatsApp (o el correo) y el director;
-  // - en la computadora, se abre el chat del director con el mensaje escrito
-  //   y la imagen queda copiada: se pega con Ctrl+V. Si el navegador no deja
-  //   copiarla, se baja y se adjunta.
-  const conElTelefono = () => window.matchMedia('(pointer: coarse)').matches && !!navigator.canShare;
+  // un archivo por WhatsApp sola, así que «Por WhatsApp» abre el chat del
+  // director con el mensaje escrito y deja la imagen copiada para pegarla:
+  // - en la computadora, el chat de WhatsApp Web (se pega con Ctrl+V);
+  // - en el teléfono, la aplicación, directo en su chat (whatsapp://). La
+  //   primera versión abría el menú de compartir del celular, con la imagen
+  //   y el mensaje juntos, pero había que elegir WhatsApp y después buscar al
+  //   director entre los contactos (29/10/2026). Si la imagen no se pega,
+  //   «Mandar la imagen» la comparte sola: el chat recién abierto queda
+  //   primero en la lista.
+  // Sin celular cargado no hay chat que abrir: en el teléfono va el menú de
+  // compartir con todo junto, y en la computadora WhatsApp Web para elegir.
+  // Si el navegador no deja copiar la imagen, se baja y se adjunta.
+  const conElTelefono = () => window.matchMedia('(pointer: coarse)').matches;
+  const puedeCompartir = () => !!(navigator.canShare && navigator.share);
   const teclaPegar = () => (/Mac|iPhone|iPad/.test(navigator.platform || '') ? '⌘V' : 'Ctrl+V');
 
   function mandarHTML(e, enFicha) {
     const m = mensajeDirector(e);
     const accion = (a) => (enFicha ? `data-ficha-accion="${a}"` : `data-accion="seg-${a}"`);
+    const boton = (canal, texto, claro) => `<button type="button" class="t-ficha__si t-mandar__boton ${claro ? 't-mandar__boton--claro' : ''}" ${accion('mandar')} data-canal="${canal}" data-id="${esc(e.id)}">${texto}</button>`;
     const reporte = `<button type="button" class="t-seg-enlace" ${accion('reporte')} data-id="${esc(e.id)}">PDF para imprimir</button>`;
     if (conElTelefono()) {
+      // En el teléfono la imagen se arma antes del toque: compartir y copiar
+      // tienen que pasar enseguida después de tocar
       setTimeout(() => imagenAvance(e).catch(() => {}), 0);
+      const conChat = m.celular;
+      const sinChat = !conChat && puedeCompartir();
+      const nota = conChat
+        ? `Abre el chat con ${esc(m.aQuienWhatsApp)} con el mensaje ya escrito, y copia la imagen del avance: en el chat, mantené apretado donde se escribe y tocá <strong>Pegar</strong>.`
+        : sinChat ? 'No tiene celular cargado: se abre para elegir a quién, con la imagen y el mensaje.' : 'No tiene celular cargado: WhatsApp se abre para elegir a quién.';
       return `<div class="t-mandar">
-        <button type="button" class="t-ficha__si t-mandar__boton" ${accion('mandar')} data-canal="compartir" data-id="${esc(e.id)}">Mandar al director</button>
-        <p class="t-ficha__nota t-mandar__estado" role="status">Con la imagen del avance y el mensaje ya escrito. Elegís WhatsApp o el correo.</p>
+        <div class="t-mandar__botones">
+          ${boton(sinChat ? 'compartir' : 'whatsapp', 'Por WhatsApp')}
+          ${puedeCompartir() ? boton('compartir-correo', 'Por correo', true) : boton('correo', 'Por correo', true)}
+        </div>
+        <p class="t-ficha__nota t-mandar__estado" role="status">${nota}</p>
+        ${conChat && puedeCompartir() ? `<p class="t-ficha__nota t-mandar__otra">¿No se pega? <button type="button" class="t-seg-enlace" ${accion('mandar')} data-canal="imagen" data-id="${esc(e.id)}">Mandar la imagen</button></p>` : ''}
         ${reporte}
       </div>`;
     }
     return `<div class="t-mandar">
       <div class="t-mandar__botones">
-        <button type="button" class="t-ficha__si t-mandar__boton" ${accion('mandar')} data-canal="whatsapp" data-id="${esc(e.id)}">Por WhatsApp</button>
-        <button type="button" class="t-ficha__si t-mandar__boton t-mandar__boton--claro" ${accion('mandar')} data-canal="correo" data-id="${esc(e.id)}">Por correo</button>
+        ${boton('whatsapp', 'Por WhatsApp')}
+        ${boton('correo', 'Por correo', true)}
         ${reporte}
       </div>
       <p class="t-ficha__nota t-mandar__estado" role="status">Abre ${m.aQuienWhatsApp ? `el chat con ${esc(m.aQuienWhatsApp)}` : 'WhatsApp (no tiene celular cargado: elegís a quién)'} o ${m.aQuienCorreo ? `un correo a ${esc(m.aQuienCorreo)}` : 'un correo (no tiene correo cargado)'}, con el mensaje ya escrito, y copia la imagen del avance: pegala con <strong>${teclaPegar()}</strong>.</p>
@@ -2159,11 +2179,15 @@
     const decir = (html) => { if (aviso && aviso.isConnected) aviso.innerHTML = html; };
     const imagen = imagenAvance(e);
     const archivo = `Avance ReSaP - ${e.nombre.replace(/[\\/:*?"<>|]/g, '-')}.png`;
-    if (canal === 'compartir') {
+
+    // El menú de compartir del celular: con todo junto (sin celular o por
+    // correo) o la imagen sola (si no se pudo pegar en el chat ya abierto)
+    if (canal === 'compartir' || canal === 'compartir-correo' || canal === 'imagen') {
       try {
         const f = new File([await imagen], archivo, { type: 'image/png' });
         if (navigator.canShare({ files: [f] })) {
-          await navigator.share({ files: [f], text: m.texto, title: m.asunto });
+          await navigator.share(canal === 'imagen' ? { files: [f] } : { files: [f], text: m.texto, title: m.asunto });
+          if (canal === 'compartir-correo' && m.aQuienCorreo) decir(`Si elegiste el correo, mandalo a <strong>${esc(m.aQuienCorreo)}</strong>.`);
           return;
         }
       } catch (err) {
@@ -2172,8 +2196,9 @@
       decir('Este celular no deja compartir la imagen. Probá desde la computadora.');
       return;
     }
-    // En la computadora: primero la imagen al portapapeles (todavía con el
-    // foco en el panel), después el chat o el correo
+
+    // Primero la imagen al portapapeles (todavía con el foco en el panel),
+    // después el chat o el correo
     let copiada = false;
     try {
       await navigator.clipboard.write([new ClipboardItem({ 'image/png': imagen })]);
@@ -2187,12 +2212,17 @@
         setTimeout(() => URL.revokeObjectURL(a.href), 10000);
       } catch (err2) { /* sin imagen: queda el PDF */ }
     }
-    if (canal === 'whatsapp') window.open(m.whatsapp, '_blank', 'noopener');
-    else window.location.href = m.correo;
+    const telefono = conElTelefono();
+    if (canal === 'whatsapp') {
+      // En el teléfono, la aplicación directo en el chat del director
+      if (telefono && m.celular) window.location.href = `whatsapp://send?phone=${m.celular}&text=${encodeURIComponent(m.texto)}`;
+      else window.open(m.whatsapp, '_blank', 'noopener');
+    } else window.location.href = m.correo;
     const donde = canal === 'whatsapp' ? 'el chat' : 'el correo';
+    const pegar = telefono ? 'mantené apretado donde se escribe y tocá <strong>Pegar</strong>' : `pegala con <strong>${teclaPegar()}</strong>`;
     decir(copiada
-      ? `Listo: la imagen está copiada. En ${donde}, pegala con <strong>${teclaPegar()}</strong> y mandá.`
-      : `La imagen se bajó a la computadora («${esc(archivo)}»): adjuntala en ${donde}.`);
+      ? `Listo: la imagen está copiada. En ${donde}, ${pegar} y mandá.`
+      : `La imagen se bajó ${telefono ? 'al celular' : 'a la computadora'} («${esc(archivo)}»): adjuntala en ${donde}.`);
   }
 
   // La imagen del avance: lo mismo que el PDF, dibujado para verse en un
