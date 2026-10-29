@@ -41,7 +41,8 @@ create policy "equipo lee" on public.sedes_anexos
 --   supabase.rpc('guardar_sede', { p_anexo_id: 'anexo-pozo-molina', p_sede_id: 'epes-39' })
 --   supabase.rpc('guardar_sede', { p_anexo_id: 'anexo-pozo-molina', p_sede_id: null })   -- ninguna
 --
--- Devuelve la fila como quedó, o { error } con un mensaje para mostrar tal cual.
+-- Devuelve { anexo_id, sede_id } como quedó, o { error } con un mensaje para
+-- mostrar tal cual.
 -- ----------------------------------------------------------------------------
 
 create or replace function public.guardar_sede(p_anexo_id text, p_sede_id text)
@@ -51,8 +52,9 @@ security definer
 set search_path = ''
 as $$
 declare
+  -- Sin variables del tipo de la tabla (public.sedes_anexos): el SQL Editor
+  -- de Supabase rechazaba la función con «type does not exist» al crearla
   v_sede text := nullif(btrim(coalesce(p_sede_id, '')), '');
-  v_fila public.sedes_anexos;
 begin
   if not public.es_equipo() then
     return jsonb_build_object('error', 'Tu usuario no puede cambiar de quién depende una escuela.');
@@ -70,9 +72,8 @@ begin
   insert into public.sedes_anexos (anexo_id, sede_id, actualizado_por)
   values (p_anexo_id, v_sede, (select auth.uid()))
   on conflict (anexo_id) do update
-     set sede_id = excluded.sede_id, actualizado_por = excluded.actualizado_por, actualizado_en = now()
-  returning * into v_fila;
-  return to_jsonb(v_fila);
+     set sede_id = excluded.sede_id, actualizado_por = excluded.actualizado_por, actualizado_en = now();
+  return jsonb_build_object('anexo_id', p_anexo_id, 'sede_id', v_sede);
 end;
 $$;
 
@@ -96,3 +97,6 @@ revoke execute on function public.guardar_sede(text, text) from public, anon;
 revoke execute on function public.restaurar_sede(text) from public, anon;
 grant  execute on function public.guardar_sede(text, text) to authenticated;
 grant  execute on function public.restaurar_sede(text) to authenticated;
+
+-- Si llegó hasta acá, quedó instalado: tiene que mostrar 0 (o las sedes ya corregidas)
+select count(*) as sedes_corregidas from public.sedes_anexos;
