@@ -83,7 +83,8 @@ fijada, nunca por bundler.
 │   ├── Nomina de Escuelas por Departamentos.xlsx   nómina oficial, la fuente
 │   ├── generar_escuelas.py  el .xlsx → escuelas.json
 │   ├── escuelas.json       288 unidades educativas, 9 departamentos
-│   └── generar_contactos.py  planillas de directivos → SQL de contactos (fuera de git)
+│   ├── generar_contactos.py  planillas de directivos → SQL de contactos (fuera de git)
+│   └── generar_correos.py  Word de correos oficiales → SQL de contactos (fuera de git)
 └── sql/                    se corren en orden en el SQL Editor; todos se pueden re-ejecutar
     ├── 01_esquema.sql      tablas e índices
     ├── 02_rls.sql          RLS, permisos, es_equipo()
@@ -723,6 +724,20 @@ salvo en las escuelas donde el equipo ya agregó o corrigió algo: ahí manda lo
 Mientras la tabla no exista, el seguimiento anda igual y la ficha dice que los contactos
 todavía no están cargados.
 
+**Los correos oficiales** (29/10/2026, los mandó el equipo en un Word, «CORREOS OF. NUMERADOS
+CAPITAL-INTERIOR-DZ»: uno por escuela, `mcye.epes10@formosa.gov.ar`, y uno por delegación
+zonal). `python datos/generar_correos.py <word.docx>` (`--revisar` informa sin escribir) arma
+`sql/privado/15_cargar_correos.sql`, con origen `correos_oficiales`. Cada E.P.E.S. recibe dos
+contactos más: **«Correo oficial»** y **«Delegación zonal Pirané»** (la de la columna
+«Delegación zonal» de la nómina). Los anexos no: la ficha muestra los de su sede. Dan 220: 108
+correos de escuela (faltan en el Word las agrarias 3 a 6; trae la E.I.B. N° 13, que no está en
+la nómina) y la delegación de las 112. Volver a correrlo reemplaza lo suyo y no agrega un
+correo que la escuela ya tenga. El SQL también suma `correos_oficiales` a los orígenes
+permitidos (lo mismo hace `sql/13` al repetirse), y `generar_contactos.py` ya no los cuenta al
+decidir si una escuela tiene contactos. El de Pirané viene escrito
+`mcye.delgacionpirane@…` («delgacion»): se cargó tal cual, y si rebota se corrige desde la
+ficha.
+
 **Unificar las escritas a mano** (29/10/2026, pedido del equipo técnico: «ponían que no
 estaban en el sistema pero están, y necesitamos unificar los datos»). Con «no encuentro mi
 escuela» algunos docentes escribieron a mano una escuela que sí está en la nómina («epes 2
@@ -1286,7 +1301,15 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
   corrección con el foco en el nombre, sin nombre avisa, corregida cambia nombre y
   departamento, unirlas dice «también escrita a mano» y la que queda suma las cargas
 
+- **Correos oficiales en la ficha** (29/10/2026): ver «Los correos oficiales». Probado
+  contra PostgreSQL 16: `sql/13` se repite y acepta el origen nuevo; el SQL carga 220 y
+  repetirlo no duplica; un correo corregido desde el panel no vuelve duplicado; el SQL de
+  directivos regenerado vuelve a cargar con los correos ya puestos. En Chromium, un anexo
+  muestra el director, el correo oficial y la delegación de su sede
+
 **Pendiente**
+- **Correr en el SQL Editor `sql/privado/15_cargar_correos.sql`** (el equipo lo tiene como
+  «6 - correos oficiales.sql»): hasta entonces la ficha no muestra los correos oficiales
 - **Volver a correr `sql/15_unificar_escuelas.sql`**: trae `editar_escuela_agregada()`. Hasta
   entonces el lápiz avisa que falta ese paso
 - **Correr en el SQL Editor `sql/mantenimiento/2026-10-27_sin_datos_de_ejemplo.sql`**: hasta

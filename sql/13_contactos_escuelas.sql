@@ -9,7 +9,9 @@
 --   - se escriben solo por guardar_contacto() y quitar_contacto().
 --
 -- La carga inicial sale de las planillas de directivos con
--- datos/generar_contactos.py, que escribe un SQL aparte que no se versiona.
+-- datos/generar_contactos.py, y la de los correos oficiales (de la escuela y de
+-- su delegación zonal) con datos/generar_correos.py: cada uno escribe un SQL
+-- aparte que no se versiona.
 --
 -- Se puede correr más de una vez.
 -- ============================================================================
@@ -23,14 +25,23 @@ create table if not exists public.contactos_escuela (
   -- Solo dígitos: el panel lo muestra con espacios y arma el enlace de WhatsApp
   celular          text check (celular ~ '^[0-9]{6,15}$'),
   correo           text check (correo ~* '^[^@\s]+@[^@\s]+\.[^@\s]+$'),
-  -- 'planilla_directivos' = vino de la carga inicial; 'panel' = lo escribió el
-  -- equipo. Volver a cargar la planilla reemplaza solo lo primero.
-  origen           text not null default 'panel' check (origen in ('planilla_directivos', 'panel')),
+  -- 'planilla_directivos' = vino de la carga inicial; 'correos_oficiales' = el
+  -- correo de la escuela y el de su delegación zonal (datos/generar_correos.py);
+  -- 'panel' = lo escribió el equipo. Volver a cargar una planilla reemplaza
+  -- solo lo suyo.
+  origen           text not null default 'panel'
+                   constraint contactos_escuela_origen_check
+                   check (origen in ('planilla_directivos', 'panel', 'correos_oficiales')),
   actualizado_por  uuid references auth.users (id) on delete set null,
   actualizado_en   timestamptz not null default now(),
   -- Un contacto sin nada no sirve
   check (nombre is not null or celular is not null or correo is not null)
 );
+
+-- Si la tabla ya existía con los dos orígenes de antes
+alter table public.contactos_escuela drop constraint if exists contactos_escuela_origen_check;
+alter table public.contactos_escuela add constraint contactos_escuela_origen_check
+  check (origen in ('planilla_directivos', 'panel', 'correos_oficiales'));
 
 create index if not exists contactos_escuela_idx on public.contactos_escuela (escuela_id);
 

@@ -168,7 +168,8 @@ def main():
 -- Carga los contactos de las planillas de directivos. Se puede volver a correr:
 -- reemplaza lo que vino de una planilla, salvo en las escuelas donde el equipo
 -- ya agregó o corrigió un contacto desde el panel: ahí manda lo del equipo, y
--- si no se salteara, el dato viejo volvería al lado del corregido.
+-- si no se salteara, el dato viejo volvería al lado del corregido. Los correos
+-- oficiales (datos/generar_correos.py) no cuentan: van aparte.
 begin;
 delete from public.contactos_escuela c
  where c.origen = 'planilla_directivos'
@@ -179,7 +180,8 @@ select v.escuela_id, v.nombre, v.cargo, v.celular, 'planilla_directivos'
 {valores}
   ) as v (escuela_id, nombre, cargo, celular)
   join public.escuelas e on e.id = v.escuela_id
- where not exists (select 1 from public.contactos_escuela p where p.escuela_id = v.escuela_id);
+ where not exists (select 1 from public.contactos_escuela p
+                    where p.escuela_id = v.escuela_id and p.origen <> 'correos_oficiales');
 commit;
 select count(*) as contactos_cargados from public.contactos_escuela where origen = 'planilla_directivos';
 """
