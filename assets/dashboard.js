@@ -1991,6 +1991,10 @@
             <button type="button" class="t-seg-enlace" data-accion="abrir-ficha" data-id="${esc(e.id)}">Editar contactos</button>
           </div>
         </section>
+        ${e.agregada ? '' : `<section class="t-seg-bloque">
+          <h2 class="t-seg-titulo">Mandarle el avance al director</h2>
+          <div class="t-seg-contacto">${mandarHTML(e, false)}</div>
+        </section>`}
         <section class="t-seg-bloque">
           <h2 class="t-seg-titulo">Por materia</h2>
           <table class="t-seg-tabla t-seg-tabla--materias">
@@ -2018,12 +2022,10 @@
   }
 
   function documentoEscuela(e, g, nueva) {
-    const donde = [e.localidad, g && g.id ? `departamento ${g.nombre}` : ''].filter(Boolean).join(', ');
     const nombre = (esp) => (Catalogo.esArtistica(esp) ? esp.nombre : Catalogo.nombreCorto(esp));
-    const ultimo = e.ultimo ? new Date(e.ultimo).toLocaleDateString('es-AR', { day: 'numeric', month: 'long' }) : '';
     const resumen = e.docentes
-      ? `Cargaron <strong>${numero(e.docentes)} ${plural(e.docentes, 'docente', 'docentes')}</strong> de la escuela: <strong>${numero(e.cargas)} ${plural(e.cargas, 'carga', 'cargas')}</strong> en ${numero(e.materias)} ${plural(e.materias, 'materia', 'materias')}. El último envío fue el ${esc(ultimo)}.`
-      : '<strong>Todavía no cargó ningún docente de la escuela.</strong>';
+      ? `Ya cargaron <strong>${numero(e.docentes)} ${plural(e.docentes, 'docente', 'docentes')}</strong>, en <strong>${numero(e.materias)} ${plural(e.materias, 'materia', 'materias')}</strong>.`
+      : '<strong>Todavía no cargó ningún docente.</strong>';
     const sede = esAnexo(e) || sedeCorregida(e.id) ? sedeDe(e.id) : null;
 
     // Materia por año: el número es cuántos docentes la cargaron en ese año
@@ -2038,7 +2040,7 @@
             if (!esp.anios_dictados.includes(n)) return '<td class="t-doc__esc-celda t-doc__esc-celda--no">no se dicta</td>';
             const c = m ? m.porAnio.get(n) || 0 : 0;
             return c
-              ? `<td class="t-doc__esc-celda t-doc__esc-celda--si"><strong>${numero(c)}</strong> ${plural(c, 'docente', 'docentes')}</td>`
+              ? `<td class="t-doc__esc-celda t-doc__esc-celda--si"><strong>${numero(c)}</strong></td>`
               : '<td class="t-doc__esc-celda t-doc__esc-celda--falta">sin cargas</td>';
           }).join('')}</tr>`;
         }).join('');
@@ -2049,41 +2051,342 @@
       <section class="t-doc__esc-bloque">
         <h2 class="t-doc__esc-titulo">Sus anexos</h2>
         <table class="t-doc__esc-anexos">
-          <thead><tr><th scope="col">Anexo</th><th scope="col">Localidad</th><th scope="col" class="t-doc__esc-num">Docentes</th><th scope="col" class="t-doc__esc-num">Materias</th><th scope="col">Último envío</th></tr></thead>
+          <thead><tr><th scope="col">Anexo</th><th scope="col">Localidad</th><th scope="col" class="t-doc__esc-num">Docentes</th><th scope="col" class="t-doc__esc-num">Materias</th></tr></thead>
           <tbody>${anexos.map((x) => `<tr>
             <th scope="row">${esc(x.nombre)}</th><td>${esc(x.localidad)}</td>
             ${x.docentes
-              ? `<td class="t-doc__esc-num">${numero(x.docentes)}</td><td class="t-doc__esc-num">${numero(x.materias)}</td><td>${esc(new Date(x.ultimo).toLocaleDateString('es-AR', { day: 'numeric', month: 'short' }))}</td>`
-              : '<td colspan="3" class="t-doc__esc-sin">Sin cargas todavía</td>'}
+              ? `<td class="t-doc__esc-num">${numero(x.docentes)}</td><td class="t-doc__esc-num">${numero(x.materias)}</td>`
+              : '<td colspan="2" class="t-doc__esc-sin">Sin cargas todavía</td>'}
           </tr>`).join('')}</tbody>
         </table>
       </section>` : '';
-    const depto = g && g.id && g.total
-      ? `<p class="t-doc__esc-depto">En el departamento ${esc(g.nombre)} ya cargaron ${numero(g.cargaron)} de sus ${numero(g.total)} escuelas.</p>` : '';
 
     return `<section class="t-doc__esc ${nueva ? 't-doc__esc--nueva' : ''}">
       <header class="t-doc__cabeza">
         ${marcaDocumento()}
         <div class="t-doc__institucion">Ministerio de Cultura y Educación · Dirección de Educación Secundaria · Formosa</div>
-        <div class="t-doc__sub">Cómo va la carga en la escuela</div>
+        <div class="t-doc__sub">Avance de la carga</div>
         <h1 class="t-doc__titulo">${esc(e.nombre)}</h1>
-        <div class="t-doc__datos">${esc(donde)}${sede ? ` · depende de ${esc(sede.nombre)}` : ''} · Datos al ${esc(fechaLarga(new Date()))}</div>
+        <div class="t-doc__datos">${esc(e.localidad)}${sede ? ` · anexo de ${esc(sede.nombre)}` : ''} · ${esc(fechaLarga(new Date()))}</div>
       </header>
       <p class="t-doc__esc-resumen">${resumen}</p>
-      ${depto}
-      <section class="t-doc__esc-como">
-        <p><strong>Cómo cargan los docentes:</strong> cada uno entra a <a href="${esc(linkFormulario())}">${esc(linkFormulario().replace(/^https?:\/\//, ''))}</a> desde el celular o la computadora, sin usuario ni contraseña, y carga una vez por cada materia y año que dicta en la escuela. Lleva unos 10 minutos por materia.</p>
-      </section>
+      <p class="t-doc__esc-como">Para cargar: <a href="${esc(linkFormulario())}">${esc(linkFormulario().replace(/^https?:\/\//, ''))}</a> · sin usuario ni contraseña · unos 10 minutos por materia</p>
       <section class="t-doc__esc-bloque">
-        <h2 class="t-doc__esc-titulo">Materia por materia</h2>
-        <p class="t-doc__lectura">En cada casilla, cuántos docentes de la escuela ya cargaron esa materia en ese año. «Sin cargas» quiere decir que todavía nadie la cargó: si la escuela no dicta esa materia, no hace falta.</p>
+        <h2 class="t-doc__esc-titulo">Docentes que cargaron cada materia</h2>
         <table class="t-doc__esc-grilla">
           <thead><tr><th scope="col">Materia</th>${anios.map((n) => `<th scope="col">${n}° año</th>`).join('')}</tr></thead>
           <tbody>${filas}</tbody>
         </table>
+        <p class="t-doc__lectura">Si la escuela no dicta una materia, no hace falta cargarla.</p>
       </section>
       ${tablaAnexos}
     </section>`;
+  }
+
+  // El mensaje que acompaña la imagen del avance: corto, con cómo va y el
+  // link para cargar. Va al celular y al correo de la escuela; un anexo sin
+  // contacto propio, a los de su sede. Sin celular, WhatsApp abre para elegir
+  // a quién.
+  function mensajeDirector(e) {
+    const avance = e.docentes
+      ? `ya cargaron ${numero(e.docentes)} ${plural(e.docentes, 'docente', 'docentes')}, en ${numero(e.materias)} ${plural(e.materias, 'materia', 'materias')}`
+      : 'todavía no cargó ningún docente';
+    const texto = `Hola. Le compartimos cómo va la carga de ReSaP en ${e.nombre}: ${avance}. `
+      + 'En la imagen está el detalle por materia, para que lo revise con sus docentes.\n\n'
+      + `Cada docente carga acá, sin usuario ni contraseña (unos 10 minutos por materia): ${linkFormulario()}\n\n`
+      + 'Gracias. Equipo de Planificación Curricular · Dirección de Educación Secundaria';
+    const todos = estado.seguimiento.contactos;
+    let lista = (todos && todos.get(e.id)) || [];
+    if (!lista.length && todos) { const sede = sedeDe(e.id); lista = sede ? todos.get(sede.id) || [] : []; }
+    const conCelular = lista.filter((c) => c.celular);
+    const cel = conCelular.find((c) => /direct/i.test(c.cargo || '')) || conCelular[0];
+    const conCorreo = lista.filter((c) => c.correo && !/^delegaci/i.test(c.nombre || ''));
+    const correo = conCorreo.find((c) => /correo oficial/i.test(c.nombre || '')) || conCorreo[0];
+    const asunto = `ReSaP: cómo va la carga en ${e.nombre}`;
+    return {
+      texto,
+      asunto,
+      whatsapp: `${cel ? enlaceWhatsApp(cel.celular) : 'https://wa.me/'}?text=${encodeURIComponent(texto)}`,
+      aQuienWhatsApp: cel ? `${cel.nombre || 'el contacto'} (${celularLegible(cel.celular)})` : '',
+      correo: `mailto:${correo ? correo.correo : ''}?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(texto)}`,
+      aQuienCorreo: correo ? correo.correo : '',
+    };
+  }
+
+  // Mandarle el avance al director: una imagen (se ve en el chat sin abrir
+  // nada, a diferencia de un PDF) y el mensaje. Ninguna página puede mandar
+  // un archivo por WhatsApp sola, así que:
+  // - en el teléfono, se abre el menú de compartir del celular con la imagen
+  //   y el mensaje juntos: se elige WhatsApp (o el correo) y el director;
+  // - en la computadora, se abre el chat del director con el mensaje escrito
+  //   y la imagen queda copiada: se pega con Ctrl+V. Si el navegador no deja
+  //   copiarla, se baja y se adjunta.
+  const conElTelefono = () => window.matchMedia('(pointer: coarse)').matches && !!navigator.canShare;
+  const teclaPegar = () => (/Mac|iPhone|iPad/.test(navigator.platform || '') ? '⌘V' : 'Ctrl+V');
+
+  function mandarHTML(e, enFicha) {
+    const m = mensajeDirector(e);
+    const accion = (a) => (enFicha ? `data-ficha-accion="${a}"` : `data-accion="seg-${a}"`);
+    const reporte = `<button type="button" class="t-seg-enlace" ${accion('reporte')} data-id="${esc(e.id)}">PDF para imprimir</button>`;
+    if (conElTelefono()) {
+      setTimeout(() => imagenAvance(e).catch(() => {}), 0);
+      return `<div class="t-mandar">
+        <button type="button" class="t-ficha__si t-mandar__boton" ${accion('mandar')} data-canal="compartir" data-id="${esc(e.id)}">Mandar al director</button>
+        <p class="t-ficha__nota t-mandar__estado" role="status">Con la imagen del avance y el mensaje ya escrito. Elegís WhatsApp o el correo.</p>
+        ${reporte}
+      </div>`;
+    }
+    return `<div class="t-mandar">
+      <div class="t-mandar__botones">
+        <button type="button" class="t-ficha__si t-mandar__boton" ${accion('mandar')} data-canal="whatsapp" data-id="${esc(e.id)}">Por WhatsApp</button>
+        <button type="button" class="t-ficha__si t-mandar__boton t-mandar__boton--claro" ${accion('mandar')} data-canal="correo" data-id="${esc(e.id)}">Por correo</button>
+        ${reporte}
+      </div>
+      <p class="t-ficha__nota t-mandar__estado" role="status">Abre ${m.aQuienWhatsApp ? `el chat con ${esc(m.aQuienWhatsApp)}` : 'WhatsApp (no tiene celular cargado: elegís a quién)'} o ${m.aQuienCorreo ? `un correo a ${esc(m.aQuienCorreo)}` : 'un correo (no tiene correo cargado)'}, con el mensaje ya escrito, y copia la imagen del avance: pegala con <strong>${teclaPegar()}</strong>.</p>
+    </div>`;
+  }
+
+  async function mandarAlDirector(canal, id, boton) {
+    const una = escuelaSeg(id);
+    if (!una) return;
+    const e = una.escuela;
+    const m = mensajeDirector(e);
+    const aviso = boton.closest('.t-mandar') && boton.closest('.t-mandar').querySelector('.t-mandar__estado');
+    const decir = (html) => { if (aviso && aviso.isConnected) aviso.innerHTML = html; };
+    const imagen = imagenAvance(e);
+    const archivo = `Avance ReSaP - ${e.nombre.replace(/[\\/:*?"<>|]/g, '-')}.png`;
+    if (canal === 'compartir') {
+      try {
+        const f = new File([await imagen], archivo, { type: 'image/png' });
+        if (navigator.canShare({ files: [f] })) {
+          await navigator.share({ files: [f], text: m.texto, title: m.asunto });
+          return;
+        }
+      } catch (err) {
+        if (err && err.name === 'AbortError') return;
+      }
+      decir('Este celular no deja compartir la imagen. Probá desde la computadora.');
+      return;
+    }
+    // En la computadora: primero la imagen al portapapeles (todavía con el
+    // foco en el panel), después el chat o el correo
+    let copiada = false;
+    try {
+      await navigator.clipboard.write([new ClipboardItem({ 'image/png': imagen })]);
+      copiada = true;
+    } catch (err) {
+      try {
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(await imagen);
+        a.download = archivo;
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(a.href), 10000);
+      } catch (err2) { /* sin imagen: queda el PDF */ }
+    }
+    if (canal === 'whatsapp') window.open(m.whatsapp, '_blank', 'noopener');
+    else window.location.href = m.correo;
+    const donde = canal === 'whatsapp' ? 'el chat' : 'el correo';
+    decir(copiada
+      ? `Listo: la imagen está copiada. En ${donde}, pegala con <strong>${teclaPegar()}</strong> y mandá.`
+      : `La imagen se bajó a la computadora («${esc(archivo)}»): adjuntala en ${donde}.`);
+  }
+
+  // La imagen del avance: lo mismo que el PDF, dibujado para verse en un
+  // celular (letra grande, una columna). Se dibuja en un canvas, sin
+  // librerías; se guarda por escuela hasta que cambien sus números.
+  const imagenesAvance = new WeakMap();
+  const imagenesCargadas = new Map();
+  function cargarImagen(src) {
+    if (!imagenesCargadas.has(src)) {
+      imagenesCargadas.set(src, new Promise((ok, mal) => { const i = new Image(); i.onload = () => ok(i); i.onerror = mal; i.src = src; }));
+    }
+    return imagenesCargadas.get(src);
+  }
+
+  function imagenAvance(e) {
+    const sede = esAnexo(e) || sedeCorregida(e.id) ? sedeDe(e.id) : null;
+    const firma = `${sede ? sede.id : ''}|${new Date().toDateString()}`;
+    const guardada = imagenesAvance.get(e);
+    if (guardada && guardada.firma === firma) return guardada.promesa;
+    const promesa = (async () => {
+      await Promise.all([
+        document.fonts.load('800 40px "Kumbh Sans"'), document.fonts.load('700 30px "Kumbh Sans"'), document.fonts.load('26px "Didact Gothic"'),
+      ]).catch(() => {});
+      const [simbolo, palabra] = await Promise.all([cargarImagen(RUTA_RESAP_SIMBOLO), cargarImagen(RUTA_RESAP_PALABRA)]).catch(() => []);
+      const dibujo = { e, sede, anexos: esAnexo(e) ? [] : anexosDe(e.id), simbolo, palabra };
+      const medida = document.createElement('canvas').getContext('2d');
+      const alto = dibujarAvance(medida, dibujo);
+      const lienzo = document.createElement('canvas');
+      lienzo.width = 1080;
+      lienzo.height = alto;
+      dibujarAvance(lienzo.getContext('2d'), dibujo);
+      return new Promise((ok, mal) => lienzo.toBlob((b) => (b ? ok(b) : mal(new Error('sin imagen'))), 'image/png'));
+    })();
+    imagenesAvance.set(e, { firma, promesa });
+    promesa.catch(() => imagenesAvance.delete(e));
+    return promesa;
+  }
+
+  // Dibuja el avance y devuelve hasta dónde llegó (con un contexto de un
+  // canvas vacío sirve para medir el alto antes de dibujar de verdad)
+  function dibujarAvance(c, { e, sede, anexos, simbolo, palabra }) {
+    const ANCHO = 1080;
+    const M = 64;
+    const util = ANCHO - 2 * M;
+    const COLOR = { azul: '#003380', tinta: '#121A2A', gris: '#535D71', borde: '#DEE3EB', tono1: '#EDF0F5', tono2: '#D3E0F2', ladrillo: '#B14A12', apagado: '#F3F5F9', apagadoTexto: '#7A8396', falta: '#C3CAD6' };
+    const TITULO = '"Kumbh Sans", "Segoe UI", sans-serif';
+    const TEXTO = '"Didact Gothic", "Segoe UI", sans-serif';
+    const fuente = (peso, tam, familia = TITULO, estilo = '') => { c.font = `${estilo} ${peso} ${tam}px ${familia}`.trim(); };
+    const renglones = (texto, ancho) => {
+      const palabras = String(texto).split(/\s+/);
+      const out = [];
+      let linea = '';
+      for (const p of palabras) {
+        const prueba = linea ? `${linea} ${p}` : p;
+        if (c.measureText(prueba).width > ancho && linea) { out.push(linea); linea = p; } else linea = prueba;
+      }
+      if (linea) out.push(linea);
+      return out;
+    };
+    const escribir = (texto, x, y, ancho, alto, alinear = 'left') => {
+      c.textAlign = alinear;
+      const r = renglones(texto, ancho);
+      r.forEach((l, i) => c.fillText(l, x, y + i * alto));
+      c.textAlign = 'left';
+      return r.length * alto;
+    };
+    c.textBaseline = 'alphabetic';
+    c.fillStyle = '#FFFFFF';
+    c.fillRect(0, 0, ANCHO, 20000);
+
+    // La marca: símbolo y «ReSaP», y el filete tricolor
+    let y = 52;
+    if (simbolo && palabra) {
+      c.drawImage(simbolo, M, y, 78, 78 * simbolo.height / simbolo.width);
+      const altoPalabra = 50;
+      c.drawImage(palabra, M + 96, y + 16, altoPalabra * palabra.width / palabra.height, altoPalabra);
+    }
+    y += 104;
+    const tercio = util / 3;
+    ['#0094F9', '#49A830', '#FEB501'].forEach((col, i) => { c.fillStyle = col; c.fillRect(M + i * tercio, y, tercio, 6); });
+    y += 52;
+
+    c.fillStyle = COLOR.ladrillo;
+    fuente(800, 24);
+    c.fillText('AVANCE DE LA CARGA', M, y);
+    y += 58;
+    c.fillStyle = COLOR.tinta;
+    fuente(800, 50);
+    y += escribir(e.nombre, M, y, util, 58);
+    c.fillStyle = COLOR.gris;
+    fuente(400, 26, TEXTO);
+    y += escribir([e.localidad, sede ? `anexo de ${sede.nombre}` : '', fechaLarga(new Date())].filter(Boolean).join(' · '), M, y, util, 34) + 30;
+
+    c.fillStyle = COLOR.azul;
+    fuente(700, 40);
+    y += escribir(e.docentes
+      ? `Ya cargaron ${numero(e.docentes)} ${plural(e.docentes, 'docente', 'docentes')}, en ${numero(e.materias)} ${plural(e.materias, 'materia', 'materias')}.`
+      : 'Todavía no cargó ningún docente.', M, y, util, 50) + 26;
+
+    // Materia por año: cuántos docentes la cargaron
+    c.fillStyle = COLOR.azul;
+    fuente(800, 24);
+    c.fillText('DOCENTES QUE CARGARON CADA MATERIA', M, y);
+    y += 40;
+    const anchoMateria = 420;
+    const hueco = 8;
+    const anchoAnio = (util - anchoMateria - 2 * hueco) / 3;
+    const xAnio = (n) => M + anchoMateria + (n - 1) * (anchoAnio + hueco);
+    c.fillStyle = COLOR.gris;
+    fuente(800, 22);
+    [1, 2, 3].forEach((n) => { c.textAlign = 'center'; c.fillText(`${n}° año`, xAnio(n) + anchoAnio / 2, y); });
+    c.textAlign = 'left';
+    y += 14;
+    const nombre = (esp) => (Catalogo.esArtistica(esp) ? esp.nombre : Catalogo.nombreCorto(esp));
+    for (const a of Catalogo.areas()) {
+      const espacios = Catalogo.espaciosPorArea(a.id);
+      if (!espacios.length) continue;
+      y += 34;
+      c.fillStyle = COLOR.gris;
+      fuente(800, 19);
+      c.fillText(a.nombre.toUpperCase(), M, y);
+      y += 12;
+      for (const esp of espacios) {
+        fuente(700, 26);
+        const lineas = renglones(nombre(esp), anchoMateria - 20);
+        const alto = Math.max(54, lineas.length * 30 + 20);
+        c.fillStyle = COLOR.tinta;
+        lineas.forEach((l, i) => c.fillText(l, M, y + (alto - lineas.length * 30) / 2 + 23 + i * 30));
+        const m = e.porMateria.get(esp.id);
+        [1, 2, 3].forEach((n) => {
+          const x = xAnio(n);
+          const medio = x + anchoAnio / 2;
+          c.textAlign = 'center';
+          if (!esp.anios_dictados.includes(n)) {
+            c.fillStyle = COLOR.apagado; c.fillRect(x, y + 3, anchoAnio, alto - 6);
+            c.fillStyle = COLOR.apagadoTexto; fuente(400, 20, TEXTO, 'italic'); c.fillText('no se dicta', medio, y + alto / 2 + 7);
+          } else {
+            const cant = m ? m.porAnio.get(n) || 0 : 0;
+            if (cant) {
+              c.fillStyle = COLOR.tono2; c.fillRect(x, y + 3, anchoAnio, alto - 6);
+              c.fillStyle = COLOR.azul; fuente(800, 32); c.fillText(numero(cant), medio, y + alto / 2 + 11);
+            } else {
+              c.strokeStyle = COLOR.falta; c.lineWidth = 2; c.strokeRect(x + 1, y + 4, anchoAnio - 2, alto - 8);
+              c.fillStyle = COLOR.gris; fuente(400, 21, TEXTO); c.fillText('sin cargas', medio, y + alto / 2 + 7);
+            }
+          }
+          c.textAlign = 'left';
+        });
+        y += alto;
+      }
+    }
+    y += 34;
+    c.fillStyle = COLOR.gris;
+    fuente(400, 22, TEXTO);
+    y += escribir('Si la escuela no dicta una materia, no hace falta cargarla.', M, y, util, 30);
+
+    if (anexos.length) {
+      y += 40;
+      c.fillStyle = COLOR.azul;
+      fuente(800, 24);
+      c.fillText('SUS ANEXOS', M, y);
+      y += 16;
+      for (const x of anexos) {
+        fuente(700, 25);
+        const lineas = renglones(x.nombre, util - 300);
+        const alto = lineas.length * 30 + 24;
+        c.fillStyle = COLOR.tinta;
+        lineas.forEach((l, i) => c.fillText(l, M, y + 36 + i * 30));
+        c.textAlign = 'right';
+        if (x.docentes) {
+          c.fillStyle = COLOR.azul; fuente(700, 24);
+          c.fillText(`${numero(x.docentes)} ${plural(x.docentes, 'docente', 'docentes')} · ${numero(x.materias)} ${plural(x.materias, 'materia', 'materias')}`, ANCHO - M, y + 36);
+        } else {
+          c.fillStyle = COLOR.gris; fuente(700, 22);
+          c.fillText('Sin cargas todavía', ANCHO - M, y + 36);
+        }
+        c.textAlign = 'left';
+        y += alto;
+        c.fillStyle = COLOR.borde;
+        c.fillRect(M, y, util, 2);
+      }
+    }
+
+    // Cómo se carga
+    y += 40;
+    const link = linkFormulario().replace(/^https?:\/\//, '').replace(/\/$/, '');
+    fuente(700, 26);
+    const lineasLink = renglones(`Para cargar: ${link}`, util - 48);
+    const altoCaja = 36 + lineasLink.length * 34 + 32;
+    c.fillStyle = COLOR.tono1;
+    c.fillRect(M, y, util, altoCaja);
+    c.fillStyle = COLOR.azul;
+    lineasLink.forEach((l, i) => c.fillText(l, M + 24, y + 46 + i * 34));
+    c.fillStyle = COLOR.gris;
+    fuente(400, 22, TEXTO);
+    c.fillText('Sin usuario ni contraseña · unos 10 minutos por materia', M + 24, y + 46 + lineasLink.length * 34 + 4);
+    y += altoCaja + 48;
+    return Math.ceil(y);
   }
 
   // Lo que baja «Reporte para la escuela»: la escuela elegida o, con un
@@ -2350,8 +2653,8 @@
             <button type="button" class="t-seg-enlace t-ficha__ir" data-ficha-accion="unificar" data-id="${esc(g && g.id ? g.id : '')}">Unificarla con una de la nómina →</button></section>` : ''}
           <section><h3 class="t-ficha__rotulo">Cargas</h3>${cargasHTML(e)}
             ${enSuVista ? '' : `<button type="button" class="t-seg-enlace t-ficha__ir" data-ficha-accion="ir" data-id="${esc(e.id)}">Ver todas sus materias →</button>`}
-            <button type="button" class="t-seg-enlace t-ficha__ir" data-ficha-accion="reporte" data-id="${esc(e.id)}">Reporte para la escuela (PDF)</button>
           </section>
+          ${e.agregada ? '' : `<section><h3 class="t-ficha__rotulo">Mandarle el avance al director</h3>${mandarHTML(e, true)}</section>`}
         </div>`;
       caja.classList.toggle('t-ficha--fija', f.fija);
       velo.hidden = !f.fija;
@@ -2488,6 +2791,7 @@
           break;
         }
         case 'reporte': reporteEscuelas(id); break;
+        case 'mandar': mandarAlDirector(b.dataset.canal, id, b); break;
         case 'ir': {
           cerrar();
           estado.seguimiento.lugar = id;
@@ -3132,7 +3436,8 @@
         };
         render();
         break;
-      case 'seg-reporte': reporteEscuelas(); break;
+      case 'seg-reporte': reporteEscuelas(d.id); break;
+      case 'seg-mandar': mandarAlDirector(d.canal, d.id, objetivo); break;
       case 'abrir-control': estado.exportar = { que: 'control', progreso: null, error: null, descargando: false }; render(); break;
       case 'cerrar-exportar': if (!(estado.exportar && estado.exportar.descargando)) { estado.exportar = null; render(); } break;
       case 'descargar': descargar(); break;

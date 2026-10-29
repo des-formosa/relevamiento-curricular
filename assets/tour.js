@@ -21,7 +21,8 @@ const Tour = (function () {
   // todos: se usa cuando cambia algo que el equipo ya había visto explicado.
   // v6 (30/10/2026): las secciones Seguimiento y Escuelas, con su recorrido
   // v7 (30/10/2026): el reporte para la escuela, en Seguimiento
-  const VERSION = 'v7';
+  // v8 (29/10/2026): mandarle el avance al director por WhatsApp o correo
+  const VERSION = 'v8';
 
   let capa = null;
   let pasos = [];
@@ -126,6 +127,12 @@ const Tour = (function () {
         opcional: true,
         titulo: 'Un reporte para la escuela',
         texto: 'Un PDF de una hoja para mandarle al director: cuántos docentes cargaron cada materia en cada año, cómo van sus anexos y el link para cargar. Sin nombres de docentes. Con un departamento elegido, sale una hoja por escuela.',
+      },
+      {
+        objetivo: '[data-accion="seg-mandar"]',
+        opcional: true,
+        titulo: 'Mandarle el avance al director',
+        texto: '«Por WhatsApp» abre el chat del director con un mensaje corto ya escrito y deja copiada una imagen del avance: en el chat, pegala con Ctrl+V y mandá. «Por correo» hace lo mismo con su correo oficial. En el celular, un solo botón abre el menú de compartir con la imagen y el mensaje juntos.',
       },
       {
         objetivo: '[data-accion="abrir-control"]',
