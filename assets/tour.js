@@ -20,7 +20,8 @@ const Tour = (function () {
   // Subir la versión hace que el recorrido vuelva a aparecer solo una vez a
   // todos: se usa cuando cambia algo que el equipo ya había visto explicado.
   // v6 (30/10/2026): las secciones Seguimiento y Escuelas, con su recorrido
-  const VERSION = 'v6';
+  // v7 (30/10/2026): el reporte para la escuela, en Seguimiento
+  const VERSION = 'v7';
 
   let capa = null;
   let pasos = [];
@@ -121,9 +122,15 @@ const Tour = (function () {
         texto: 'Pasá el mouse por el nombre de una escuela (en el teléfono, tocalo): aparece su contacto, con el celular para llamar o escribir por WhatsApp, el correo oficial y el de su delegación. Un anexo muestra los de su sede. Ahí mismo se agrega o se corrige un contacto, y se cambia de qué E.P.E.S. depende un anexo.',
       },
       {
+        objetivo: '[data-accion="seg-reporte"]',
+        opcional: true,
+        titulo: 'Un reporte para la escuela',
+        texto: 'Un PDF de una hoja para mandarle al director: cuántos docentes cargaron cada materia en cada año, cómo van sus anexos y el link para cargar. Sin nombres de docentes. Con un departamento elegido, sale una hoja por escuela.',
+      },
+      {
         objetivo: '[data-accion="abrir-control"]',
         titulo: 'El Excel, para llamar',
-        texto: 'Baja lo que estás mirando: con «Solo las que no cargaron», la lista de escuelas con su contacto. Trae nombres y celulares: es de uso interno, no para repartir.',
+        texto: 'Baja lo que estás mirando: con «Solo las que no cargaron», la lista de escuelas con su contacto. Trae nombres y celulares: es de uso interno, no para repartir. Para mandarle algo a una escuela, elegila arriba y aparece «Reporte para la escuela (PDF)».',
       },
       {
         objetivo: '[data-solo="agregadas"]',

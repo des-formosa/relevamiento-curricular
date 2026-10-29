@@ -49,6 +49,7 @@
     chevron: svg('<path d="M6 9l6 6 6-6"/>', { tam: 17, grosor: 2.6 }),
     info: svg('<circle cx="12" cy="12" r="9.2"/><path d="M12 11v6"/><path d="M12 7.6v.2"/>', { color: '#636C80', grosor: 2.2 }),
     cerrar: svg('<path d="M6 6l12 12"/><path d="M18 6L6 18"/>', { tam: 21, color: '#535D71' }),
+    hoja: svg('<path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/><path d="M9 12h6"/><path d="M9 16h6"/>', { tam: 20, grosor: 2.2 }),
   };
 
   // «EJE II: LECTURA Y PRODUCCIÓN ESCRITA» → { rotulo: 'EJE II', nombre: 'Lectura y producción escrita' }
@@ -201,13 +202,13 @@
 
   /* ---------- Seguimiento de la carga ---------- */
 
-  // Los envíos, con lo justo para contar: escuela, docente, materia y fecha.
+  // Los envíos, con lo justo para contar: escuela, docente, materia, año y fecha.
   // Sin nombres de docentes. La primera página dice cuántos son y las demás
   // se piden juntas; se pagina con la medida que devuelva la base, por si
   // entrega menos filas que las pedidas.
   async function traerEnvios() {
     const pagina = (desde, hasta, conteo) => sb.from('aportes')
-      .select('escuela_id, docente_id, espacio_id, enviado_en', conteo ? { count: 'exact' } : {})
+      .select('escuela_id, docente_id, espacio_id, anio, enviado_en', conteo ? { count: 'exact' } : {})
       .eq('es_ejemplo', false).order('id').range(desde, hasta);
     const fallo = 'No pudimos traer las cargas. Revisá la conexión y volvé a intentar.';
     const primera = await pagina(0, FILAS_POR_PAGINA - 1, true);
@@ -239,10 +240,12 @@
       e.ultimo = Math.max(e.ultimo, cuando);
       // Por materia: cuántas cargas (una por docente y año) y de cuántos docentes
       let m = e.porMateria.get(a.espacio_id);
-      if (!m) e.porMateria.set(a.espacio_id, (m = { cargas: 0, docentes: new Set(), ultimo: 0 }));
+      if (!m) e.porMateria.set(a.espacio_id, (m = { cargas: 0, docentes: new Set(), ultimo: 0, porAnio: new Map() }));
       m.cargas += 1;
       m.docentes.add(a.docente_id);
       m.ultimo = Math.max(m.ultimo, cuando);
+      // Y por año, para el reporte de la escuela: una carga es un docente
+      m.porAnio.set(a.anio, (m.porAnio.get(a.anio) || 0) + 1);
     }
     const fila = (escuela, extra) => {
       const e = porEscuela.get(escuela.id);
@@ -1179,11 +1182,14 @@
 
   // Pone el documento en la página, abre la impresión del navegador (de ahí sale
   // el PDF) y al cerrarla lo saca
-  function imprimir(html) {
+  // «titulo» es el nombre que el navegador propone al guardar como PDF
+  function imprimir(html, titulo) {
     estado.documento = html;
     estado.exportar = null;
     render();
-    window.addEventListener('afterprint', () => { estado.documento = null; render(); }, { once: true });
+    const antes = document.title;
+    if (titulo) document.title = titulo;
+    window.addEventListener('afterprint', () => { document.title = antes; estado.documento = null; render(); }, { once: true });
     setTimeout(() => window.print(), 150);
   }
 
@@ -1627,6 +1633,11 @@
       }),
       extras.length ? `<optgroup label="Escuelas agregadas por docentes">${extras.map((e) => opcion(e.id, e.nombre)).join('')}</optgroup>` : '',
     ].join('');
+    // El reporte para mandarle a la escuela: con una escuela o un departamento
+    // elegido (con toda la provincia serían cientos de hojas)
+    const conDepto = s.lugar && Catalogo.departamentos().some((d) => d.id === s.lugar);
+    const reporte = s.lugar && s.datos
+      ? `<button type="button" class="t-exportar t-exportar--claro" data-accion="seg-reporte" title="${conDepto ? 'Un PDF con una hoja por escuela (cada E.P.E.S. con sus anexos), para mandarle a cada director' : 'Un PDF de una hoja, para mandarle al director'}">${Icono.hoja}${conDepto ? 'Reportes para las escuelas (PDF)' : 'Reporte para la escuela (PDF)'}</button>` : '';
     return `<div class="t-selectores">
       <div class="t-selector">
         <label class="t-selector__etiqueta" for="s-seg-lugar">Alcance</label>
@@ -1634,6 +1645,7 @@
       </div>
       <div class="espaciador"></div>
       <div class="t-selectores__acciones">
+        ${reporte}
         <button type="button" class="t-exportar" data-accion="abrir-control">${Icono.descargar}Descargar el Excel</button>
       </div>
     </div>`;
@@ -1989,6 +2001,124 @@
       </div>`;
   }
 
+  /* ---------- El reporte para la escuela (PDF) ---------- */
+
+  // Para mandarle al director: cómo va la carga en su escuela, en una hoja que
+  // se entiende sin explicación. Una grilla de materias por año (cuántos
+  // docentes cargaron cada una), sus anexos si es una E.P.E.S., y cómo se
+  // carga. Sin nombres de docentes: cuenta, como la pantalla. No dice «de 16
+  // materias»: ninguna escuela dicta todas, y el número sonaría a reproche.
+  const linkFormulario = () => new URL('./', window.location.href).href;
+
+  // Las escuelas que dirige el director de esta: ella y, si es una E.P.E.S.,
+  // los anexos que dependen de ella (estén en el departamento que estén)
+  function anexosDe(id) {
+    return nominaOrdenada().filter((x) => x.id !== id && esAnexo(x) && (sedeDe(x.id) || {}).id === id)
+      .map((x) => escuelaSeg(x.id)).filter(Boolean).map((x) => x.escuela);
+  }
+
+  function documentoEscuela(e, g, nueva) {
+    const donde = [e.localidad, g && g.id ? `departamento ${g.nombre}` : ''].filter(Boolean).join(', ');
+    const nombre = (esp) => (Catalogo.esArtistica(esp) ? esp.nombre : Catalogo.nombreCorto(esp));
+    const ultimo = e.ultimo ? new Date(e.ultimo).toLocaleDateString('es-AR', { day: 'numeric', month: 'long' }) : '';
+    const resumen = e.docentes
+      ? `Cargaron <strong>${numero(e.docentes)} ${plural(e.docentes, 'docente', 'docentes')}</strong> de la escuela: <strong>${numero(e.cargas)} ${plural(e.cargas, 'carga', 'cargas')}</strong> en ${numero(e.materias)} ${plural(e.materias, 'materia', 'materias')}. El último envío fue el ${esc(ultimo)}.`
+      : '<strong>Todavía no cargó ningún docente de la escuela.</strong>';
+    const sede = esAnexo(e) || sedeCorregida(e.id) ? sedeDe(e.id) : null;
+
+    // Materia por año: el número es cuántos docentes la cargaron en ese año
+    const anios = [1, 2, 3];
+    const filas = Catalogo.areas().map((a) => {
+      const espacios = Catalogo.espaciosPorArea(a.id);
+      if (!espacios.length) return '';
+      return `<tr class="t-doc__esc-area"><th colspan="4" scope="colgroup">${esc(a.nombre)}</th></tr>`
+        + espacios.map((esp) => {
+          const m = e.porMateria.get(esp.id);
+          return `<tr><th scope="row">${esc(nombre(esp))}</th>${anios.map((n) => {
+            if (!esp.anios_dictados.includes(n)) return '<td class="t-doc__esc-celda t-doc__esc-celda--no">no se dicta</td>';
+            const c = m ? m.porAnio.get(n) || 0 : 0;
+            return c
+              ? `<td class="t-doc__esc-celda t-doc__esc-celda--si"><strong>${numero(c)}</strong> ${plural(c, 'docente', 'docentes')}</td>`
+              : '<td class="t-doc__esc-celda t-doc__esc-celda--falta">sin cargas</td>';
+          }).join('')}</tr>`;
+        }).join('');
+    }).join('');
+
+    const anexos = esAnexo(e) ? [] : anexosDe(e.id);
+    const tablaAnexos = anexos.length ? `
+      <section class="t-doc__esc-bloque">
+        <h2 class="t-doc__esc-titulo">Sus anexos</h2>
+        <table class="t-doc__esc-anexos">
+          <thead><tr><th scope="col">Anexo</th><th scope="col">Localidad</th><th scope="col" class="t-doc__esc-num">Docentes</th><th scope="col" class="t-doc__esc-num">Materias</th><th scope="col">Último envío</th></tr></thead>
+          <tbody>${anexos.map((x) => `<tr>
+            <th scope="row">${esc(x.nombre)}</th><td>${esc(x.localidad)}</td>
+            ${x.docentes
+              ? `<td class="t-doc__esc-num">${numero(x.docentes)}</td><td class="t-doc__esc-num">${numero(x.materias)}</td><td>${esc(new Date(x.ultimo).toLocaleDateString('es-AR', { day: 'numeric', month: 'short' }))}</td>`
+              : '<td colspan="3" class="t-doc__esc-sin">Sin cargas todavía</td>'}
+          </tr>`).join('')}</tbody>
+        </table>
+      </section>` : '';
+    const depto = g && g.id && g.total
+      ? `<p class="t-doc__esc-depto">En el departamento ${esc(g.nombre)} ya cargaron ${numero(g.cargaron)} de sus ${numero(g.total)} escuelas.</p>` : '';
+
+    return `<section class="t-doc__esc ${nueva ? 't-doc__esc--nueva' : ''}">
+      <header class="t-doc__cabeza">
+        ${marcaDocumento()}
+        <div class="t-doc__institucion">Ministerio de Cultura y Educación · Dirección de Educación Secundaria · Formosa</div>
+        <div class="t-doc__sub">Cómo va la carga en la escuela</div>
+        <h1 class="t-doc__titulo">${esc(e.nombre)}</h1>
+        <div class="t-doc__datos">${esc(donde)}${sede ? ` · depende de ${esc(sede.nombre)}` : ''} · Datos al ${esc(fechaLarga(new Date()))}</div>
+      </header>
+      <p class="t-doc__esc-resumen">${resumen}</p>
+      ${depto}
+      <section class="t-doc__esc-como">
+        <p><strong>Cómo cargan los docentes:</strong> cada uno entra a <a href="${esc(linkFormulario())}">${esc(linkFormulario().replace(/^https?:\/\//, ''))}</a> desde el celular o la computadora, sin usuario ni contraseña, y carga una vez por cada materia y año que dicta en la escuela. Lleva unos 10 minutos por materia.</p>
+      </section>
+      <section class="t-doc__esc-bloque">
+        <h2 class="t-doc__esc-titulo">Materia por materia</h2>
+        <p class="t-doc__lectura">En cada casilla, cuántos docentes de la escuela ya cargaron esa materia en ese año. «Sin cargas» quiere decir que todavía nadie la cargó: si la escuela no dicta esa materia, no hace falta.</p>
+        <table class="t-doc__esc-grilla">
+          <thead><tr><th scope="col">Materia</th>${anios.map((n) => `<th scope="col">${n}° año</th>`).join('')}</tr></thead>
+          <tbody>${filas}</tbody>
+        </table>
+      </section>
+      ${tablaAnexos}
+    </section>`;
+  }
+
+  // Lo que baja «Reporte para la escuela»: la escuela elegida o, con un
+  // departamento, una hoja por director (cada E.P.E.S. con sus anexos, y los
+  // anexos que no dependen de ninguna). Si un anexo del departamento depende
+  // de una E.P.E.S. de otro, va el reporte de esa E.P.E.S.: si no, quedaría
+  // afuera.
+  function escuelasDelReporte() {
+    const s = estado.seguimiento;
+    if (!s.datos || !s.lugar) return [];
+    const g = s.datos.grupos.find((x) => x.id === s.lugar);
+    if (!g) {
+      const una = escuelaSeg(s.lugar);
+      return una ? [una] : [];
+    }
+    const ids = new Set(g.escuelas.map((x) => { const sede = esAnexo(x) || sedeCorregida(x.id) ? sedeDe(x.id) : null; return sede ? sede.id : x.id; }));
+    return nominaOrdenada().filter((x) => ids.has(x.id)).map((x) => escuelaSeg(x.id)).filter(Boolean);
+  }
+
+  function reporteEscuelas(id) {
+    if (id) {
+      const una = escuelaSeg(id);
+      if (!una) return;
+      Ficha.cerrar();
+      imprimir(`<article class="t-doc t-doc--escuela">${documentoEscuela(una.escuela, una.grupo, false)}</article>`,
+        `Carga ReSaP - ${una.escuela.nombre} - ${hoyArchivo()}`);
+      return;
+    }
+    const lista = escuelasDelReporte();
+    if (!lista.length) return;
+    const g = estado.seguimiento.datos.grupos.find((x) => x.id === estado.seguimiento.lugar);
+    imprimir(`<article class="t-doc t-doc--escuela">${lista.map((x, i) => documentoEscuela(x.escuela, x.grupo, i > 0)).join('')}</article>`,
+      `Carga ReSaP - ${g ? `Departamento ${g.nombre}` : lista[0].escuela.nombre} - ${hoyArchivo()}`);
+  }
+
   /* ---------- Ficha de la escuela: contacto y cargas ---------- */
 
   // Una escuela de las contadas, con su departamento
@@ -2220,6 +2350,7 @@
             <button type="button" class="t-seg-enlace t-ficha__ir" data-ficha-accion="unificar" data-id="${esc(g && g.id ? g.id : '')}">Unificarla con una de la nómina →</button></section>` : ''}
           <section><h3 class="t-ficha__rotulo">Cargas</h3>${cargasHTML(e)}
             ${enSuVista ? '' : `<button type="button" class="t-seg-enlace t-ficha__ir" data-ficha-accion="ir" data-id="${esc(e.id)}">Ver todas sus materias →</button>`}
+            <button type="button" class="t-seg-enlace t-ficha__ir" data-ficha-accion="reporte" data-id="${esc(e.id)}">Reporte para la escuela (PDF)</button>
           </section>
         </div>`;
       caja.classList.toggle('t-ficha--fija', f.fija);
@@ -2356,6 +2487,7 @@
           window.scrollTo(0, 0);
           break;
         }
+        case 'reporte': reporteEscuelas(id); break;
         case 'ir': {
           cerrar();
           estado.seguimiento.lugar = id;
@@ -2825,6 +2957,7 @@
       ${barraSeguimiento()}
       ${contenido}
       ${panelExportar()}
+      ${estado.documento || ''}
     </div>`;
   }
 
@@ -2999,6 +3132,7 @@
         };
         render();
         break;
+      case 'seg-reporte': reporteEscuelas(); break;
       case 'abrir-control': estado.exportar = { que: 'control', progreso: null, error: null, descargando: false }; render(); break;
       case 'cerrar-exportar': if (!(estado.exportar && estado.exportar.descargando)) { estado.exportar = null; render(); } break;
       case 'descargar': descargar(); break;
