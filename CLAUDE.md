@@ -1377,11 +1377,11 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
   agregar un anexo, baja con «Deshacer», renombrar, publicar; el seguimiento ve enseguida lo
   publicado y el formulario del docente usa la nómina publicada y la busca igual; sin `sql/16`
   dice qué falta; sin scroll horizontal de 360 a 1280 px, y la cabecera en una fila de 1280 a
-  1920 en todas las pantallas
+  1920 en todas las pantallas. **Instalado en Supabase** (30/10/2026): la consulta final dio
+  288 escuelas y 0 sin orden. Mientras nadie toque «Publicar», los docentes siguen viendo
+  `datos/escuelas.json`
 
 **Pendiente**
-- **Correr en el SQL Editor `sql/16_editar_escuelas.sql`** (el equipo lo tiene como «7 -
-  editar escuelas.sql»): hasta entonces la sección «Escuelas» dice que falta ese paso
 - **Correr en el SQL Editor `sql/privado/15_cargar_correos.sql`** (el equipo lo tiene como
   «6 - correos oficiales.sql»): hasta entonces la ficha no muestra los correos oficiales
 - **Volver a correr `sql/15_unificar_escuelas.sql`**: trae `editar_escuela_agregada()`. Hasta
