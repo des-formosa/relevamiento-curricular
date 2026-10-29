@@ -486,9 +486,11 @@ en la cabecera, el logo chico.
 **Al entrar, un inicio** (24/09/2026, lo pidió el equipo: «algo más cómodo de recibir antes de
 usarlo»). La primera versión tenía de más —saludo enorme, estado del catálogo, cuatro consejos—
 y el equipo la sintió cargada. Quedó: «Hola, Ana» chico, la marca ReSaP como título
-(logo, nombre completo, filete tricolor y eslogan), una línea de cómo va la carga y los tres caminos: «Ver los
-resultados», «Seguir la carga» (sumado el 27/10/2026, con el seguimiento) y «Editar el
-catálogo»; desde 1100 px van lado a lado, más angosto uno debajo del otro. Desde el panel se vuelve con «Inicio». **Un link
+(logo, nombre completo, filete tricolor y eslogan), una línea de cómo va la carga y los cuatro caminos: «Ver los
+resultados», «Seguir la carga» (sumado el 27/10/2026, con el seguimiento), «Editar el
+catálogo» y «Editar las escuelas» (sumado el 30/10/2026, con la sección Escuelas); desde
+760 px van de a dos, más angosto uno debajo del otro. De a cuatro en una fila no: cada tarjeta
+quedaba de 250 px y el texto se partía en cuatro renglones. Desde el panel se vuelve con «Inicio». **Un link
 compartido** (con `materia=` o `seguimiento=` en el hash) no pasa por el inicio: va directo a
 lo que muestra. Salir borra el hash, así el que entra después arranca por el inicio.
 
@@ -511,8 +513,10 @@ confundía. Quedó así:
 - **Seguimiento**, en su barra: el alcance y **«Descargar el Excel»** (la planilla de uso
   interno, con nombres).
 
-El recorrido guiado pasó a `v4`, con un paso para «Descargar para revisar», y a `v5` cuando
-«Descargar resultados» pasó a ser el reporte de la materia (25/09/2026).
+El recorrido guiado pasó a `v4`, con un paso para «Descargar para revisar», a `v5` cuando
+«Descargar resultados» pasó a ser el reporte de la materia (25/09/2026), y a `v6` cuando se
+sumaron los recorridos de Seguimiento y Escuelas (30/10/2026). «¿Cómo se usa?» aparece en
+Resultados, Catálogo, Seguimiento y Escuelas, y abre el recorrido de la pantalla que se mira.
 
 **Después, es prácticamente una sola pantalla:**
 
@@ -795,7 +799,9 @@ qué, con lo que respondió la base. La primera versión escondía la solapa en 
 equipo, con el SQL ya corrido, no la encontraba y no tenía cómo saber por qué. `sql/14` y
 `sql/15` terminan con `notify pgrst, 'reload schema'`, para que la API vea enseguida lo nuevo.
 
-No tiene recorrido guiado: si algo necesitara explicación, estaría mal.
+Al principio no tenía recorrido guiado («si algo necesitara explicación, estaría mal»). El
+30/10/2026, con la ficha, el Excel por alcance y las escritas a mano sumados, el equipo pidió
+que los recorridos explicaran todo lo nuevo: ver «El recorrido guiado».
 
 ### Escuelas: editar la nómina (pantalla «Escuelas», sql/16)
 
@@ -966,9 +972,17 @@ formulario solo entra por `registrar_aporte`.
 
 Son veinte personas que entran cada tanto, no todos los días. En vez de un instructivo que
 nadie lee, el panel se explica solo: ilumina una parte de la pantalla y dice qué mira, con
-«Saltar», «Anterior» y «Siguiente». Nueve pasos para leer los resultados (eran diez: el de
-«Datos de ejemplo» se sacó con el interruptor) y once para editar el
-catálogo (el último agregado: el orden de los saberes).
+«Saltar», «Anterior» y «Siguiente». Cuatro recorridos, uno por pantalla:
+
+- **Resultados**, diez pasos (el de «Datos de ejemplo» se sacó con el interruptor; el último,
+  sumado el 30/10/2026, señala la cabecera y cuenta para qué son Seguimiento y Escuelas).
+- **Catálogo**, once (el último agregado: el orden de los saberes).
+- **Seguimiento** (30/10/2026), ocho: el alcance, la línea con la respuesta, las tres listas,
+  los departamentos, la ficha de cada escuela (contacto, WhatsApp, correo oficial, delegación,
+  sede de un anexo), el Excel para llamar y las escritas a mano.
+- **Escuelas** (30/10/2026), ocho: que editar no es publicar, buscar y filtrar, los
+  departamentos, corregir una escuela, dar de baja (que no borra), agregar una escuela o un
+  anexo, y publicar.
 
 Arranca solo la primera vez que se entra a cada pantalla (queda anotado en `localStorage`,
 claves `relevamiento.tour.<modo>.<versión>`) y se vuelve a ver desde «¿Cómo se usa?» en la
@@ -1386,6 +1400,14 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
   `sql/15_unificar_escuelas.sql` (con `editar_escuela_agregada()`) y
   `sql/mantenimiento/2026-10-27_sin_datos_de_ejemplo.sql`: ya no quedan datos inventados en la
   base
+
+- **Inicio y recorridos al día** (30/10/2026): el inicio suma «Editar las escuelas» (los cuatro
+  caminos de a dos), y los recorridos suman Seguimiento y Escuelas, con «¿Cómo se usa?» en las
+  dos (versión `v6`: a todos les vuelve a aparecer una vez). Probado en Chromium con un
+  Supabase simulado, en 1440 y 390 px: el inicio con los cuatro caminos y sin scroll
+  horizontal; cada pantalla abre su recorrido sola la primera vez, todos los pasos señalan algo
+  que está y la tarjeta entra en la pantalla, «Listo» lo cierra, al volver no se repite y
+  «¿Cómo se usa?» lo muestra de nuevo; la cabecera sigue en una fila de 1280 a 1920
 
 **Pendiente**
 - El formulario escribe de verdad por defecto; `?demo` en el link es solo para mostrarlo sin

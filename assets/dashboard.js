@@ -520,7 +520,7 @@
         ${enlace('escuelas', 'ir-escuelas', 'Escuelas')}
       </nav>
       <span class="t-nav__separador" aria-hidden="true"></span>
-      ${estado.pantalla === 'panel' ? '<button type="button" class="t-enlace-cab t-ayuda" data-accion="tour" title="Ver cómo se usa esta pantalla">¿Cómo se usa?</button>' : ''}
+      ${['panel', 'seguimiento', 'escuelas'].includes(estado.pantalla) ? '<button type="button" class="t-enlace-cab t-ayuda" data-accion="tour" title="Ver cómo se usa esta pantalla">¿Cómo se usa?</button>' : ''}
       <button type="button" class="t-enlace-cab" data-accion="salir">Salir</button>`;
   }
 
@@ -1585,6 +1585,10 @@
               svg('<path d="M4 20h4l10-10-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/>', { tam: 28, color: '#003380', grosor: 2 }),
               'Editar el catálogo',
               'Los saberes y contenidos que ven los docentes.')}
+            ${opcion('ir-escuelas',
+              svg('<path d="M3 21h18"/><path d="M5 21V10l7-5 7 5v11"/><path d="M10 21v-5h4v5"/>', { tam: 28, color: '#003380', grosor: 2 }),
+              'Editar las escuelas',
+              'La nómina de escuelas, anexos y departamentos.')}
           </div>
         </div>
       </main>
@@ -2876,6 +2880,10 @@
     previo.seccion = seccion;
   }
 
+  // Qué recorrido corresponde a la pantalla que se está mirando
+  const modoTour = () => (['seguimiento', 'escuelas'].includes(estado.pantalla) ? estado.pantalla
+    : estado.modo === 'catalogo' ? 'catalogo' : 'resultados');
+
   function render() {
     const fn = { ingreso: pantallaIngreso, 'sin-permiso': pantallaSinPermiso, inicio: pantallaInicio, panel: pantallaPanel, seguimiento: pantallaSeguimiento, escuelas: pantallaEscuelas }[estado.pantalla] || pantallaCargando;
     const habiaPanel = !!app.querySelector('.t-panel');
@@ -2887,6 +2895,9 @@
     if (estado.pantalla === 'panel' && !estado.cargandoDatos && !Editor.estado.cargando) {
       Tour.quizas(estado.modo === 'catalogo' ? 'catalogo' : 'resultados');
     }
+    // Seguimiento y Escuelas, cuando ya tienen la lista en pantalla
+    if (estado.pantalla === 'seguimiento' && estado.seguimiento.datos && !estado.seguimiento.cargando) Tour.quizas('seguimiento');
+    if (estado.pantalla === 'escuelas' && estado.escuelasEd.lista && !estado.escuelasEd.error) Tour.quizas('escuelas');
   }
 
   /* ======================================================================
@@ -2910,7 +2921,7 @@
       case 'salir': salir(); break;
       case 'reintentar-permiso': estado.pantalla = 'cargando'; render(); verificarSesion(); break;
       case 'reintentar': cargarDatos(); break;
-      case 'tour': Tour.iniciar(estado.modo === 'catalogo' ? 'catalogo' : 'resultados'); break;
+      case 'tour': Tour.iniciar(modoTour()); break;
       case 'ir-inicio': irAlInicio(); break;
       case 'ir-resultados': irAlPanel('resultados'); break;
       case 'ir-catalogo': irAlPanel('catalogo'); break;
