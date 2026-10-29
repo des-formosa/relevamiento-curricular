@@ -510,9 +510,10 @@ confundía. Quedó así:
   de la materia, sin resultados, en Excel o PDF, para un profesor), **«Cambiar con una
   planilla»** (1 · bajá la planilla, 2 · subila corregida; el JSON quedó como enlace chico para
   quien mantiene el sistema) y **«Publicar»**.
-- **Seguimiento**, en su barra: el alcance, **«Reporte para la escuela (PDF)»** (con una
-  escuela o un departamento elegido, para mandarle al director) y **«Descargar el Excel»** (la
-  planilla de uso interno, con nombres).
+- **Seguimiento**, en su barra: el alcance, **«Reportes para las escuelas (PDF)»** (con un
+  departamento elegido: una hoja por director) y **«Descargar el Excel»** (la planilla de uso
+  interno, con nombres). Con una escuela elegida, su reporte está en «Mandarle el avance al
+  director», no en la barra.
 
 El recorrido guiado pasó a `v4`, con un paso para «Descargar para revisar», a `v5` cuando
 «Descargar resultados» pasó a ser el reporte de la materia (25/09/2026), y a `v6` cuando se
@@ -629,8 +630,8 @@ eso es lo que el Ministerio necesita mirar. Los nombres siguen solo en el Excel,
 desde acá con su aviso de uso interno. El enlace del pie se sacó: la solapa ya está a la vista.
 
 - **Barra:** Alcance (toda la provincia, un departamento o una escuela, agrupadas por
-  departamento como en Resultados, más las que agregaron los docentes), «Reporte para la
-  escuela (PDF)» (ver abajo) y «Descargar el Excel».
+  departamento como en Resultados, más las que agregaron los docentes), «Reportes para las
+  escuelas (PDF)» con un departamento elegido (ver abajo) y «Descargar el Excel».
 - **Línea de contexto con la respuesta:** «Cargaron 487 docentes de 135 de las 288 escuelas.
   153 escuelas todavía no cargaron.» Nunca «Faltan 153» a secas: el equipo preguntó «¿faltan
   qué?». Lo mismo en la tabla («Escuelas sin cargas») y en cada departamento («20 sin cargas
@@ -681,8 +682,10 @@ no se repiten entre sí), así se puede dejar marcada.
 simple y comprensible para los directores de cada escuela; en el Excel es bastante tosco»). Un
 PDF de una hoja, A4 vertical, armado como los demás (`documentoEscuela()`, impreso con
 `imprimir()`, que ahora también propone el nombre del archivo: «Carga ReSaP - E.P.E.S. N° 2 -
-fecha»). Se baja con «Reporte para la escuela (PDF)» en la barra, cuando hay una escuela
-elegida, o desde la ficha. Lleva:
+fecha»). Se baja con «PDF para imprimir», en «Mandarle el avance al director» (en la ficha y
+en el detalle de la escuela). Hasta el 29/10/2026 también había un «Reporte para la escuela
+(PDF)» en la barra con una escuela elegida: con el bloque para mandarlo quedó repetido y se
+sacó. Lleva:
 
 - la marca, «Avance de la carga», el nombre, la localidad, de qué E.P.E.S. es anexo (si lo
   es) y la fecha;
@@ -706,8 +709,8 @@ casilla) y el equipo pidió el 29/10/2026 que fuera más simple para los directo
 eso.
 
 **Sin nombres de docentes**: cuenta, como la pantalla. Para eso `traerEnvios()` pide también
-el `anio` de cada envío (`porMateria` lleva `porAnio`). Con **un departamento** elegido, el
-botón dice «Reportes para las escuelas (PDF)» y arma un solo PDF con una hoja por director:
+el `anio` de cada envío (`porMateria` lleva `porAnio`). Con **un departamento** elegido, la
+barra tiene «Reportes para las escuelas (PDF)», que arma un solo PDF con una hoja por director:
 cada E.P.E.S. con sus anexos, y los anexos que no dependen de ninguna. Si un anexo del
 departamento depende de una E.P.E.S. de otro, entra el reporte de esa E.P.E.S.: si no, ese
 anexo quedaría afuera. Con toda la provincia no se ofrece, porque serían cientos de hojas. Una
@@ -1045,8 +1048,8 @@ nadie lee, el panel se explica solo: ilumina una parte de la pantalla y dice qu�
 - **Catálogo**, once (el último agregado: el orden de los saberes).
 - **Seguimiento** (30/10/2026), diez: el alcance, la línea con la respuesta, las tres listas,
   los departamentos, la ficha de cada escuela (contacto, WhatsApp, correo oficial, delegación,
-  sede de un anexo), el reporte para la escuela (opcional: solo con una escuela o un
-  departamento elegido; si no, lo menciona el paso del Excel), mandarle el avance al director
+  sede de un anexo), los reportes de las escuelas (opcional: solo con un departamento
+  elegido), mandarle el avance al director
   (opcional: con una escuela elegida), el Excel para llamar y las escritas a mano.
 - **Escuelas** (30/10/2026), ocho: que editar no es publicar, buscar y filtrar, los
   departamentos, corregir una escuela, dar de baja (que no borra), agregar una escuela o un

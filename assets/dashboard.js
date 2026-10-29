@@ -1633,11 +1633,12 @@
       }),
       extras.length ? `<optgroup label="Escuelas agregadas por docentes">${extras.map((e) => opcion(e.id, e.nombre)).join('')}</optgroup>` : '',
     ].join('');
-    // El reporte para mandarle a la escuela: con una escuela o un departamento
-    // elegido (con toda la provincia serían cientos de hojas)
+    // Los reportes de las escuelas de un departamento, en un solo PDF (con toda
+    // la provincia serían cientos de hojas). Con una escuela elegida no va acá:
+    // está en «Mandarle el avance al director», con el PDF para imprimir.
     const conDepto = s.lugar && Catalogo.departamentos().some((d) => d.id === s.lugar);
-    const reporte = s.lugar && s.datos
-      ? `<button type="button" class="t-exportar t-exportar--claro" data-accion="seg-reporte" title="${conDepto ? 'Un PDF con una hoja por escuela (cada E.P.E.S. con sus anexos), para mandarle a cada director' : 'Un PDF de una hoja, para mandarle al director'}">${Icono.hoja}${conDepto ? 'Reportes para las escuelas (PDF)' : 'Reporte para la escuela (PDF)'}</button>` : '';
+    const reporte = conDepto && s.datos
+      ? `<button type="button" class="t-exportar t-exportar--claro" data-accion="seg-reporte" title="Un PDF con una hoja por escuela (cada E.P.E.S. con sus anexos), para mandarle a cada director">${Icono.hoja}Reportes para las escuelas (PDF)</button>` : '';
     return `<div class="t-selectores">
       <div class="t-selector">
         <label class="t-selector__etiqueta" for="s-seg-lugar">Alcance</label>
