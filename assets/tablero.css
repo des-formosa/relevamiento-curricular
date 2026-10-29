@@ -1020,7 +1020,6 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
   .t-doc__esc-resumen { font-family: var(--texto); font-size: 13pt; line-height: 1.4; margin: 0; }
   .t-doc__esc-bloque { margin-top: 14px; }
   .t-doc__esc-titulo { font-size: 10pt; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--azul); margin: 0 0 4px; break-after: avoid; }
-  .t-doc__esc-bloque .t-doc__lectura { margin: 6px 0 0; }
   .t-doc__esc-grilla { width: 100%; border-collapse: separate; border-spacing: 0 2px; font-size: 9.5pt; }
   .t-doc__esc-anexos { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 9pt; }
   .t-doc__esc-anexos thead th { white-space: nowrap; }
@@ -1028,7 +1027,6 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
   .t-doc__esc-anexos thead th:nth-child(2) { width: 20%; }
   .t-doc__esc-anexos thead th:nth-child(3), .t-doc__esc-anexos thead th:nth-child(4) { width: 12%; }
   .t-doc__esc-grilla { table-layout: fixed; }
-  .t-doc__esc-resumen a, .t-doc__esc-como a { color: var(--azul); font-weight: 800; text-decoration: none; }
   .t-doc__esc-grilla thead th { width: 21%; text-align: center; font-size: 9pt; font-weight: 800; color: var(--t-gris); padding: 0 0 2px; }
   .t-doc__esc-grilla thead th:first-child { width: 37%; text-align: left; }
   .t-doc__esc-grilla tbody th { text-align: left; font-weight: 700; padding: 0 8px 0 0; }
@@ -1044,8 +1042,6 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
   .t-doc__esc-anexos tbody th { font-weight: 700; }
   .t-doc__esc-num { text-align: right !important; font-variant-numeric: tabular-nums; }
   .t-doc__esc-sin { font-weight: 700; color: var(--t-gris); }
-  .t-doc__esc-como { margin-top: 10px; padding: 7px 10px; background: var(--t-tono-1); break-inside: avoid; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .t-doc__esc-como { font-family: var(--texto); font-size: 11pt; line-height: 1.45; margin-bottom: 0; }
 }
 @page mapa { size: A4 landscape; margin: 12mm 12mm; }
 @page escuela { size: A4 portrait; margin: 11mm 14mm; }

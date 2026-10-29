@@ -2010,12 +2010,14 @@
 
   // Para mandarle al director: cómo va la carga en su escuela, en una hoja que
   // se entiende sin explicación. Una grilla de materias por año (cuántos
-  // docentes cargaron cada una), sus anexos si es una E.P.E.S., y cómo se
-  // carga. Sin nombres de docentes: cuenta, como la pantalla. No dice «de 16
-  // materias»: ninguna escuela dicta todas, y el número sonaría a reproche.
-  // El link del formulario va escrito completo, como en las etiquetas Open
-  // Graph: el PDF, la imagen y el mensaje lo llevan igual aunque el panel se
-  // abra desde otra dirección. Si el sitio se muda, hay que cambiarlo acá.
+  // docentes cargaron cada una) y sus anexos si es una E.P.E.S. Nada más: ni
+  // cómo se carga ni aclaraciones, solo la información (lo pidió el equipo,
+  // 30/10/2026; el link va en el mensaje). Sin nombres de docentes: cuenta,
+  // como la pantalla. No dice «de 16 materias»: ninguna escuela dicta todas,
+  // y el número sonaría a reproche.
+  // El link del formulario va escrito completo en el mensaje, como en las
+  // etiquetas Open Graph, aunque el panel se abra desde otra dirección. Si el
+  // sitio se muda, hay que cambiarlo acá.
   const LINK_FORMULARIO = 'https://des-formosa.github.io/relevamiento-curricular/';
   const linkFormulario = () => LINK_FORMULARIO;
 
@@ -2075,14 +2077,12 @@
         <div class="t-doc__datos">${esc(e.localidad)}${sede ? ` · anexo de ${esc(sede.nombre)}` : ''} · ${esc(fechaLarga(new Date()))}</div>
       </header>
       <p class="t-doc__esc-resumen">${resumen}</p>
-      <p class="t-doc__esc-como">Para cargar: <a href="${esc(linkFormulario())}">${esc(linkFormulario().replace(/^https?:\/\//, ''))}</a> · sin usuario ni contraseña · unos 10 minutos por materia</p>
       <section class="t-doc__esc-bloque">
         <h2 class="t-doc__esc-titulo">Docentes que cargaron cada materia</h2>
         <table class="t-doc__esc-grilla">
           <thead><tr><th scope="col">Materia</th>${anios.map((n) => `<th scope="col">${n}° año</th>`).join('')}</tr></thead>
           <tbody>${filas}</tbody>
         </table>
-        <p class="t-doc__lectura">Si la escuela no dicta una materia, no hace falta cargarla.</p>
       </section>
       ${tablaAnexos}
     </section>`;
@@ -2374,11 +2374,6 @@
         y += alto;
       }
     }
-    y += 34;
-    c.fillStyle = COLOR.gris;
-    fuente(400, 22, TEXTO);
-    y += escribir('Si la escuela no dicta una materia, no hace falta cargarla.', M, y, util, 30);
-
     if (anexos.length) {
       y += 40;
       c.fillStyle = COLOR.azul;
@@ -2406,20 +2401,7 @@
       }
     }
 
-    // Cómo se carga
-    y += 40;
-    const link = linkFormulario().replace(/^https?:\/\//, '').replace(/\/$/, '');
-    fuente(700, 26);
-    const lineasLink = renglones(`Para cargar: ${link}`, util - 48);
-    const altoCaja = 36 + lineasLink.length * 34 + 32;
-    c.fillStyle = COLOR.tono1;
-    c.fillRect(M, y, util, altoCaja);
-    c.fillStyle = COLOR.azul;
-    lineasLink.forEach((l, i) => c.fillText(l, M + 24, y + 46 + i * 34));
-    c.fillStyle = COLOR.gris;
-    fuente(400, 22, TEXTO);
-    c.fillText('Sin usuario ni contraseña · unos 10 minutos por materia', M + 24, y + 46 + lineasLink.length * 34 + 4);
-    y += altoCaja + 48;
+    y += 48;
     return Math.ceil(y);
   }
 
