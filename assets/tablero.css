@@ -1781,6 +1781,12 @@ body.tour-abierto { overflow: hidden; }
 .t-unif__fila--confirmando { background: var(--gris-claro-3); }
 .t-unif__escrita { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .t-unif__escrita strong { color: var(--t-tinta); overflow-wrap: anywhere; }
+.t-unif__nombre { display: flex; align-items: center; gap: 2px; }
+.t-unif__nombre .t-ficha__icono { margin: -6px 0; }
+/* Corregir cómo quedó escrita: el nombre a lo ancho, localidad y departamento de a dos */
+.t-unif__editar { grid-column: 1 / -1; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+.t-unif__editar-nombre { grid-column: 1 / -1; }
+.t-unif__editar-nota { font-size: 14px; color: var(--t-gris-2); }
 .t-unif__escrita span { font-size: 14px; color: var(--t-gris-2); }
 .t-unif__elegir { display: flex; align-items: flex-end; gap: 10px; min-width: 0; }
 .t-unif__elegir .t-ficha__campo { flex: 1; }
@@ -1799,6 +1805,7 @@ body.tour-abierto { overflow: hidden; }
   .t-unif__elegir { flex-direction: column; align-items: stretch; }
   .t-unif__elegir .t-ficha__si { height: 44px; }
   .t-unif__elegir select { height: 46px; font-size: 16px; }
+  .t-unif__editar { grid-template-columns: 1fr; }
 }
 
 /* En el teléfono cada escuela es un renglón de texto: el nombre, la

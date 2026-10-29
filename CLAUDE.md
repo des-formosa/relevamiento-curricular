@@ -731,14 +731,25 @@ aparece al lado de las otras dos cuando hay alguna (también con un departamento
 `&agregadas=1` en el hash):
 
 - Una fila por escrita: lo que escribió el docente, entre comillas, con su localidad,
-  departamento y cuántas cargas de cuántos docentes; a la derecha, «Es de la nómina» con la
-  lista de las 288 (su departamento primero, y al final las otras escritas, para juntar dos que
-  escribieron distinto una escuela que de verdad falta) y «Unificar».
+  departamento y cuántas cargas de cuántos docentes; a la derecha, «Es la misma que» con la
+  lista para elegir y «Unificar». La lista trae arriba **las otras escritas a mano** (las de su
+  departamento primero, cada una con el suyo) y después la nómina, por departamento.
+- **Dos escritas que son la misma escuela** («instituto san martin» e «Inst. San Martín», que
+  no está en la nómina) se unifican igual, una con la otra: lo pidió el equipo el mismo
+  29/10, después de ver la primera versión, que tenía las otras escritas al final de la lista y
+  no las sugería. La que queda suma las cargas de las dos, y se puede corregir.
 - **Viene elegida la que parece ser**, rotulada «(sugerida, revisala)», si hay una clara
   (`sugerirDestino()`): con número, la E.P.E.S. de ese número en el mismo departamento, y entre
   la común, la E.I.B. y la agraria, la que diga el texto; sin número, la única de la nómina en
-  esa localidad, o la que comparte casi todas las palabras del nombre. Si no hay una clara,
-  «Elegí cuál es…».
+  esa localidad, o la que comparte casi todas las palabras del nombre. Si no hay ninguna de la
+  nómina, otra escrita con casi las mismas palabras, aunque esté en otro departamento (un
+  docente pudo elegirlo mal); las abreviaturas cuentan («inst» por «instituto»). Si no hay una
+  clara, «Elegí cuál es…».
+- **El lápiz al lado del nombre corrige cómo quedó escrita**: nombre, localidad y departamento,
+  en un formulario en la misma fila (`editar_escuela_agregada()`). Si el nombre nuevo es el de
+  una escuela de la nómina, o el de otra escrita, en ese departamento, no lo guarda y dice que
+  hay que unificarlas. El id no cambia, así que un docente que la vuelva a escribir como antes
+  también llega a la corregida.
 - «Unificar» pide confirmar en la misma fila («Sus 2 cargas pasan a E.P.E.S. N° 2 y «epes 2
   pirane» deja de aparecer aparte»). Hecho, un aviso lo dice, con «Deshacer», y la escrita pasa
   a **«Ya unificadas»**, abajo, cada una con su «Deshacer».
@@ -1265,12 +1276,19 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
   (no la común), avisa si no se eligió nada, cancelar no toca la base, unificar las suma a la
   N° 2 y la pasa a «Ya unificadas», deshacer la devuelve, con un departamento solo las suyas, la
   ficha lleva ahí, sin la tabla no aparece la solapa y en el teléfono no hay scroll horizontal.
-  De paso, las solapas del seguimiento en el teléfono crecen en alto en vez de pisar el texto
+  De paso, las solapas del seguimiento en el teléfono crecen en alto en vez de pisar el texto.
+  El mismo día, **unir dos escritas y corregirlas**: probado contra PostgreSQL 16 que
+  «instituto san martin» (Pirané) e «Inst. San Martín» (Formosa, mal elegido) se corrigen y se
+  unen, que la que queda se corrige, que un nombre igual a otro del departamento o a uno de la
+  nómina se rechaza con su mensaje, que no se puede corregir una de la nómina ni una ya
+  unificada, y que los docentes que vuelven a escribirla como antes, con cualquiera de las dos
+  formas, llegan a la que quedó. En Chromium: cada una sugiere a la otra, el lápiz abre la
+  corrección con el foco en el nombre, sin nombre avisa, corregida cambia nombre y
+  departamento, unirlas dice «también escrita a mano» y la que queda suma las cargas
 
 **Pendiente**
-- **`sql/15_unificar_escuelas.sql`**: el equipo lo corrió (dio 0), pero la solapa no apareció.
-  Ahora aparece igual y dice qué responde la base; si dice que no puede, volver a correr el
-  archivo (ahora avisa a la API que recargue)
+- **Volver a correr `sql/15_unificar_escuelas.sql`**: trae `editar_escuela_agregada()`. Hasta
+  entonces el lápiz avisa que falta ese paso
 - **Correr en el SQL Editor `sql/mantenimiento/2026-10-27_sin_datos_de_ejemplo.sql`**: hasta
   entonces los datos inventados siguen en la base, aunque el panel ya no los muestra en ningún
   lado
