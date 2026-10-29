@@ -224,5 +224,8 @@ revoke execute on function public.redirigir_escuela_unificada() from public, ano
 grant  execute on function public.unificar_escuela(text, text) to authenticated;
 grant  execute on function public.separar_escuela(text) to authenticated;
 
+-- Que la API de Supabase vea enseguida las tablas y funciones nuevas
+notify pgrst, 'reload schema';
+
 -- Si llegó hasta acá, quedó instalado: tiene que mostrar 0 (o las ya unificadas)
 select count(*) as escuelas_unificadas from public.escuelas_unificadas;
