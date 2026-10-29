@@ -510,12 +510,14 @@ confundía. Quedó así:
   de la materia, sin resultados, en Excel o PDF, para un profesor), **«Cambiar con una
   planilla»** (1 · bajá la planilla, 2 · subila corregida; el JSON quedó como enlace chico para
   quien mantiene el sistema) y **«Publicar»**.
-- **Seguimiento**, en su barra: el alcance y **«Descargar el Excel»** (la planilla de uso
-  interno, con nombres).
+- **Seguimiento**, en su barra: el alcance, **«Reporte para la escuela (PDF)»** (con una
+  escuela o un departamento elegido, para mandarle al director) y **«Descargar el Excel»** (la
+  planilla de uso interno, con nombres).
 
 El recorrido guiado pasó a `v4`, con un paso para «Descargar para revisar», a `v5` cuando
 «Descargar resultados» pasó a ser el reporte de la materia (25/09/2026), y a `v6` cuando se
-sumaron los recorridos de Seguimiento y Escuelas (30/10/2026). «¿Cómo se usa?» aparece en
+sumaron los recorridos de Seguimiento y Escuelas (30/10/2026), y a `v7` con el reporte para la
+escuela. «¿Cómo se usa?» aparece en
 Resultados, Catálogo, Seguimiento y Escuelas, y abre el recorrido de la pantalla que se mira.
 
 **Después, es prácticamente una sola pantalla:**
@@ -627,7 +629,8 @@ eso es lo que el Ministerio necesita mirar. Los nombres siguen solo en el Excel,
 desde acá con su aviso de uso interno. El enlace del pie se sacó: la solapa ya está a la vista.
 
 - **Barra:** Alcance (toda la provincia, un departamento o una escuela, agrupadas por
-  departamento como en Resultados, más las que agregaron los docentes) y «Descargar el Excel».
+  departamento como en Resultados, más las que agregaron los docentes), «Reporte para la
+  escuela (PDF)» (ver abajo) y «Descargar el Excel».
 - **Línea de contexto con la respuesta:** «Cargaron 487 docentes de 135 de las 288 escuelas.
   153 escuelas todavía no cargaron.» Nunca «Faltan 153» a secas: el equipo preguntó «¿faltan
   qué?». Lo mismo en la tabla («Escuelas sin cargas») y en cada departamento («20 sin cargas
@@ -667,12 +670,43 @@ departamento y de la provincia. Se cuentan los aportes reales (`es_ejemplo = fal
 nombres.
 
 **No necesita nada nuevo en la base.** Lee la tabla `aportes` con los permisos que el equipo ya
-tiene (solo `escuela_id`, `docente_id`, `espacio_id` y `enviado_en`) y cuenta en el navegador.
+tiene (solo `escuela_id`, `docente_id`, `espacio_id`, `anio` y `enviado_en`) y cuenta en el navegador.
 La primera página trae el total y las demás se piden juntas; con 15.000 aportes son 15 pedidos
 chicos. Los nombres de las escuelas salen de `datos/escuelas.json`; las que no están ahí se
 piden a `escuelas`. Se vuelve a contar cada vez que se entra a la pantalla. La selección viaja
 en el hash (`#seguimiento=pirane` o `#seguimiento=epes-2`: los id de departamentos y escuelas
 no se repiten entre sí), así se puede dejar marcada.
+
+**El reporte para la escuela** (30/10/2026, pedido del equipo: «un seguimiento más gráfico,
+simple y comprensible para los directores de cada escuela; en el Excel es bastante tosco»). Un
+PDF de una hoja, A4 vertical, armado como los demás (`documentoEscuela()`, impreso con
+`imprimir()`, que ahora también propone el nombre del archivo: «Carga ReSaP - E.P.E.S. N° 2 -
+fecha»). Se baja con «Reporte para la escuela (PDF)» en la barra, cuando hay una escuela
+elegida, o desde la ficha. Lleva:
+
+- la marca, «Cómo va la carga en la escuela», el nombre, dónde queda, de qué E.P.E.S. depende
+  si es un anexo, y la fecha;
+- una frase con la respuesta: «Cargaron 5 docentes de la escuela: 8 cargas en 7 materias. El
+  último envío fue el 27 de octubre», y cuántas escuelas de su departamento ya cargaron;
+- **cómo cargan los docentes**, en un recuadro arriba: el link del formulario (se puede tocar
+  en el PDF), sin usuario ni contraseña, una vez por materia y año, unos 10 minutos. Va arriba
+  porque es lo que el director reenvía; abajo se pasaba a una segunda hoja;
+- **materia por materia**: las 16, agrupadas por área, con una casilla por año. Cada casilla
+  dice cuántos docentes la cargaron (en azul), «sin cargas» (en blanco, con borde) o «no se
+  dicta» (en gris, según `anios_dictados`). Es la parte gráfica: se ve de un golpe qué falta.
+  **No dice «de 16 materias»**: ninguna escuela dicta todas, y sonaría a reproche. La lectura
+  aclara que si la escuela no dicta una materia, no hace falta cargarla;
+- **sus anexos**, si es una E.P.E.S.: cada uno con docentes, materias y último envío, o «Sin
+  cargas todavía». Son los de la sede corregida o de la nómina, estén en el departamento que
+  estén (los diez de la N° 39 van en el reporte de la N° 39).
+
+**Sin nombres de docentes**: cuenta, como la pantalla. Para eso `traerEnvios()` pide también
+el `anio` de cada envío (`porMateria` lleva `porAnio`). Con **un departamento** elegido, el
+botón dice «Reportes para las escuelas (PDF)» y arma un solo PDF con una hoja por director:
+cada E.P.E.S. con sus anexos, y los anexos que no dependen de ninguna. Si un anexo del
+departamento depende de una E.P.E.S. de otro, entra el reporte de esa E.P.E.S.: si no, ese
+anexo quedaría afuera. Con toda la provincia no se ofrece, porque serían cientos de hojas. Una
+E.P.E.S. con pocos anexos entra en una hoja; con diez, la lista de anexos sigue en la segunda.
 
 **La ficha de la escuela** (27/10/2026, pedido del equipo: ver el contacto de cada escuela
 para llamarla). En las listas del seguimiento, el nombre de cada escuela abre una ficha:
@@ -977,9 +1011,11 @@ nadie lee, el panel se explica solo: ilumina una parte de la pantalla y dice qu�
 - **Resultados**, diez pasos (el de «Datos de ejemplo» se sacó con el interruptor; el último,
   sumado el 30/10/2026, señala la cabecera y cuenta para qué son Seguimiento y Escuelas).
 - **Catálogo**, once (el último agregado: el orden de los saberes).
-- **Seguimiento** (30/10/2026), ocho: el alcance, la línea con la respuesta, las tres listas,
+- **Seguimiento** (30/10/2026), nueve: el alcance, la línea con la respuesta, las tres listas,
   los departamentos, la ficha de cada escuela (contacto, WhatsApp, correo oficial, delegación,
-  sede de un anexo), el Excel para llamar y las escritas a mano.
+  sede de un anexo), el reporte para la escuela (opcional: solo con una escuela o un
+  departamento elegido; si no, lo menciona el paso del Excel), el Excel para llamar y las
+  escritas a mano.
 - **Escuelas** (30/10/2026), ocho: que editar no es publicar, buscar y filtrar, los
   departamentos, corregir una escuela, dar de baja (que no borra), agregar una escuela o un
   anexo, y publicar.
@@ -1408,6 +1444,16 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
   horizontal; cada pantalla abre su recorrido sola la primera vez, todos los pasos señalan algo
   que está y la tarjeta entra en la pantalla, «Listo» lo cierra, al volver no se repite y
   «¿Cómo se usa?» lo muestra de nuevo; la cabecera sigue en una fila de 1280 a 1920
+
+- **Reporte para la escuela** (30/10/2026): ver «El reporte para la escuela». Probado en
+  Chromium con un Supabase simulado, generando los PDF: la N° 39 sale con sus 16 materias, las
+  casillas suman sus 8 cargas, y lista sus 10 anexos aunque estén en Bermejo; un anexo dice de
+  quién depende y no lista anexos; Bermejo da una hoja por director (3, la N° 39 incluida por
+  sus anexos), cada una en página nueva; el nombre del archivo dice la escuela o el
+  departamento y vuelve a «ReSaP» al terminar; desde la ficha se arma igual y la ficha se
+  cierra; con toda la provincia no aparece el botón; no hay nombres de docentes. La E.P.E.S.
+  N° 25 con tres anexos entra en una hoja. La barra no hace scroll horizontal en 1280, 1024 ni
+  390 px. Recorrido en `v7`, con el paso nuevo
 
 **Pendiente**
 - El formulario escribe de verdad por defecto; `?demo` en el link es solo para mostrarlo sin
