@@ -118,6 +118,16 @@ create table if not exists public.escuelas (
 alter table public.escuelas
   add column if not exists vigente boolean not null default true;
 
+-- Lo que necesita el panel para editar la nómina y publicarla (sql/16): el
+-- tipo («EPES», «ANEXO RURAL»…), el CUE y el orden de la nómina, que deja
+-- cada E.P.E.S. seguida de sus anexos. Los departamentos, en su orden.
+alter table public.escuelas
+  add column if not exists tipo  text,
+  add column if not exists cue   text,
+  add column if not exists orden integer;
+alter table public.departamentos
+  add column if not exists orden integer;
+
 
 -- ----------------------------------------------------------------------------
 -- 3. Relevamiento

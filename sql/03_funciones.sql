@@ -630,6 +630,11 @@ revoke execute on function public.cargar_contenidos(jsonb) from public, anon, au
 --
 -- Recibe el contenido de datos/escuelas.json. Agrega y actualiza por id.
 -- No toca las escuelas que escribieron los docentes.
+--
+-- OJO: pisa lo que el equipo haya editado desde la sección Escuelas del panel
+-- (sql/16). Una vez que se edita desde ahí, la nómina se mantiene en el panel;
+-- una nómina nueva del Ministerio se carga con esto y después se revisa y se
+-- publica desde el panel.
 -- ----------------------------------------------------------------------------
 
 create or replace function public.cargar_escuelas(datos jsonb)
@@ -642,24 +647,25 @@ declare
   v_deptos   integer;
   v_escuelas integer;
 begin
-  insert into public.departamentos (id, nombre)
-  select x.id, x.nombre
-    from jsonb_to_recordset(datos -> 'departamentos') as x(id text, nombre text)
-  on conflict (id) do update set nombre = excluded.nombre;
+  insert into public.departamentos (id, nombre, orden)
+  select x.id, x.nombre, t.n
+    from jsonb_array_elements(datos -> 'departamentos') with ordinality as t(d, n),
+         jsonb_to_record(t.d) as x(id text, nombre text)
+  on conflict (id) do update set nombre = excluded.nombre, orden = excluded.orden;
   get diagnostics v_deptos = row_count;
 
   insert into public.escuelas
-    (id, departamento_id, numero, denominacion, nombre, localidad, nombre_normalizado, origen)
+    (id, departamento_id, numero, denominacion, nombre, localidad, nombre_normalizado, origen, tipo, cue, orden)
   select x.id, x.departamento_id, x.numero, x.denominacion, x.nombre, x.localidad,
-         public.normalizar_texto(x.nombre), 'oficial'
+         public.normalizar_texto(x.nombre), 'oficial', x.tipo, x.cue, x.orden
     from jsonb_to_recordset(datos -> 'escuelas')
          as x(id text, departamento_id text, numero text, denominacion text,
-              nombre text, localidad text)
+              nombre text, localidad text, tipo text, cue text, orden integer)
   on conflict (id) do update
     set departamento_id = excluded.departamento_id, numero = excluded.numero,
         denominacion = excluded.denominacion, nombre = excluded.nombre,
         localidad = excluded.localidad, nombre_normalizado = excluded.nombre_normalizado,
-        origen = 'oficial';
+        origen = 'oficial', tipo = excluded.tipo, cue = excluded.cue, orden = excluded.orden;
   get diagnostics v_escuelas = row_count;
 
   -- Las oficiales que ya no vienen en la nómina quedan no vigentes. No se
