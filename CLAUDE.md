@@ -691,15 +691,11 @@ sacó. Lleva:
 - la marca, «Avance de la carga», el nombre, la localidad, de qué E.P.E.S. es anexo (si lo
   es) y la fecha;
 - una frase con la respuesta: «Ya cargaron 5 docentes, en 7 materias»;
-- **para cargar**, en una línea arriba: el link del formulario (se puede tocar en el PDF), sin
-  usuario ni contraseña, unos 10 minutos por materia. Va arriba porque es lo que el director
-  reenvía;
 - **docentes que cargaron cada materia**: las 16, agrupadas por área, con una casilla por año.
   Cada casilla tiene el número de docentes que la cargaron (en azul), «sin cargas» (en blanco,
   con borde) o «no se dicta» (en gris, según `anios_dictados`). Es la parte gráfica: se ve de
   un golpe qué falta. **No dice «de 16 materias»**: ninguna escuela dicta todas, y sonaría a
-  reproche. Una línea abajo aclara que si la escuela no dicta una materia, no hace falta
-  cargarla;
+  reproche;
 - **sus anexos**, si es una E.P.E.S.: cada uno con localidad, docentes y materias, o «Sin
   cargas todavía». Son los de la sede corregida o de la nómina, estén en el departamento que
   estén (los diez de la N° 39 van en el reporte de la N° 39).
@@ -707,7 +703,10 @@ sacó. Lleva:
 La primera versión tenía más texto (el último envío, cuántas escuelas del departamento ya
 cargaron, un párrafo sobre cómo cargar y otro sobre cómo leer la grilla, «3 docentes» en cada
 casilla) y el equipo pidió el 29/10/2026 que fuera más simple para los directores: se sacó todo
-eso.
+eso. El 30/10/2026, para mandarlo también a los profesores, se sacó lo que quedaba que no es
+información: la línea «Para cargar» (el link, «sin usuario ni contraseña», «unos 10 minutos por
+materia») y la aclaración «si la escuela no dicta una materia, no hace falta cargarla». Lo mismo
+en la imagen. El link para cargar queda solo en el mensaje que acompaña la imagen.
 
 **Sin nombres de docentes**: cuenta, como la pantalla. Para eso `traerEnvios()` pide también
 el `anio` de cada envío (`porMateria` lleva `porAnio`). Con **un departamento** elegido, la
@@ -725,7 +724,7 @@ manda es una **imagen**, no el PDF: en WhatsApp se ve en el chat sin abrir nada.
 librería que captura la pantalla no los ve), con lo mismo que el PDF en una columna de
 1080 px y letra para leer en el celular. La acompaña un mensaje corto (`mensajeDirector()`),
 de tres renglones: cómo va, que lo revise con sus docentes y el link para cargar. El link
-(`LINK_FORMULARIO`, el mismo del PDF y la imagen) va escrito completo,
+(`LINK_FORMULARIO`; el PDF y la imagen ya no lo llevan) va escrito completo,
 `https://des-formosa.github.io/relevamiento-curricular/`: si el sitio se muda, hay que cambiarlo.
 
 **Ninguna página puede mandar sola un archivo por WhatsApp** a un número (haría falta la API
@@ -1565,6 +1564,12 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
   equivalencias y todos los «no» deja los 285 envíos exactamente como estaban. **Instalado en
   Supabase** (29/10/2026): el equipo corrió `sql/17` y el script de mantenimiento, y desde ahí
   el trigger unifica cada envío nuevo
+
+- **El reporte, solo con la información** (30/10/2026): el PDF y la imagen sin la línea «Para
+  cargar» ni la aclaración de las materias que no se dictan. Probado en Chromium con un Supabase
+  simulado, en la N° 25, la N° 39 y un anexo: ni el PDF ni la imagen dicen «10 minutos»,
+  «usuario ni contraseña», «Para cargar», «no hace falta cargarla» ni el link, y los dos siguen
+  con la grilla y los anexos. La N° 25 con tres anexos entra en una hoja
 
 **Pendiente**
 - El equipo revisa la lista (Excel «unificacion-textos-libres», con una columna
