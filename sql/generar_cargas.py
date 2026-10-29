@@ -51,7 +51,7 @@ def main() -> None:
     escuelas_min = {
         "departamentos": [{"id": d["id"], "nombre": d["nombre"]} for d in escuelas["departamentos"]],
         "escuelas": [
-            {k: e.get(k) for k in ("id", "departamento_id", "numero", "denominacion", "nombre", "localidad")}
+            {k: e.get(k) for k in ("id", "departamento_id", "numero", "denominacion", "nombre", "localidad", "tipo", "cue", "orden")}
             for e in escuelas["escuelas"]
         ],
     }

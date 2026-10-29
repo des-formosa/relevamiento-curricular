@@ -42,7 +42,7 @@ sistema aguanta.
 | Capa | Dónde vive | Quién la escribe |
 |---|---|---|
 | Catálogo curricular (áreas, espacios, ejes, saberes, contenidos sugeridos) | Supabase Storage (bucket `catalogo`), con `datos/catalogo.json` del repo como respaldo | el equipo, desde el panel: edita en la base y publica con un botón |
-| Escuelas y departamentos | `datos/escuelas.json` en el repo, generado del Excel oficial | nadie desde la app |
+| Escuelas y departamentos | Supabase Storage (`catalogo/escuelas.json`), con `datos/escuelas.json` del repo (generado del Excel oficial) como respaldo | el equipo, desde la sección «Escuelas» del panel: edita en la base y publica con un botón (desde el 30/10/2026) |
 | Aportes de los docentes | Supabase | el formulario, vía una función RPC |
 | Usuarios del dashboard | Supabase Auth | administrador |
 
@@ -101,6 +101,7 @@ fijada, nunca por bundler.
     ├── 13_contactos_escuelas.sql  contactos de cada escuela, solo para el equipo
     ├── 14_sedes_anexos.sql  de qué E.P.E.S. depende cada anexo, cuando el equipo la corrige
     ├── 15_unificar_escuelas.sql  unir una escuela escrita a mano con la de la nómina
+    ├── 16_editar_escuelas.sql  editar escuelas y departamentos desde el panel, y publicarlos
     ├── privado/            lo que genera generar_contactos.py: datos personales, no se versiona
     ├── mantenimiento/      scripts de una sola vez, con fecha; no forman parte de la instalación
     └── generar_cargas.py   regenera 06, 07 y 08 cuando cambian los JSON
@@ -266,6 +267,13 @@ Sale de **«Nomina de Escuelas por Departamentos.xlsx»** (Hoja1), la planilla o
 Ministerio, y se vuelca con `python datos/generar_escuelas.py` (`--revisar` informa sin
 escribir). Cuando llegue una nómina nueva, se reemplaza el .xlsx y se corre el script; no se
 edita `escuelas.json` a mano.
+
+**Desde el 30/10/2026 la nómina se edita en el panel** (sección «Escuelas», ver más abajo), y
+lo que lee el formulario es la versión publicada desde ahí. `datos/escuelas.json` queda como
+respaldo, igual que `datos/catalogo.json`. Ojo: volver a cargar `06_cargar_escuelas.sql`
+**pisa lo editado en el panel** (nombres, localidades, departamentos, tipo, CUE, orden) y deja
+como no vigente cualquier escuela agregada desde ahí. Si llega una nómina nueva, conviene
+cargarla, revisar en el panel lo que se había corregido y publicar.
 
 Son **288 unidades educativas**: 113 E.P.E.S. (95 comunes, 12 E.I.B. y 6 agrarias) y 175
 anexos —rurales, de Educación Intercultural Bilingüe y agrarios—. Los anexos están porque el
@@ -488,10 +496,12 @@ lo que muestra. Salir borra el hash, así el que entra después arranca por el i
 parecidos y un botón «Editar catálogo» que cambiaba de texto según dónde estabas; el equipo se
 confundía. Quedó así:
 
-- **Cabecera: solo navegación.** «Inicio · Resultados · Catálogo · Seguimiento», con el lugar
-  actual subrayado como solapa, y después «¿Cómo se usa?» y «Salir». Todos enlaces sin recuadro
-  (`.t-enlace-cab`), así entra en una fila desde 1280 px; en el teléfono, desde 360 px las
-  cuatro solapas van en un renglón y «Salir» en el de abajo.
+- **Cabecera: solo navegación.** «Inicio · Resultados · Catálogo · Seguimiento · Escuelas», con
+  el lugar actual subrayado como solapa, y después «¿Cómo se usa?» y «Salir». Todos enlaces sin
+  recuadro (`.t-enlace-cab`), así entra en una fila desde 1280 px. Con la quinta solapa
+  (30/10/2026) no entraba en «Resultados» a 1280: la fecha se ve recién desde 1800 px y entre
+  1101 y 1399 los enlaces se aprietan un poco. En el teléfono, desde 360 px van cuatro solapas
+  en un renglón, y «Escuelas» y «Salir» en el de abajo.
 - **Resultados**, en la barra de selectores: **«Descargar resultados»** (el reporte de la
   materia). Si no entra al lado de los selectores, baja a una segunda línea.
 - **Catálogo**, en la barra del editor: «Historial», **«Descargar para revisar»** (la currícula
@@ -786,6 +796,55 @@ equipo, con el SQL ya corrido, no la encontraba y no tenía cómo saber por qué
 `sql/15` terminan con `notify pgrst, 'reload schema'`, para que la API vea enseguida lo nuevo.
 
 No tiene recorrido guiado: si algo necesitara explicación, estaría mal.
+
+### Escuelas: editar la nómina (pantalla «Escuelas», sql/16)
+
+Lo pidió el equipo el 30/10/2026: «editar toda la info de escuelas, departamentos y anexos en
+un sector aparte». Hasta ahí la nómina salía solo de la planilla del Ministerio, por el
+repositorio, y desde el panel solo se podían cambiar la sede de un anexo y los contactos. Es la
+quinta sección de la cabecera, «Escuelas» (`#escuelas=<departamento>` en el hash).
+
+**Funciona como el catálogo: se edita en la base y se publica con un botón.** El formulario
+del docente no lee la base. `exportar_escuelas()` arma `escuelas.json` (los departamentos y las
+escuelas oficiales vigentes, en el orden de la nómina, con los mismos campos que
+`datos/escuelas.json`) y el panel lo sube al bucket `catalogo`. `Catalogo.cargar()`, en el
+formulario y en el panel, pide primero ese archivo y, si no está, falla o viene incompleto
+(`sirvenEscuelas()`), usa `datos/escuelas.json`; `Catalogo.origenEscuelas()` dice cuál cargó.
+El índice de búsqueda (`busqueda`) no viaja en el publicado: lo arma `completarBusqueda()` en el
+navegador, igual que `generar_escuelas.py` (el nombre con la sigla con y sin puntos, la
+localidad y el departamento, nunca el CUE): da las mismas palabras en las 288. Después de
+publicar, el panel cambia su copia con `Catalogo.reemplazarEscuelas()`, así el seguimiento y
+los resultados ven lo publicado sin recargar.
+
+- **Barra:** buscar (nombre, número, localidad o CUE; por palabra entera, para que «41» no
+  traiga las que tienen 41 en el medio del CUE), departamento, «+ Agregar una escuela» y
+  «Publicar».
+- **Línea de contexto:** cuántas escuelas tiene la nómina y qué ven los docentes: «Hay 3
+  cambios sin publicar: los docentes ven la versión que se publicó (hoy, Ana)» o «Todo
+  publicado» (`estado_escuelas()`, que cuenta `escuelas_cambios` desde la última publicación).
+- **Departamentos:** los 9, con cuántas escuelas tiene cada uno y un lápiz para renombrarlo
+  (`guardar_departamento()`; el id no cambia). El nombre lleva a sus escuelas.
+- **Escuelas,** por departamento, en el orden de la nómina: nombre (con «Contacto y cargas →»,
+  que lleva a su detalle en Seguimiento, donde están los contactos), tipo, localidad, CUE, de
+  qué E.P.E.S. depende (los anexos; «corregida» si el equipo la cambió), un lápiz y un tacho.
+- **Corregir** abre el formulario en la fila: nombre, tipo, número, CUE, localidad,
+  departamento y, en un anexo, de qué E.P.E.S. depende (lo guarda `sql/14`, como desde la
+  ficha). `guardar_escuela()` valida y dice qué falta en palabras del equipo: nombre vacío, CUE
+  que no son 9 números, número con letras, el mismo nombre que otra del departamento.
+- **Agregar** abre el mismo formulario arriba, con «Si es un anexo, ¿de qué E.P.E.S. depende?».
+  Con sede, queda en la nómina después de ella y de sus anexos (así su sede se deduce sola);
+  sin, al final de su departamento. El id se arma con el nombre como en `generar_escuelas.py`
+  (`epes-N`, `epes-eib-N`, `anexo-el-corralito`) y no cambia más.
+- **Dar de baja** pide confirmar («deja de ofrecerse a los docentes cuando publiques; sus
+  cargas se conservan»). No borra: `vigente = false`. El aviso trae «Deshacer», y las dadas de
+  baja quedan en «Ver las dadas de baja (N)», con «Restaurar».
+- Todo cambio queda en `escuelas_cambios` (alta, edición, baja, restauración, departamento),
+  con lo de antes, lo de después, quién y cuándo.
+
+Las escuelas escritas a mano por los docentes no están acá: se corrigen y se unifican en
+Seguimiento, «Agregadas por docentes». La base necesitó el tipo, el CUE y el orden de cada
+escuela, que antes solo estaban en el JSON: `sql/01` los crea, `cargar_escuelas()` los llena,
+y `sql/16` los completa en una base que ya andaba.
 
 ### Editar el catálogo (assets/editor.js + sql/09_edicion_catalogo.sql)
 
@@ -1307,7 +1366,22 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
   directivos regenerado vuelve a cargar con los correos ya puestos. En Chromium, un anexo
   muestra el director, el correo oficial y la delegación de su sede
 
+- **Sección «Escuelas»** (30/10/2026): ver «Escuelas: editar la nómina». `sql/16` probado
+  contra PostgreSQL 16: se puede repetir y completa tipo, CUE y orden de las 288; corregir, los
+  mensajes de cada error, agregar un anexo detrás de su sede (la 39, aunque sus anexos estén en
+  otro departamento) y una E.P.E.S. al final de su departamento, sin órdenes repetidos; dar de
+  baja y restaurar; renombrar un departamento (y rechazar un nombre repetido); exportar,
+  registrar la publicación y contar los cambios pendientes; un usuario que no es del equipo y
+  `anon` no pueden nada. En Chromium con un Supabase simulado: la lista, buscar sin perder el
+  cursor, filtrar por departamento, CUE incompleto, corregir, cambiar la sede de un anexo,
+  agregar un anexo, baja con «Deshacer», renombrar, publicar; el seguimiento ve enseguida lo
+  publicado y el formulario del docente usa la nómina publicada y la busca igual; sin `sql/16`
+  dice qué falta; sin scroll horizontal de 360 a 1280 px, y la cabecera en una fila de 1280 a
+  1920 en todas las pantallas
+
 **Pendiente**
+- **Correr en el SQL Editor `sql/16_editar_escuelas.sql`** (el equipo lo tiene como «7 -
+  editar escuelas.sql»): hasta entonces la sección «Escuelas» dice que falta ese paso
 - **Correr en el SQL Editor `sql/privado/15_cargar_correos.sql`** (el equipo lo tiene como
   «6 - correos oficiales.sql»): hasta entonces la ficha no muestra los correos oficiales
 - **Volver a correr `sql/15_unificar_escuelas.sql`**: trae `editar_escuela_agregada()`. Hasta

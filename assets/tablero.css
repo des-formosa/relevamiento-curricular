@@ -68,7 +68,14 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
 @media (max-width: 1599px) {
   .t-cabecera__marca .t-cabecera__nombre + .t-cabecera__separador + .t-cabecera__simbolo + .t-cabecera__nombre { display: none; }
 }
-@media (max-width: 1399px) { .t-cabecera__fecha { display: none; } }
+/* Con las cinco solapas (sumada Escuelas el 30/10/2026), la fecha entra recién
+   desde 1800, y hasta 1399 los enlaces se aprietan un poco: así la cabecera
+   sigue en una fila desde 1280 en todas las pantallas */
+@media (max-width: 1799px) { .t-cabecera__fecha { display: none; } }
+@media (min-width: 1101px) and (max-width: 1399px) {
+  .t-cabecera .t-enlace-cab { padding: 0 5px; }
+  .t-cabecera__derecha { gap: 10px; }
+}
 /* Entre 900 y 1100 los cuatro controles no entran al lado de la marca */
 @media (min-width: 900px) and (max-width: 1100px) {
   .t-cabecera__marca { flex: 1 1 100%; }
@@ -884,7 +891,7 @@ body { background: var(--t-fondo); color: var(--t-tinta); }
 @media (max-width: 400px) {
   .t-cabecera__nombre span:first-child { font-size: 11px; }
   .t-salir { font-size: 13.5px; }
-  /* Las cuatro solapas entran en un renglón desde 360 px; «Salir» baja al de abajo */
+  /* Cuatro solapas entran en un renglón desde 360 px; «Escuelas» y «Salir» bajan al de abajo */
   .t-cabecera .t-enlace-cab { padding: 0 4px; font-size: 14.5px; }
 }
 
@@ -1682,8 +1689,9 @@ body.tour-abierto { overflow: hidden; }
 .ar-enlace { border: none; background: none; padding: 0; font: inherit; color: var(--azul); text-decoration: underline; cursor: pointer; }
 @media (max-width: 899px) {
   .t-nav__separador { display: none; }
-  /* Con cuatro solapas, en el teléfono más angosto pueden no entrar: que bajen */
-  .t-nav { flex-wrap: wrap; }
+  /* Cinco solapas no entran en un renglón de teléfono: bajan, y «Salir» sigue
+     a «Escuelas» en el segundo en vez de ocupar un tercero */
+  .t-nav { flex-wrap: wrap; display: contents; }
 }
 
 /* El botón de descargar va a la derecha; si no entra al lado de los
@@ -1991,4 +1999,51 @@ body.tour-abierto { overflow: hidden; }
 @media (prefers-reduced-motion: reduce) {
   .t-entra, .t-barra--crece, .t-panel--entra { animation: none !important; }
   .t-inicio__opcion:hover .t-inicio__flecha { transform: none; }
+}
+
+/* ---------- Escuelas: editar la nómina ---------- */
+.visualmente-oculto {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+.t-exportar--claro { background: var(--blanco); color: var(--azul); box-shadow: inset 0 0 0 2px var(--azul); }
+.t-exportar--claro:hover { background: var(--gris-claro-3); }
+.t-exportar:disabled { opacity: .55; cursor: default; }
+.t-esc-buscar {
+  height: 46px; width: 340px; max-width: 100%; padding: 0 12px;
+  border: 2px solid var(--azul); border-radius: 3px; background: var(--blanco);
+  font-family: var(--ui); font-size: 17px; color: var(--t-tinta);
+}
+.t-esc-buscar:focus { outline: 3px solid var(--azul-profundo); outline-offset: 1px; }
+.t-esc-publicacion { display: block; margin-top: 4px; font-size: 16px; color: var(--tinta-2); }
+.t-esc-publicacion strong { color: var(--t-tinta); }
+.t-esc-tabla td, .t-esc-tabla tbody th { vertical-align: top; }
+.t-esc-tabla .t-esc-cue { font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--tinta-2); }
+.t-esc-acciones { width: 96px; white-space: nowrap; text-align: right; }
+.t-esc-acciones .t-ficha__icono { display: inline-flex; }
+.t-esc-contacto { display: block; margin-top: 2px; font-size: 14px; font-weight: 600; }
+.t-esc-fila--baja th, .t-esc-fila--baja td { color: var(--t-gris-2); }
+.t-esc-fila--editando td { background: var(--gris-claro-3); }
+.t-esc-deptos { max-width: 560px; }
+/* El formulario: el nombre a lo ancho, el resto de a tres */
+.t-esc-form { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.t-esc-form__ancho { grid-column: 1 / -1; }
+.t-esc-form select, .t-esc-depto select {
+  width: 100%; height: 36px; padding: 0 6px; border: 1.5px solid var(--borde-campo); border-radius: 3px; background: var(--blanco);
+  font: inherit; font-size: 15px; font-weight: 400; color: var(--t-tinta);
+}
+.t-esc-depto { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px 14px; }
+.t-esc-depto .t-ficha__campo { flex: 1 1 240px; }
+.t-esc-depto input {
+  width: 100%; height: 36px; padding: 0 8px; border: 1.5px solid var(--borde-campo); border-radius: 3px;
+  font: inherit; font-size: 15.5px; font-weight: 400; color: var(--t-tinta);
+}
+.t-esc-depto .t-ficha__error { flex-basis: 100%; }
+@media (max-width: 899px) {
+  .t-esc-buscar { width: 100%; height: 50px; font-size: 16px; }
+  .t-selector--buscar { align-self: stretch; }
+  .t-esc-form { grid-template-columns: 1fr; }
+  .t-esc-form select, .t-esc-depto input { height: 46px; font-size: 16px; }
+  .t-esc-acciones { width: auto; text-align: left; flex-basis: 100%; }
+  .t-esc-fila--editando td { flex-basis: 100%; }
 }

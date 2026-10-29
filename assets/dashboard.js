@@ -94,6 +94,10 @@
     cargandoDatos: false,
     errorDatos: null,
     abiertos: new Set(),
+    // Escuelas: editar la nómina (sql/16). lista y departamentos, de la base
+    escuelasEd: { lista: null, departamentos: null, publicacion: null, sedes: null, cargando: false, error: null,
+      texto: '', dep: '', editando: null, quitando: null, editandoDepto: null, guardando: false, publicando: false,
+      errorForm: null, errorAccion: null, aviso: null, verBajas: false },
     escuelasAgregadas: [],            // las que escribieron los docentes y no se unificaron
     unificadas: null,                 // [{ agregada, destino_id, … }], o null sin sql/15
     unificadasError: null,            // por qué no se pudo leer escuelas_unificadas
@@ -359,6 +363,7 @@
     // Un link compartido (con la selección en el hash) va directo a lo que
     // muestra; entrar al panel a secas, al inicio
     const hash = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+    if (hash.has('escuelas')) { irAEscuelas(hash.get('escuelas')); return; }
     if (hash.has('seguimiento')) {
       estado.seguimiento.soloFaltan = hash.get('faltan') === '1';
       estado.seguimiento.agregadas = hash.get('agregadas') === '1';
@@ -474,7 +479,7 @@
       </div>
       <div class="t-cabecera__derecha">
         <div class="t-cabecera__fecha">Datos al ${esc(fechaLarga(new Date()))}</div>
-        ${['inicio', 'panel', 'seguimiento'].includes(estado.pantalla) ? navegacion() : ''}
+        ${['inicio', 'panel', 'seguimiento', 'escuelas'].includes(estado.pantalla) ? navegacion() : ''}
       </div>
     </header>`;
   }
@@ -500,11 +505,11 @@
       <img class="resap-chico__palabra" src="${RUTA_RESAP_PALABRA}" alt="ReSaP">
     </span>`;
 
-  // La cabecera solo lleva por dónde moverse: Inicio, Resultados, Catálogo y
-  // Seguimiento, con el lugar actual marcado, y la ayuda y la salida. Las
+  // La cabecera solo lleva por dónde moverse: Inicio, Resultados, Catálogo,
+  // Seguimiento y Escuelas, con el lugar actual marcado, y la ayuda y la salida. Las
   // acciones de cada pantalla van en su propia barra, al lado de lo que afectan.
   function navegacion() {
-    const actual = ['inicio', 'seguimiento'].includes(estado.pantalla) ? estado.pantalla : estado.modo === 'catalogo' ? 'catalogo' : 'resultados';
+    const actual = ['inicio', 'seguimiento', 'escuelas'].includes(estado.pantalla) ? estado.pantalla : estado.modo === 'catalogo' ? 'catalogo' : 'resultados';
     const enlace = (id, accion, texto) =>
       `<button type="button" class="t-enlace-cab ${actual === id ? 't-enlace-cab--actual' : ''}" data-accion="${accion}" ${actual === id ? 'aria-current="page"' : ''}>${texto}</button>`;
     return `<nav class="t-nav" aria-label="Secciones">
@@ -512,6 +517,7 @@
         ${enlace('resultados', 'ir-resultados', 'Resultados')}
         ${enlace('catalogo', 'ir-catalogo', 'Catálogo')}
         ${enlace('seguimiento', 'ir-seguimiento', 'Seguimiento')}
+        ${enlace('escuelas', 'ir-escuelas', 'Escuelas')}
       </nav>
       <span class="t-nav__separador" aria-hidden="true"></span>
       ${estado.pantalla === 'panel' ? '<button type="button" class="t-enlace-cab t-ayuda" data-accion="tour" title="Ver cómo se usa esta pantalla">¿Cómo se usa?</button>' : ''}
@@ -2389,6 +2395,396 @@
     return { abrir, cerrar, abierta: () => !!f.id, estado: f };
   })();
 
+  /* ---------- Escuelas: editar la nómina (sql/16) ----------
+
+     La nómina de escuelas y departamentos, para corregirla, agregar o dar de
+     baja. Se lee de la base, no del archivo: así se ve lo editado aunque no
+     esté publicado. Como el catálogo, editar no publica: «Publicar» sube
+     escuelas.json al bucket que lee el formulario. */
+
+  const TIPOS_ESCUELA = [
+    ['EPES', 'E.P.E.S.'], ['EPES EIB', 'E.P.E.S. E.I.B.'], ['EPES AGRARIA', 'E.P.E.S. Agraria'],
+    ['ANEXO RURAL', 'Anexo rural'], ['ANEXO EIB', 'Anexo E.I.B.'], ['ANEXO AGRARIA', 'Anexo agrario'],
+    ['ANEXO EPES EIB', 'Anexo de E.P.E.S. E.I.B.'],
+  ];
+  const nombreTipo = (t) => (TIPOS_ESCUELA.find(([v]) => v === t) || [t, t || '—'])[1];
+
+  function irAEscuelas(dep) {
+    estado.pantalla = 'escuelas';
+    estado.modo = 'resultados';
+    estado.exportar = null;
+    Editor.limpiar();
+    const s = estado.escuelasEd;
+    if (dep !== undefined) s.dep = dep || '';
+    Object.assign(s, { editando: null, quitando: null, editandoDepto: null, errorForm: null });
+    escribirHashEscuelas();
+    render();
+    window.scrollTo(0, 0);
+    cargarEscuelasEd();
+  }
+
+  function escribirHashEscuelas() {
+    history.replaceState(null, '', '#' + new URLSearchParams({ escuelas: estado.escuelasEd.dep || '' }).toString());
+  }
+
+  const enfocarEscuelaEd = () => { const c = app.querySelector('.t-esc-form input[name="nombre"], .t-esc-depto input'); if (c) c.focus(); };
+
+  async function cargarEscuelasEd({ silencioso = false } = {}) {
+    const s = estado.escuelasEd;
+    if (!silencioso) { s.cargando = true; s.error = null; render(); }
+    const [lista, deptos, pub, sedes] = await Promise.all([
+      sb.from('escuelas').select('id, nombre, localidad, departamento_id, tipo, numero, cue, orden, vigente')
+        .eq('origen', 'oficial').order('orden', { ascending: true, nullsFirst: false }),
+      sb.from('departamentos').select('id, nombre, orden').order('orden', { ascending: true, nullsFirst: false }),
+      sb.rpc('estado_escuelas'),
+      traerSedes(),
+    ]);
+    s.cargando = false;
+    if (lista.error || deptos.error) {
+      const mensaje = (lista.error || deptos.error).message || '';
+      s.error = /tipo|orden|cue|does not exist|no existe/i.test(mensaje)
+        ? 'Para editar la nómina falta un paso en la base: correr sql/16_editar_escuelas.sql entero en el SQL Editor de Supabase.'
+        : 'No pudimos traer la nómina. Revisá la conexión y volvé a intentar.';
+      render();
+      return;
+    }
+    s.lista = lista.data || [];
+    s.departamentos = deptos.data || [];
+    s.publicacion = pub.error ? null : pub.data;
+    s.sedes = sedes;
+    estado.seguimiento.sedes = sedes;
+    render();
+  }
+
+  const esAnexoEd = (e) => /^ANEXO/i.test(e.tipo || '') || /\banexo\b/i.test(e.nombre || '');
+
+  // La sede de cada anexo con la nómina de la base (puede tener escuelas que
+  // todavía no se publicaron): la E.P.E.S. que lo precede, o la que corrigió
+  // el equipo
+  function sedesDeLaLista() {
+    const s = estado.escuelasEd;
+    const porId = new Map(s.lista.map((e) => [e.id, e]));
+    const deLaNomina = new Map();
+    let sede = null;
+    for (const e of s.lista) {
+      if (!esAnexoEd(e)) sede = e;
+      else if (sede) deLaNomina.set(e.id, sede);
+    }
+    const sedeDe = (id) => {
+      if (s.sedes && s.sedes.has(id)) { const otra = s.sedes.get(id); return otra ? porId.get(otra) || null : null; }
+      return deLaNomina.get(id) || null;
+    };
+    return { sedeDe, deLaNomina: (id) => deLaNomina.get(id) || null, corregida: (id) => !!(s.sedes && s.sedes.has(id)) };
+  }
+
+  function barraEscuelas() {
+    const s = estado.escuelasEd;
+    const deps = s.departamentos || Catalogo.departamentos();
+    return `<div class="t-selectores">
+      <div class="t-selector t-selector--buscar">
+        <label class="t-selector__etiqueta" for="s-esc-buscar">Buscar</label>
+        <input class="t-esc-buscar" id="s-esc-buscar" type="search" data-entrada="esc-buscar" value="${esc(s.texto)}" placeholder="Nombre, número, localidad o CUE" autocomplete="off">
+      </div>
+      <div class="t-selector">
+        <label class="t-selector__etiqueta" for="s-esc-dep">Departamento</label>
+        <select class="t-select" id="s-esc-dep" data-cambio="esc-dep">
+          <option value="">Todos</option>
+          ${deps.map((d) => `<option value="${esc(d.id)}" ${s.dep === d.id ? 'selected' : ''}>${esc(d.nombre)}</option>`).join('')}
+        </select>
+      </div>
+      <div class="espaciador"></div>
+      <div class="t-selectores__acciones">
+        <button type="button" class="t-exportar t-exportar--claro" data-accion="esc-agregar" ${s.lista && !s.editando ? '' : 'disabled'}>+ Agregar una escuela</button>
+        <button type="button" class="t-exportar" data-accion="esc-publicar" ${s.lista && !s.publicando ? '' : 'disabled'}>${s.publicando ? 'Publicando…' : 'Publicar'}</button>
+      </div>
+    </div>`;
+  }
+
+  // «Hay 3 cambios sin publicar» o «Todo publicado»: lo que ve el docente
+  function lineaPublicacionEscuelas() {
+    const p = estado.escuelasEd.publicacion;
+    if (!p) return '';
+    const pendientes = Number(p.cambios_sin_publicar || 0);
+    if (!p.publicado_en) {
+      return pendientes
+        ? `Hay <strong>${numero(pendientes)} ${plural(pendientes, 'cambio sin publicar', 'cambios sin publicar')}</strong>. Los docentes todavía ven la nómina original: tocá «Publicar» para que vean la corregida.`
+        : 'Los docentes ven la nómina original del Ministerio. Lo que corrijas acá les llega cuando toques «Publicar».';
+    }
+    const cuando = `${cuandoFue(Date.parse(p.publicado_en))}, ${esc(p.publicado_por || 'alguien del equipo')}`;
+    return pendientes
+      ? `Hay <strong>${numero(pendientes)} ${plural(pendientes, 'cambio sin publicar', 'cambios sin publicar')}</strong>: los docentes ven la versión que se publicó (${cuando}).`
+      : `Todo publicado: los docentes ven esta nómina (publicada ${cuando}).`;
+  }
+
+  function opcionesTipo(actual) {
+    const tipos = TIPOS_ESCUELA.slice();
+    if (actual && !tipos.some(([v]) => v === actual)) tipos.push([actual, actual]);
+    return tipos.map(([v, t]) => `<option value="${esc(v)}" ${v === actual ? 'selected' : ''}>${esc(t)}</option>`).join('');
+  }
+
+  function opcionesDepartamento(actual) {
+    return (estado.escuelasEd.departamentos || []).map((d) =>
+      `<option value="${esc(d.id)}" ${d.id === actual ? 'selected' : ''}>${esc(d.nombre)}</option>`).join('');
+  }
+
+  // Las E.P.E.S. vigentes por departamento, para elegir la sede de un anexo
+  function opcionesSedes(elegida, sinElegir) {
+    const s = estado.escuelasEd;
+    return `${sinElegir}
+      ${(s.departamentos || []).map((d) => {
+        const epes = s.lista.filter((e) => e.vigente && !esAnexoEd(e) && e.departamento_id === d.id);
+        return epes.length ? `<optgroup label="${esc(d.nombre)}">${epes.map((e) =>
+          `<option value="${esc(e.id)}" ${e.id === elegida ? 'selected' : ''}>${esc(e.nombre)}${e.localidad ? ` · ${esc(e.localidad)}` : ''}</option>`).join('')}</optgroup>` : '';
+      }).join('')}`;
+  }
+
+  // Corregir una escuela, o agregar una (e = null)
+  function formularioEscuela(e) {
+    const s = estado.escuelasEd;
+    const v = (k) => esc(e && e[k] != null ? e[k] : '');
+    const g = s.guardando;
+    const sedes = sedesDeLaLista();
+    let sede = '';
+    if (!e) {
+      sede = `<label class="t-ficha__campo t-esc-form__ancho"><span>Si es un anexo, ¿de qué E.P.E.S. depende? <em>(queda en la nómina después de ella y de sus anexos)</em></span>
+        <select name="sede">${opcionesSedes('', '<option value="">No es un anexo: va al final de su departamento</option>')}</select></label>`;
+    } else if (esAnexoEd(e) && s.sedes) {
+      const actual = sedes.sedeDe(e.id);
+      const nomina = sedes.deLaNomina(e.id);
+      const elegida = !sedes.corregida(e.id) ? '' : actual ? actual.id : '-';
+      sede = `<label class="t-ficha__campo t-esc-form__ancho"><span>¿De qué E.P.E.S. depende?</span>
+        <select name="sede">${opcionesSedes(elegida, `<option value="" ${elegida === '' ? 'selected' : ''}>La de la nómina${nomina ? ` (${esc(nomina.nombre)})` : ''}</option>
+          <option value="-" ${elegida === '-' ? 'selected' : ''}>De ninguna: tiene dirección propia</option>`)}</select></label>`;
+    }
+    return `<form class="t-ficha__form t-esc-form" data-form="esc-escuela" data-id="${e ? esc(e.id) : ''}" novalidate aria-label="${e ? 'Corregir la escuela' : 'Agregar una escuela'}">
+      <label class="t-ficha__campo t-esc-form__ancho"><span>Nombre</span><input name="nombre" type="text" value="${v('nombre')}" placeholder="E.P.E.S. N° 41 · Anexo de Educación Rural – El Corralito" autocomplete="off"></label>
+      <label class="t-ficha__campo"><span>Tipo</span><select name="tipo">${opcionesTipo(e ? e.tipo : 'EPES')}</select></label>
+      <label class="t-ficha__campo"><span>Número <em>(si tiene)</em></span><input name="numero" type="text" inputmode="numeric" value="${v('numero')}" autocomplete="off"></label>
+      <label class="t-ficha__campo"><span>CUE <em>(9 números)</em></span><input name="cue" type="text" inputmode="numeric" value="${v('cue')}" autocomplete="off"></label>
+      <label class="t-ficha__campo"><span>Localidad</span><input name="localidad" type="text" value="${v('localidad')}" autocomplete="off"></label>
+      <label class="t-ficha__campo"><span>Departamento</span><select name="departamento">${opcionesDepartamento(e ? e.departamento_id : (s.dep || ((s.departamentos || [])[0] || {}).id))}</select></label>
+      ${sede}
+      ${s.errorForm ? `<p class="t-ficha__error t-esc-form__ancho" role="alert">${esc(s.errorForm)}</p>` : ''}
+      <div class="t-ficha__form-acciones">
+        <button type="submit" class="t-ficha__si" ${g ? 'disabled' : ''}>${g ? 'Guardando…' : e ? 'Guardar' : 'Agregar'}</button>
+        <button type="button" class="t-ficha__enlace" data-accion="esc-cancelar">Cancelar</button>
+        ${e ? '' : '<span class="t-unif__editar-nota">El id se arma con el nombre y no cambia más.</span>'}
+      </div>
+    </form>`;
+  }
+
+  // Coincide si cada palabra buscada empieza alguna palabra de la escuela, en
+  // cualquier orden. Por palabra entera y no por pedazo: si no, «41» daría
+  // todas las que tienen 41 en el medio del CUE. La sigla entra con y sin
+  // puntos, como en el buscador del docente («epes 41» y «e.p.e.s. 41»).
+  function coincideEscuela(e, texto) {
+    const palabras = normalizarTexto(texto).split(' ').filter(Boolean);
+    if (!palabras.length) return true;
+    const sinPuntos = e.nombre.replace(/\b((?:[A-Za-z]\.){2,})/g, (m) => m.replace(/\./g, ''));
+    const suyas = normalizarTexto(`${e.nombre} ${sinPuntos} ${e.localidad || ''} ${e.numero || ''} ${e.cue || ''} ${nombreTipo(e.tipo)}`).split(' ');
+    return palabras.every((p) => suyas.some((w) => w.startsWith(p)));
+  }
+
+  function tablaDepartamentosEd() {
+    const s = estado.escuelasEd;
+    const filas = s.departamentos.map((d) => {
+      const cuantas = s.lista.filter((e) => e.vigente && e.departamento_id === d.id).length;
+      if (s.editandoDepto === d.id) {
+        return `<tr><td colspan="3"><form class="t-esc-depto" data-form="esc-depto" data-id="${esc(d.id)}" novalidate aria-label="Renombrar el departamento">
+          <label class="t-ficha__campo"><span>Nombre del departamento</span><input name="nombre" type="text" value="${esc(d.nombre)}" autocomplete="off"></label>
+          <button type="submit" class="t-ficha__si" ${s.guardando ? 'disabled' : ''}>Guardar</button>
+          <button type="button" class="t-ficha__enlace" data-accion="esc-cancelar">Cancelar</button>
+          ${s.errorForm ? `<p class="t-ficha__error" role="alert">${esc(s.errorForm)}</p>` : ''}
+        </form></td></tr>`;
+      }
+      return `<tr>
+        <th scope="row" class="t-seg-escuela"><button type="button" class="t-seg-enlace" data-accion="esc-ver-dep" data-id="${esc(d.id)}">${esc(d.nombre)}</button></th>
+        <td class="t-seg-num" data-etiqueta="Escuelas">${numero(cuantas)}</td>
+        <td class="t-esc-acciones">${s.editando || s.editandoDepto ? '' : `<button type="button" class="t-ficha__icono" data-accion="esc-editar-dep" data-id="${esc(d.id)}" title="Renombrar" aria-label="Renombrar el departamento ${esc(d.nombre)}">${IconoFicha.corregir}</button>`}</td>
+      </tr>`;
+    }).join('');
+    return `<section class="t-seg-bloque">
+      <h2 class="t-seg-titulo">Departamentos <span>${numero(s.departamentos.length)}</span></h2>
+      <table class="t-seg-tabla t-esc-deptos">
+        <thead><tr><th scope="col">Departamento</th><th scope="col" class="t-seg-num">Escuelas</th><th scope="col"><span class="visualmente-oculto">Acciones</span></th></tr></thead>
+        <tbody>${filas}</tbody>
+      </table>
+    </section>`;
+  }
+
+  function filaEscuela(e, sedes) {
+    const s = estado.escuelasEd;
+    if (s.editando === e.id) return `<tr class="t-esc-fila--editando"><td colspan="6">${formularioEscuela(e)}</td></tr>`;
+    const sede = esAnexoEd(e) ? sedes.sedeDe(e.id) : null;
+    const libre = !s.editando && !s.quitando && !s.editandoDepto;
+    const acciones = !e.vigente
+      ? `<button type="button" class="t-ficha__enlace" data-accion="esc-restaurar" data-id="${esc(e.id)}" ${s.guardando ? 'disabled' : ''}>Restaurar</button>`
+      : libre ? `<button type="button" class="t-ficha__icono" data-accion="esc-editar" data-id="${esc(e.id)}" title="Corregir" aria-label="Corregir ${esc(e.nombre)}">${IconoFicha.corregir}</button>
+          <button type="button" class="t-ficha__icono" data-accion="esc-pedir-baja" data-id="${esc(e.id)}" title="Dar de baja" aria-label="Dar de baja ${esc(e.nombre)}">${IconoFicha.quitar}</button>` : '';
+    const fila = `<tr class="${e.vigente ? '' : 't-esc-fila--baja'}">
+      <th scope="row" class="t-seg-escuela">${esc(e.nombre)}${e.vigente ? '' : ' <span class="t-seg-extra">(dada de baja)</span>'}
+        <button type="button" class="t-seg-enlace t-esc-contacto" data-accion="esc-contacto" data-id="${esc(e.id)}">Contacto y cargas →</button></th>
+      <td data-etiqueta="Tipo">${esc(nombreTipo(e.tipo))}</td>
+      <td class="t-seg-localidad" data-etiqueta="Localidad">${esc(e.localidad || '')}</td>
+      <td class="t-esc-cue" data-etiqueta="CUE">${esc(e.cue || '')}</td>
+      ${esAnexoEd(e) ? `<td data-etiqueta="Depende de">${sede ? esc(sede.nombre) : 'De ninguna'}${sedes.corregida(e.id) ? ' <span class="t-ficha__marca">corregida</span>' : ''}</td>` : '<td></td>'}
+      <td class="t-esc-acciones">${acciones}</td>
+    </tr>`;
+    if (s.quitando !== e.id) return fila;
+    return `${fila}<tr class="t-esc-fila--editando"><td colspan="6"><div class="t-ficha__confirmar">¿Dar de baja «${esc(e.nombre)}»? Deja de ofrecerse a los docentes cuando publiques; sus cargas se conservan.
+      <button type="button" class="t-ficha__si" data-accion="esc-baja" data-id="${esc(e.id)}" ${s.guardando ? 'disabled' : ''}>Dar de baja</button>
+      <button type="button" class="t-ficha__enlace" data-accion="esc-cancelar">No</button></div></td></tr>`;
+  }
+
+  function tablaEscuelasEd(d, lista, sedes) {
+    return `<section class="t-seg-bloque">
+      <h2 class="t-seg-titulo">Departamento ${esc(d.nombre)} <span>${numero(lista.length)} ${plural(lista.length, 'escuela', 'escuelas')}</span></h2>
+      <table class="t-seg-tabla t-esc-tabla">
+        <thead><tr><th scope="col">Escuela</th><th scope="col">Tipo</th><th scope="col">Localidad</th><th scope="col">CUE</th><th scope="col">Depende de</th><th scope="col"><span class="visualmente-oculto">Acciones</span></th></tr></thead>
+        <tbody>${lista.map((e) => filaEscuela(e, sedes)).join('')}</tbody>
+      </table>
+    </section>`;
+  }
+
+  function pantallaEscuelas() {
+    const s = estado.escuelasEd;
+    let contenido;
+    if (s.cargando && !s.lista) {
+      contenido = '<div class="t-cuerpo"><div class="t-estado"><div class="t-estado__texto">Trayendo la nómina…</div></div></div>';
+    } else if (s.error) {
+      contenido = `<div class="t-cuerpo"><div class="t-estado"><div class="t-estado__titulo">No se puede editar la nómina todavía</div><div class="t-estado__texto">${esc(s.error)}</div><button type="button" class="boton boton--primario boton--66" data-accion="esc-reintentar">Volver a intentar</button></div></div>`;
+    } else if (s.lista) {
+      const sedes = sedesDeLaLista();
+      const deps = s.departamentos.filter((d) => !s.dep || d.id === s.dep);
+      const visibles = (d, vigente) => s.lista.filter((e) => e.departamento_id === d.id && e.vigente === vigente && coincideEscuela(e, s.texto));
+      const bloques = deps.map((d) => ({ d, lista: visibles(d, true) })).filter((b) => b.lista.length);
+      const bajas = deps.flatMap((d) => visibles(d, false));
+      const total = bloques.reduce((n, b) => n + b.lista.length, 0);
+      contenido = `<div class="t-contexto"><div class="t-contexto__texto">${s.texto || s.dep
+          ? `${numero(total)} ${plural(total, 'escuela', 'escuelas')}${s.texto ? ` con «${esc(s.texto)}»` : ''}${s.dep ? ` en el departamento ${esc((s.departamentos.find((d) => d.id === s.dep) || {}).nombre || '')}` : ''}.`
+          : `La nómina tiene <strong>${numero(s.lista.filter((e) => e.vigente).length)} escuelas</strong> en ${numero(s.departamentos.length)} departamentos.`}
+        <span class="t-esc-publicacion">${lineaPublicacionEscuelas()}</span></div></div>
+        <div class="t-cuerpo t-seg">
+          ${s.aviso ? `<p class="t-unif-aviso" role="status"><span>${s.aviso.texto}</span>${s.aviso.deshacer ? `<button type="button" class="t-ficha__enlace" data-accion="esc-restaurar" data-id="${esc(s.aviso.deshacer)}">Deshacer</button>` : ''}</p>` : ''}
+          ${s.errorAccion ? `<p class="t-ficha__error" role="alert">${esc(s.errorAccion)}</p>` : ''}
+          ${s.editando === 'nuevo' ? `<section class="t-seg-bloque"><h2 class="t-seg-titulo">Agregar una escuela</h2>${formularioEscuela(null)}</section>` : ''}
+          ${s.dep || s.texto ? '' : tablaDepartamentosEd()}
+          ${bloques.map((b) => tablaEscuelasEd(b.d, b.lista, sedes)).join('') || '<p class="t-seg-vacia">No hay ninguna escuela que coincida con la búsqueda.</p>'}
+          ${bajas.length ? `<section class="t-seg-bloque">
+            <button type="button" class="t-seg-enlace" data-accion="esc-ver-bajas" aria-expanded="${s.verBajas}">${s.verBajas ? 'Ocultar' : 'Ver'} las dadas de baja (${numero(bajas.length)})</button>
+            ${s.verBajas ? `<table class="t-seg-tabla t-esc-tabla"><tbody>${bajas.map((e) => filaEscuela(e, sedes)).join('')}</tbody></table>` : ''}
+          </section>` : ''}
+        </div>`;
+    } else {
+      contenido = '';
+    }
+    return `<div class="tablero">
+      ${cabecera()}
+      ${barraEscuelas()}
+      <div class="t-seg-marco">${contenido}</div>
+    </div>`;
+  }
+
+  // Cada cambio se guarda y se vuelve a leer la nómina: así la pantalla
+  // muestra lo que quedó en la base (y cuántos cambios hay sin publicar)
+  async function guardarEscuelaEd(form) {
+    const s = estado.escuelasEd;
+    const datos = Object.fromEntries(new FormData(form).entries());
+    const id = form.dataset.id || null;
+    const actual = id ? s.lista.find((e) => e.id === id) : null;
+    s.guardando = true; s.errorForm = null; render();
+    const { data, error } = await sb.rpc('guardar_escuela', {
+      p_id: id, p_nombre: datos.nombre, p_localidad: datos.localidad, p_departamento_id: datos.departamento,
+      p_tipo: datos.tipo, p_numero: datos.numero, p_cue: datos.cue, p_despues_de: !id && datos.sede ? datos.sede : null,
+    });
+    if (error || !data || data.error) {
+      s.guardando = false;
+      s.errorForm = (data && data.error) || 'No pudimos guardar. Revisá la conexión y volvé a intentar.';
+      render();
+      return;
+    }
+    // La sede de un anexo se guarda aparte (sql/14)
+    if (actual && esAnexoEd(actual) && 'sede' in datos && s.sedes) {
+      const sedes = sedesDeLaLista();
+      const antes = !sedes.corregida(id) ? '' : (sedes.sedeDe(id) || { id: '-' }).id;
+      if (datos.sede !== antes) {
+        const r = datos.sede === ''
+          ? await sb.rpc('restaurar_sede', { p_anexo_id: id })
+          : await sb.rpc('guardar_sede', { p_anexo_id: id, p_sede_id: datos.sede === '-' ? null : datos.sede });
+        if (r.error || (r.data && r.data.error)) {
+          s.guardando = false;
+          s.errorForm = (r.data && r.data.error) || 'Se guardó la escuela, pero no de qué E.P.E.S. depende. Volvé a intentar.';
+          render();
+          return;
+        }
+      }
+    }
+    s.guardando = false;
+    s.editando = null;
+    s.aviso = { texto: `${id ? 'Guardado' : 'Agregada'}: «${esc(data.nombre)}». Tocá «Publicar» para que lo vean los docentes.` };
+    await cargarEscuelasEd({ silencioso: true });
+  }
+
+  async function guardarDepartamentoEd(form) {
+    const s = estado.escuelasEd;
+    const nombre = new FormData(form).get('nombre');
+    s.guardando = true; s.errorForm = null; render();
+    const { data, error } = await sb.rpc('guardar_departamento', { p_id: form.dataset.id, p_nombre: nombre });
+    s.guardando = false;
+    if (error || !data || data.error) {
+      s.errorForm = (data && data.error) || 'No pudimos guardar. Revisá la conexión y volvé a intentar.';
+      render();
+      return;
+    }
+    s.editandoDepto = null;
+    s.aviso = { texto: `Ahora se llama «${esc(data.nombre)}». Tocá «Publicar» para que lo vean los docentes.` };
+    await cargarEscuelasEd({ silencioso: true });
+  }
+
+  async function vigenciaEscuelaEd(id, vigente) {
+    const s = estado.escuelasEd;
+    const e = s.lista.find((x) => x.id === id) || { nombre: id };
+    s.guardando = true; s.errorAccion = null; render();
+    const { data, error } = await sb.rpc('cambiar_vigencia_escuela', { p_id: id, p_vigente: vigente });
+    s.guardando = false;
+    s.quitando = null;
+    if (error || !data || data.error) {
+      s.errorAccion = (data && data.error) || 'No pudimos hacerlo. Revisá la conexión y volvé a intentar.';
+      render();
+      return;
+    }
+    const cargas = Number(data.cargas || 0);
+    s.aviso = vigente
+      ? { texto: `«${esc(e.nombre)}» vuelve a estar en la nómina. Tocá «Publicar» para que se ofrezca de nuevo a los docentes.` }
+      : { texto: `«${esc(e.nombre)}» quedó dada de baja${cargas ? ` (sus ${numero(cargas)} ${plural(cargas, 'carga se conserva', 'cargas se conservan')})` : ''}. Deja de ofrecerse cuando toques «Publicar».`, deshacer: id };
+    await cargarEscuelasEd({ silencioso: true });
+  }
+
+  // Sube escuelas.json al bucket que lee el formulario, como el catálogo
+  async function publicarEscuelas() {
+    const s = estado.escuelasEd;
+    s.publicando = true; s.errorAccion = null; s.aviso = null; render();
+    try {
+      const { data, error } = await sb.rpc('exportar_escuelas');
+      if (error || (data && data.error)) throw new Error((data && data.error) || error.message);
+      if (!data.escuelas || !data.escuelas.length || !data.departamentos || !data.departamentos.length) throw new Error('la nómina vendría vacía');
+      const cuerpo = new Blob([JSON.stringify(data)], { type: 'application/json' });
+      const subida = await sb.storage.from('catalogo').upload('escuelas.json', cuerpo, {
+        upsert: true, contentType: 'application/json', cacheControl: '300',
+      });
+      if (subida && subida.error) throw new Error(subida.error.message);
+      await sb.rpc('registrar_publicacion_escuelas', { p_escuelas: data.escuelas.length });
+      Catalogo.reemplazarEscuelas(data);
+      s.publicando = false;
+      s.aviso = { texto: `Publicado: ${numero(data.escuelas.length)} escuelas en ${numero(data.departamentos.length)} departamentos. Los docentes que entren de ahora en más ven esta nómina (tarda hasta cinco minutos en llegarles).` };
+      await cargarEscuelasEd({ silencioso: true });
+    } catch (e) {
+      s.publicando = false;
+      s.errorAccion = `No pudimos publicar: ${(e && e.message) || 'error desconocido'}. Volvé a intentar.`;
+      render();
+    }
+  }
+
   function pantallaSeguimiento() {
     const s = estado.seguimiento;
     let contenido = '';
@@ -2481,7 +2877,7 @@
   }
 
   function render() {
-    const fn = { ingreso: pantallaIngreso, 'sin-permiso': pantallaSinPermiso, inicio: pantallaInicio, panel: pantallaPanel, seguimiento: pantallaSeguimiento }[estado.pantalla] || pantallaCargando;
+    const fn = { ingreso: pantallaIngreso, 'sin-permiso': pantallaSinPermiso, inicio: pantallaInicio, panel: pantallaPanel, seguimiento: pantallaSeguimiento, escuelas: pantallaEscuelas }[estado.pantalla] || pantallaCargando;
     const habiaPanel = !!app.querySelector('.t-panel');
     app.innerHTML = fn();
     if (estado.pantalla !== 'seguimiento' && Ficha.abierta()) Ficha.cerrar();
@@ -2519,6 +2915,19 @@
       case 'ir-resultados': irAlPanel('resultados'); break;
       case 'ir-catalogo': irAlPanel('catalogo'); break;
       case 'ir-seguimiento': irAlSeguimiento(); break;
+      case 'ir-escuelas': irAEscuelas(); break;
+      case 'esc-reintentar': cargarEscuelasEd(); break;
+      case 'esc-agregar': Object.assign(estado.escuelasEd, { editando: 'nuevo', quitando: null, editandoDepto: null, errorForm: null, aviso: null }); render(); enfocarEscuelaEd(); break;
+      case 'esc-editar': Object.assign(estado.escuelasEd, { editando: d.id, quitando: null, editandoDepto: null, errorForm: null, aviso: null }); render(); enfocarEscuelaEd(); break;
+      case 'esc-editar-dep': Object.assign(estado.escuelasEd, { editandoDepto: d.id, editando: null, quitando: null, errorForm: null, aviso: null }); render(); enfocarEscuelaEd(); break;
+      case 'esc-pedir-baja': Object.assign(estado.escuelasEd, { quitando: d.id, editando: null, editandoDepto: null, aviso: null }); render(); break;
+      case 'esc-cancelar': Object.assign(estado.escuelasEd, { editando: null, quitando: null, editandoDepto: null, errorForm: null }); render(); break;
+      case 'esc-baja': vigenciaEscuelaEd(d.id, false); break;
+      case 'esc-restaurar': vigenciaEscuelaEd(d.id, true); break;
+      case 'esc-publicar': publicarEscuelas(); break;
+      case 'esc-ver-bajas': estado.escuelasEd.verBajas = !estado.escuelasEd.verBajas; render(); break;
+      case 'esc-ver-dep': estado.escuelasEd.dep = d.id; escribirHashEscuelas(); render(); window.scrollTo(0, 0); break;
+      case 'esc-contacto': irAlSeguimiento(d.id); break;
       case 'seg-reintentar': cargarSeguimiento(); break;
       case 'seg-solo': {
         const s = estado.seguimiento;
@@ -2610,6 +3019,11 @@
         break;
       }
       case 'unif-destino': estado.unificar.elegidas.set(el.dataset.id, el.value); break;
+      case 'esc-dep':
+        Object.assign(estado.escuelasEd, { dep: el.value, editando: null, quitando: null, editandoDepto: null });
+        escribirHashEscuelas();
+        render();
+        break;
       case 'seg-lugar':
         Ficha.cerrar();
         estado.seguimiento.lugar = el.value || null;
@@ -2623,7 +3037,22 @@
     }
   });
 
+  // Buscar en la nómina mientras se escribe: se redibuja y el cursor vuelve a su lugar
+  app.addEventListener('input', (e) => {
+    const el = e.target.closest('[data-entrada="esc-buscar"]');
+    if (!el) return;
+    const pos = el.selectionStart;
+    estado.escuelasEd.texto = el.value;
+    render();
+    const nuevo = document.getElementById('s-esc-buscar');
+    if (nuevo) { nuevo.focus(); try { nuevo.setSelectionRange(pos, pos); } catch (x) { /* type=search */ } }
+  });
+
   app.addEventListener('submit', (e) => {
+    const escuela = e.target.closest('[data-form="esc-escuela"]');
+    if (escuela) { e.preventDefault(); guardarEscuelaEd(escuela); return; }
+    const depto = e.target.closest('[data-form="esc-depto"]');
+    if (depto) { e.preventDefault(); guardarDepartamentoEd(depto); return; }
     const correccion = e.target.closest('[data-form="unif-editar"]');
     if (correccion) { e.preventDefault(); editarAgregada(correccion); return; }
     const form = e.target.closest('[data-form="ingreso"]');

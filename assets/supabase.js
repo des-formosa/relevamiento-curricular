@@ -24,6 +24,12 @@ const URL_CATALOGO_PUBLICADO = CONFIG_SUPABASE.url
   ? CONFIG_SUPABASE.url + '/storage/v1/object/public/catalogo/catalogo.json'
   : '';
 
+// La nómina de escuelas publicada desde la sección «Escuelas» del panel
+// (sql/16), en el mismo bucket. Si no está o falla, datos/escuelas.json.
+const URL_ESCUELAS_PUBLICADAS = CONFIG_SUPABASE.url
+  ? CONFIG_SUPABASE.url + '/storage/v1/object/public/catalogo/escuelas.json'
+  : '';
+
 // Modo demostración: con «?demo» en la URL el flujo es el mismo, pero no se
 // escribe nada en la base. Sirve para mostrar el formulario en reuniones.
 const MODO_DEMO = new URLSearchParams(window.location.search).has('demo');

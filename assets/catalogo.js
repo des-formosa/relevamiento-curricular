@@ -12,6 +12,7 @@ const Catalogo = (function () {
   let datos = null;       // { areas, espacios, ejes, saberes, contenidos }
   let origenCatalogo = null;  // 'publicado' (Storage) | 'repositorio'
   let institucion = null; // { departamentos, escuelas }
+  let origenEscuelas = null;  // 'publicado' (Storage) | 'repositorio'
   const idx = {};
   const cacheTramos = new Map();
 
@@ -54,14 +55,61 @@ const Catalogo = (function () {
     return r.json();
   }
 
+  // La nómina sirve si trae departamentos y escuelas con lo mínimo para
+  // buscarlas y agruparlas
+  function sirvenEscuelas(e) {
+    return Boolean(e) && Array.isArray(e.departamentos) && e.departamentos.length > 0
+      && Array.isArray(e.escuelas) && e.escuelas.length > 0
+      && e.escuelas.every((x) => x && x.id && x.nombre && x.departamento_id);
+  }
+
+  // Igual que el catálogo: primero la nómina que publicó el equipo desde el
+  // panel (sección Escuelas), y si no está o viene mal, la del repositorio
+  async function traerEscuelas() {
+    const publicado = typeof URL_ESCUELAS_PUBLICADAS === 'string' ? URL_ESCUELAS_PUBLICADAS : '';
+    if (publicado) {
+      try {
+        const r = await fetch(publicado, { cache: 'no-cache' });
+        if (r.ok) {
+          const e = await r.json();
+          if (sirvenEscuelas(e)) { origenEscuelas = 'publicado'; return e; }
+        }
+      } catch (e) { /* sin conexión al CDN: seguimos con la del repositorio */ }
+    }
+    const r = await fetch('datos/escuelas.json');
+    if (!r.ok) throw new Error('escuelas');
+    origenEscuelas = 'repositorio';
+    return r.json();
+  }
+
+  // El índice de búsqueda de cada escuela, si no viene armado (la nómina
+  // publicada desde el panel no lo trae). Igual que generar_escuelas.py: el
+  // nombre con la sigla con puntos y sin puntos («e.p.e.s. 41» y «epes 41»),
+  // la localidad y el departamento. Nunca el CUE.
+  function completarBusqueda(e) {
+    const deptos = new Map(e.departamentos.map((d) => [d.id, d.nombre]));
+    for (const x of e.escuelas) {
+      if (x.busqueda) continue;
+      const sinPuntos = x.nombre.replace(/\b((?:[A-Za-z]\.){2,})/g, (m) => m.replace(/\./g, ''));
+      x.busqueda = normalizarTexto(`${x.nombre} ${sinPuntos} ${x.localidad || ''} ${deptos.get(x.departamento_id) || ''}`);
+    }
+    return e;
+  }
+
   async function cargar() {
-    const [c, e] = await Promise.all([
-      traerCatalogo(),
-      fetch('datos/escuelas.json').then((r) => { if (!r.ok) throw new Error('escuelas'); return r.json(); }),
-    ]);
+    const [c, e] = await Promise.all([traerCatalogo(), traerEscuelas()]);
     datos = c;
-    institucion = e;
+    institucion = completarBusqueda(e);
     construirIndices();
+  }
+
+  // Después de publicar la nómina desde el panel, para verla sin recargar
+  function reemplazarEscuelas(e) {
+    if (!sirvenEscuelas(e)) return false;
+    institucion = completarBusqueda(e);
+    origenEscuelas = 'publicado';
+    construirIndices();
+    return true;
   }
 
   function construirIndices() {
@@ -219,6 +267,8 @@ const Catalogo = (function () {
   return {
     cargar,
     origen: () => origenCatalogo,
+    origenEscuelas: () => origenEscuelas,
+    reemplazarEscuelas,
     version: () => (datos ? datos.exportado_en || null : null),
     areas, area, espacio, espaciosPorArea, espaciosAgrupados, eje, saber, contenido,
     esArtistica, nombreCorto, subtituloArea,
