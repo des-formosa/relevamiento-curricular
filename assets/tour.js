@@ -3,8 +3,8 @@
 
    El equipo de Planificación entra al panel cada tanto, no todos los días, y
    no son perfiles técnicos. Este recorrido señala cada parte de la pantalla y
-   dice qué mira: primero cómo leer los resultados, y con el mismo formato cómo
-   editar el catálogo.
+   dice qué mira: cómo leer los resultados, y con el mismo formato cómo editar
+   el catálogo, cómo seguir la carga y cómo editar la nómina de escuelas.
 
    Aparece solo la primera vez (queda anotado en el navegador) y se puede
    volver a ver desde «¿Cómo se usa?» en la cabecera. Siempre se puede saltear.
@@ -19,7 +19,8 @@ const Tour = (function () {
   const CLAVE = 'relevamiento.tour.';
   // Subir la versión hace que el recorrido vuelva a aparecer solo una vez a
   // todos: se usa cuando cambia algo que el equipo ya había visto explicado.
-  const VERSION = 'v5';
+  // v6 (30/10/2026): las secciones Seguimiento y Escuelas, con su recorrido
+  const VERSION = 'v6';
 
   let capa = null;
   let pasos = [];
@@ -79,6 +80,101 @@ const Tour = (function () {
         objetivo: '[data-accion="ir-catalogo"]',
         titulo: 'Y si hay algo mal en el catálogo',
         texto: 'En «Catálogo», arriba, se corrige un saber, se agrega un contenido que falta o se saca uno que no va. También se puede rehacer una materia entera con una planilla de Excel. Cuando entres, te muestro cómo.',
+      },
+      {
+        objetivo: '.t-nav',
+        titulo: 'Las otras secciones',
+        texto: '«Seguimiento» muestra qué escuelas ya cargaron y a cuáles hay que llamar, con el contacto de cada una. «Escuelas» es la nómina que ven los docentes al elegir su escuela, y ahí se corrige. Cada sección tiene su «¿Cómo se usa?».',
+      },
+    ],
+
+    seguimiento: [
+      {
+        titulo: 'Cómo va la carga, escuela por escuela',
+        texto: 'Cuántos docentes cargaron en cada escuela, de todas las materias juntas, y qué escuelas todavía no cargaron. No muestra nombres de docentes: cuenta por escuela.',
+      },
+      {
+        objetivo: '.t-selectores .t-selector',
+        titulo: 'Elegís qué mirar',
+        texto: 'Toda la provincia, un departamento o una escuela. Al elegir una escuela, ves cuántas cargas tiene de cada materia, y cuáles todavía no.',
+      },
+      {
+        objetivo: '.t-contexto__texto',
+        titulo: 'La respuesta, en una línea',
+        texto: 'Cuántos docentes cargaron, en cuántas escuelas, y cuántas escuelas todavía no cargaron. Se vuelve a contar cada vez que entrás.',
+      },
+      {
+        objetivo: '.t-vistas',
+        titulo: 'Tres listas',
+        texto: '«Todas las escuelas», con las que no cargaron arriba. «Solo las que no cargaron», para llamarlas. Y «Agregadas por docentes», cuando alguien escribió su escuela a mano.',
+      },
+      {
+        objetivo: '.t-seg-tabla--deptos',
+        opcional: true,
+        titulo: 'Cada departamento',
+        texto: 'La barra muestra cuántas de sus escuelas ya cargaron. El nombre del departamento lleva a su lista.',
+      },
+      {
+        objetivo: '[data-ficha]',
+        opcional: true,
+        titulo: 'La ficha de cada escuela',
+        texto: 'Pasá el mouse por el nombre de una escuela (en el teléfono, tocalo): aparece su contacto, con el celular para llamar o escribir por WhatsApp, el correo oficial y el de su delegación. Un anexo muestra los de su sede. Ahí mismo se agrega o se corrige un contacto, y se cambia de qué E.P.E.S. depende un anexo.',
+      },
+      {
+        objetivo: '[data-accion="abrir-control"]',
+        titulo: 'El Excel, para llamar',
+        texto: 'Baja lo que estás mirando: con «Solo las que no cargaron», la lista de escuelas con su contacto. Trae nombres y celulares: es de uso interno, no para repartir.',
+      },
+      {
+        objetivo: '[data-solo="agregadas"]',
+        opcional: true,
+        titulo: 'Las escuelas escritas a mano',
+        texto: 'Algunos docentes escribieron su escuela aunque estaba en la nómina, o la escribieron de dos formas distintas. Acá se elige cuál es y se unifican: sus cargas pasan a esa escuela. Se puede deshacer.',
+      },
+    ],
+
+    escuelas: [
+      {
+        titulo: 'La nómina de escuelas',
+        texto: 'Las escuelas y los anexos que ve el docente cuando busca la suya en el formulario, por departamento. Acá se corrigen, se agregan y se dan de baja.',
+      },
+      {
+        objetivo: '.t-esc-publicacion',
+        titulo: 'Editar no es publicar',
+        texto: 'Lo que corrijas lo ven los docentes recién cuando tocás «Publicar». Esta línea dice si quedaron cambios sin publicar.',
+      },
+      {
+        objetivo: '.t-selectores',
+        titulo: 'Buscar y filtrar',
+        texto: 'Por nombre, número, localidad o CUE, y por departamento.',
+      },
+      {
+        objetivo: '.t-esc-deptos',
+        opcional: true,
+        titulo: 'Los departamentos',
+        texto: 'Cuántas escuelas tiene cada uno. Con el lápiz se corrige el nombre.',
+      },
+      {
+        objetivo: '[data-accion="esc-editar"]',
+        opcional: true,
+        titulo: 'Corregir una escuela',
+        texto: 'El lápiz abre sus datos: nombre, tipo, número, CUE, localidad y departamento. En un anexo, también de qué E.P.E.S. depende.',
+      },
+      {
+        objetivo: '[data-accion="esc-pedir-baja"]',
+        opcional: true,
+        titulo: 'Dar de baja no borra',
+        texto: 'Una escuela dada de baja deja de ofrecerse a los docentes, pero sus cargas se conservan. Queda en «Ver las dadas de baja», al final, y se puede restaurar.',
+      },
+      {
+        objetivo: '[data-accion="esc-agregar"]',
+        titulo: 'Agregar una escuela o un anexo',
+        texto: 'Si es un anexo, elegís de qué E.P.E.S. depende y queda ubicado detrás de ella. Las escuelas que escribieron los docentes a mano no se agregan acá: se unifican en Seguimiento.',
+      },
+      {
+        objetivo: '[data-accion="esc-publicar"]',
+        titulo: 'Publicar, el último paso',
+        texto: 'Sube la nómina corregida para el formulario. A los docentes les llega en unos minutos; si algo fallara, el formulario sigue con la nómina anterior.',
       },
     ],
 
