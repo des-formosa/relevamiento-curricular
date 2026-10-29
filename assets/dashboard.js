@@ -2091,10 +2091,9 @@
     const avance = e.docentes
       ? `ya cargaron ${numero(e.docentes)} ${plural(e.docentes, 'docente', 'docentes')}, en ${numero(e.materias)} ${plural(e.materias, 'materia', 'materias')}`
       : 'todavía no cargó ningún docente';
-    const texto = `Hola. Le compartimos cómo va la carga de ReSaP en ${e.nombre}: ${avance}. `
-      + 'En la imagen está el detalle por materia, para que lo revise con sus docentes.\n\n'
-      + `Cada docente carga acá, sin usuario ni contraseña (unos 10 minutos por materia): ${linkFormulario()}\n\n`
-      + 'Gracias. Equipo de Planificación Curricular · Dirección de Educación Secundaria';
+    const texto = `Hola. Así va la carga de ReSaP en ${e.nombre}: ${avance}. Le pedimos que lo revise con sus docentes.\n\n`
+      + `Se carga acá, sin usuario ni contraseña: ${linkFormulario()}\n\n`
+      + 'Equipo de Planificación Curricular · DES';
     const todos = estado.seguimiento.contactos;
     let lista = (todos && todos.get(e.id)) || [];
     if (!lista.length && todos) { const sede = sedeDe(e.id); lista = sede ? todos.get(sede.id) || [] : []; }

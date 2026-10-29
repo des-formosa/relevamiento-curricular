@@ -719,8 +719,8 @@ la ficha de la escuela y en su detalle, un bloque «Mandarle el avance al direct
 manda es una **imagen**, no el PDF: en WhatsApp se ve en el chat sin abrir nada. La dibuja
 `imagenAvance()` en un canvas (sin librerías: los estilos del PDF son de impresión y una
 librería que captura la pantalla no los ve), con lo mismo que el PDF en una columna de
-1080 px y letra para leer en el celular. La acompaña un mensaje corto (`mensajeDirector()`):
-cómo va, que lo revise con sus docentes y el link para cargar.
+1080 px y letra para leer en el celular. La acompaña un mensaje corto (`mensajeDirector()`),
+de tres renglones: cómo va, que lo revise con sus docentes y el link para cargar.
 
 **Ninguna página puede mandar sola un archivo por WhatsApp** a un número (haría falta la API
 de WhatsApp Business, con servidor y pago). Por eso:
