@@ -95,6 +95,7 @@
     abiertos: new Set(),
     escuelasAgregadas: [],            // las que escribieron los docentes y no se unificaron
     unificadas: null,                 // [{ agregada, destino_id, … }], o null sin sql/15
+    unificadasError: null,            // por qué no se pudo leer escuelas_unificadas
     ingreso: { email: '', error: null, enviando: false },
     // Descargar: que = 'materia' (todos los años) | 'anio' (el que se mira) |
     //   'control' (seguimiento de la carga, uso interno) | 'curricula' (sin resultados);
@@ -187,6 +188,7 @@
     ]);
     const todas = data || [];
     const porId = new Map(todas.map((e) => [e.id, e]));
+    estado.unificadasError = unif.error ? (unif.error.message || String(unif.error)) : null;
     estado.unificadas = unif.error ? null : (unif.data || []).map((u) => Object.assign({ agregada: porId.get(u.agregada_id) || { id: u.agregada_id, nombre: u.agregada_id } }, u));
     const unidas = new Set((estado.unificadas || []).map((u) => u.agregada_id));
     estado.escuelasAgregadas = todas.filter((e) => !unidas.has(e.id));
@@ -1645,7 +1647,9 @@
     const solapa = (valor, titulo) =>
       `<button type="button" class="t-vista ${vista === valor ? 't-vista--activa' : ''}" data-accion="seg-solo" data-solo="${valor}" aria-pressed="${vista === valor}">${titulo}</button>`;
     const agregadas = agregadasPendientes(g ? [g] : d.grupos).length;
-    const conAgregadas = estado.unificadas && (agregadas || unificadasDe(g).length || s.agregadas);
+    // Aparece con alguna escrita a mano aunque la base todavía no deje
+    // unificar: la vista dice por qué, en vez de que la solapa falte sin más
+    const conAgregadas = agregadas || unificadasDe(g).length || s.agregadas;
     return `<div class="t-contexto">
       <div class="t-contexto__texto">${texto}</div>
       <div class="t-vistas">
@@ -1716,10 +1720,13 @@
     const aviso = u.aviso ? `<p class="t-unif-aviso" role="status"><span>${u.aviso.texto}</span>
         ${u.aviso.agregada_id ? `<button type="button" class="t-ficha__enlace" data-accion="unif-deshacer" data-id="${esc(u.aviso.agregada_id)}" ${u.guardando ? 'disabled' : ''}>Deshacer</button>` : ''}</p>` : '';
     const error = u.error ? `<p class="t-ficha__error" role="alert">${esc(u.error)}</p>` : '';
+    const puede = !!estado.unificadas;
+    const sinBase = puede ? '' : `<p class="t-unif-aviso" role="alert"><span><strong>Todavía no se puede unificar:</strong> la base no tiene lo necesario o no lo ve todavía. Si recién se corrió <em>sql/15_unificar_escuelas.sql</em>, volvé a correrlo entero, esperá un minuto y recargá. ${estado.unificadasError ? `Lo que respondió la base: «${esc(estado.unificadasError)}».` : ''}</span></p>`;
     const filas = pendientes.map(({ e, g: suGrupo }) => {
       const cargas = `${numero(e.cargas)} ${plural(e.cargas, 'carga', 'cargas')} de ${numero(e.docentes)} ${plural(e.docentes, 'docente', 'docentes')}`;
       const donde = [e.localidad, suGrupo.id ? `departamento ${suGrupo.nombre}` : ''].filter(Boolean).join(' · ');
       const escrita = `<div class="t-unif__escrita"><strong>«${esc(e.nombre)}»</strong><span>${esc(donde)}${donde ? ' · ' : ''}${cargas}</span></div>`;
+      if (!puede) return `<li class="t-unif__fila" data-agregada="${esc(e.id)}">${escrita}</li>`;
       if (u.confirmando && u.confirmando.id === e.id) {
         return `<li class="t-unif__fila t-unif__fila--confirmando" data-agregada="${esc(e.id)}">${escrita}
           <div class="t-unif__confirmar">
@@ -1742,7 +1749,7 @@
     const hechas = unificadasDe(g);
     return `<section class="t-seg-bloque">
         <h2 class="t-seg-titulo">Agregadas por docentes <span>${pendientes.length ? `${numero(pendientes.length)} ${plural(pendientes.length, 'escrita', 'escritas')} a mano${g ? ` en el departamento ${esc(g.nombre)}` : ''}` : ''}</span></h2>
-        ${aviso}${error}
+        ${sinBase}${aviso}${error}
         ${pendientes.length
           ? `<p class="t-seg-nota">Si una ya está en la nómina, elegí cuál es y unificala: sus cargas pasan a esa escuela. Si de verdad falta en la nómina, dejala como está.</p>
         <ul class="t-unif">${filas}</ul>`
@@ -2127,7 +2134,7 @@
         <div class="t-ficha__cuerpo">
           ${anexoDeLaNomina(e.id) ? `<section>${sedeHTML(e.id)}</section>` : ''}
           <section>${rotuloContacto(true)}${contactosHTML(e.id, true)}</section>
-          ${e.agregada && estado.unificadas ? `<section><h3 class="t-ficha__rotulo">Agregada por un docente</h3>
+          ${e.agregada ? `<section><h3 class="t-ficha__rotulo">Agregada por un docente</h3>
             <p class="t-ficha__nota">La escribió un docente a mano. Si ya está en la nómina, unificala para que sus cargas sumen ahí.</p>
             <button type="button" class="t-seg-enlace t-ficha__ir" data-ficha-accion="unificar" data-id="${esc(g && g.id ? g.id : '')}">Unificarla con una de la nómina →</button></section>` : ''}
           <section><h3 class="t-ficha__rotulo">Cargas</h3>${cargasHTML(e)}

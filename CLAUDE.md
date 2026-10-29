@@ -752,8 +752,12 @@ de ofrecerse en Resultados y en el seguimiento. **Si otro docente vuelve a escri
 `registrar_aporte()` la encuentra por el nombre y un trigger en `aportes`
 (`redirigir_escuela_unificada`) manda el envío a la elegida; un reenvío reemplaza al de ahí.
 `separar_escuela()` deshace: vuelven las cargas movidas y las que llegaron después por el nombre
-(anotadas en `aportes_unificados`); las descartadas por repetidas no. Mientras el SQL no
-esté, la solapa no aparece.
+(anotadas en `aportes_unificados`); las descartadas por repetidas no. La solapa aparece
+siempre que haya alguna escrita a mano, aunque la base no deje unificar todavía (sin el SQL, o
+con la API sin ver las tablas nuevas): entonces lista las escritas sin «Unificar» y dice por
+qué, con lo que respondió la base. La primera versión escondía la solapa en ese caso, y el
+equipo, con el SQL ya corrido, no la encontraba y no tenía cómo saber por qué. `sql/14` y
+`sql/15` terminan con `notify pgrst, 'reload schema'`, para que la API vea enseguida lo nuevo.
 
 No tiene recorrido guiado: si algo necesitara explicación, estaría mal.
 
@@ -1264,8 +1268,9 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
   De paso, las solapas del seguimiento en el teléfono crecen en alto en vez de pisar el texto
 
 **Pendiente**
-- **Correr en el SQL Editor `sql/15_unificar_escuelas.sql`**: hasta entonces la solapa
-  «Agregadas por docentes» no aparece
+- **`sql/15_unificar_escuelas.sql`**: el equipo lo corrió (dio 0), pero la solapa no apareció.
+  Ahora aparece igual y dice qué responde la base; si dice que no puede, volver a correr el
+  archivo (ahora avisa a la API que recargue)
 - **Correr en el SQL Editor `sql/mantenimiento/2026-10-27_sin_datos_de_ejemplo.sql`**: hasta
   entonces los datos inventados siguen en la base, aunque el panel ya no los muestra en ningún
   lado

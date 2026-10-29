@@ -98,5 +98,8 @@ revoke execute on function public.restaurar_sede(text) from public, anon;
 grant  execute on function public.guardar_sede(text, text) to authenticated;
 grant  execute on function public.restaurar_sede(text) to authenticated;
 
+-- Que la API de Supabase vea enseguida las tablas y funciones nuevas
+notify pgrst, 'reload schema';
+
 -- Si llegó hasta acá, quedó instalado: tiene que mostrar 0 (o las sedes ya corregidas)
 select count(*) as sedes_corregidas from public.sedes_anexos;
