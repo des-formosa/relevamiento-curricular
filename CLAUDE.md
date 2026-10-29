@@ -720,7 +720,9 @@ manda es una **imagen**, no el PDF: en WhatsApp se ve en el chat sin abrir nada.
 `imagenAvance()` en un canvas (sin librerías: los estilos del PDF son de impresión y una
 librería que captura la pantalla no los ve), con lo mismo que el PDF en una columna de
 1080 px y letra para leer en el celular. La acompaña un mensaje corto (`mensajeDirector()`),
-de tres renglones: cómo va, que lo revise con sus docentes y el link para cargar.
+de tres renglones: cómo va, que lo revise con sus docentes y el link para cargar. El link
+(`LINK_FORMULARIO`, el mismo del PDF y la imagen) va escrito completo,
+`https://des-formosa.github.io/relevamiento-curricular/`: si el sitio se muda, hay que cambiarlo.
 
 **Ninguna página puede mandar sola un archivo por WhatsApp** a un número (haría falta la API
 de WhatsApp Business, con servidor y pago). Por eso:

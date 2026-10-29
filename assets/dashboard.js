@@ -2012,7 +2012,11 @@
   // docentes cargaron cada una), sus anexos si es una E.P.E.S., y cómo se
   // carga. Sin nombres de docentes: cuenta, como la pantalla. No dice «de 16
   // materias»: ninguna escuela dicta todas, y el número sonaría a reproche.
-  const linkFormulario = () => new URL('./', window.location.href).href;
+  // El link del formulario va escrito completo, como en las etiquetas Open
+  // Graph: el PDF, la imagen y el mensaje lo llevan igual aunque el panel se
+  // abra desde otra dirección. Si el sitio se muda, hay que cambiarlo acá.
+  const LINK_FORMULARIO = 'https://des-formosa.github.io/relevamiento-curricular/';
+  const linkFormulario = () => LINK_FORMULARIO;
 
   // Las escuelas que dirige el director de esta: ella y, si es una E.P.E.S.,
   // los anexos que dependen de ella (estén en el departamento que estén)
