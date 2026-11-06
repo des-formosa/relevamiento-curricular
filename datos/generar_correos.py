@@ -154,7 +154,7 @@ def main():
 begin;
 alter table public.contactos_escuela drop constraint if exists contactos_escuela_origen_check;
 alter table public.contactos_escuela add constraint contactos_escuela_origen_check
-  check (origen in ('planilla_directivos', 'panel', 'correos_oficiales'));
+  check (origen in ('planilla_directivos', 'panel', 'correos_oficiales', 'base_directivos'));
 delete from public.contactos_escuela where origen = 'correos_oficiales';
 insert into public.contactos_escuela (escuela_id, nombre, correo, origen)
 select v.escuela_id, v.nombre, v.correo, 'correos_oficiales'

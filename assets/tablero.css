@@ -2091,3 +2091,183 @@ body.tour-abierto { overflow: hidden; }
   .t-esc-acciones { width: auto; text-align: left; flex-basis: 100%; }
   .t-esc-fila--editando td { flex-basis: 100%; }
 }
+
+/* ---------- Notas a las escuelas (assets/notas.js), dentro de Seguimiento ---------- */
+.t-notas { display: flex; flex-direction: column; }
+.t-notas__cabeza { display: flex; flex-direction: column; gap: 8px; padding: 22px 32px 0; }
+.t-notas__arriba { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 24px; font-size: 16.5px; }
+.t-notas__herramientas { display: flex; flex-wrap: wrap; gap: 6px 22px; }
+.t-notas__titulo { margin: 4px 0 0; font-size: 30px; font-weight: 800; line-height: 1.15; letter-spacing: -0.015em; color: var(--t-tinta); overflow-wrap: anywhere; }
+.t-notas__pasos { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 6px 20px; }
+.t-notas__guardado { font-size: 14.5px; color: var(--t-gris-2); min-height: 1.4em; }
+.t-notas__cuerpo { display: flex; flex-direction: column; gap: 24px; padding-top: 22px; }
+.t-notas__cuerpo > .t-contexto { padding: 0; }
+.t-notas__lista { margin: 0; padding: 0; list-style: none; background: var(--blanco); border: 1px solid var(--t-borde); }
+.t-notas__item { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 20px; padding: 14px 18px; border-top: 1px solid var(--linea); }
+.t-notas__item:first-child { border-top: none; }
+.t-notas__item-texto { display: flex; flex-direction: column; gap: 3px; min-width: 0; color: var(--tinta-2); }
+.t-notas__item-titulo { font-size: 19px; font-weight: 800; text-align: left; }
+.t-notas__item-avance { font-size: 14.5px; color: var(--t-gris-2); }
+.t-notas__item-acciones { display: flex; gap: 14px; }
+.t-notas__archivadas { align-self: flex-start; font-size: 16px; }
+.t-notas__aviso { padding: 10px 14px; background: var(--azul-suave); border-left: 3px solid var(--azul); color: var(--t-tinta); line-height: 1.45; }
+.t-notas__aviso--error { background: var(--ocre-fila); border-left-color: var(--ladrillo); }
+.t-notas__aviso small { color: var(--t-gris-2); }
+.t-notas__bloque { display: flex; flex-direction: column; gap: 12px; max-width: 880px; }
+.t-notas__redactar, .t-notas__destinatarios, .t-notas__enviar { display: flex; flex-direction: column; gap: 22px; }
+.t-notas__grilla { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 16px; }
+.t-notas__ancho { grid-column: 1 / -1; }
+.t-notas .t-ficha__campo, .t-panel .t-ficha__campo { font-size: 13.5px; }
+.t-notas .t-ficha__campo input, .t-panel .t-ficha__campo input, .t-panel .t-ficha__campo select { height: 42px; font-size: 16.5px; }
+.t-notas textarea, .t-panel textarea {
+  width: 100%; padding: 8px 10px; border: 1.5px solid var(--borde-campo); border-radius: 3px; background: var(--blanco);
+  font: inherit; font-size: 16px; font-weight: 400; line-height: 1.45; color: var(--t-tinta); resize: vertical;
+}
+.t-notas textarea:focus, .t-panel textarea:focus, .t-notas__editor:focus { outline: 3px solid var(--azul-profundo); outline-offset: 1px; border-color: var(--azul); }
+.t-notas__formatos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.t-notas__casilla { display: flex; align-items: flex-start; gap: 10px; font-size: 16.5px; line-height: 1.4; color: var(--t-tinta); cursor: pointer; }
+.t-notas__casilla input { width: 20px; height: 20px; margin: 2px 0 0; accent-color: var(--azul); flex-shrink: 0; }
+.t-notas__rotulo-linea { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; }
+.t-notas__subir { cursor: pointer; font-size: 16px; }
+.t-notas__campos { display: flex; flex-wrap: wrap; gap: 6px; }
+.t-notas__campo {
+  border: 1px solid var(--borde); border-radius: 3px; background: var(--azul-suave); padding: 3px 8px; cursor: pointer;
+  font-family: ui-monospace, Consolas, monospace; font-size: 13px; color: var(--azul);
+}
+.t-notas__campo:hover { border-color: var(--azul); }
+.t-notas__herramientas-texto { display: flex; flex-wrap: wrap; gap: 4px; }
+.t-notas__herramientas-texto button {
+  min-width: 36px; height: 34px; padding: 0 10px; border: 1px solid var(--borde); border-radius: 3px; background: var(--blanco);
+  font: inherit; font-size: 14.5px; color: var(--t-tinta); cursor: pointer;
+}
+.t-notas__herramientas-texto button:hover { border-color: var(--azul); }
+.t-notas__editor {
+  min-height: 280px; padding: 16px 18px; border: 1.5px solid var(--borde-campo); border-radius: 3px; background: var(--blanco);
+  font-family: "Times New Roman", Times, serif; font-size: 17px; line-height: 1.6; color: #000;
+}
+.t-notas__editor p { margin: 0 0 8px; }
+.t-notas__pie { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; }
+.t-notas__filtros { padding: 0; }
+.t-notas__filtros .t-select { width: 220px; }
+.t-notas__buscar { flex: 1 1 260px; }
+.t-notas__buscar .t-select { width: 100%; font-weight: 400; padding-right: 12px; }
+.t-notas__seleccion { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; color: var(--tinta-2); }
+.t-notas__seleccion strong { font-size: 18px; color: var(--t-tinta); }
+.t-notas__marco-tabla { overflow-x: auto; }
+.t-notas__tabla td, .t-notas__tabla th { vertical-align: top; }
+.t-notas__tabla .t-notas__marcar { width: 44px; }
+.t-notas__marcar input, .t-notas__estado input { width: 20px; height: 20px; margin: 2px 0 0; accent-color: var(--azul); }
+.t-notas__escuela, .t-notas__quien, .t-notas__medio { overflow-wrap: anywhere; }
+.t-notas__escuela > span, .t-notas__quien > span, .t-notas__medio > span { display: block; font-size: 14.5px; font-weight: 400; color: var(--t-gris-2); }
+.t-notas__escuela .t-seg-enlace { text-align: left; }
+.t-notas__falta { color: var(--t-gris-2); font-style: italic; }
+.t-notas__marca { font-size: 13px; font-weight: 700; color: var(--t-gris-2); }
+.t-notas__resumen { padding: 0; flex-direction: column; align-items: stretch; gap: 10px; }
+.t-notas__barra { height: 18px; background: var(--pista); max-width: 620px; }
+.t-notas__barra .t-barra { height: 18px; }
+.t-notas__acciones-lote { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; }
+.t-notas__acciones { white-space: nowrap; }
+.t-notas__acciones .t-ficha__si { margin-right: 4px; }
+.t-notas__claro { background: var(--blanco); color: var(--azul); box-shadow: inset 0 0 0 1.5px var(--azul); }
+.t-notas__claro:hover { background: var(--gris-claro-3); }
+.t-notas__acciones .t-ficha__si:disabled { opacity: .45; cursor: default; }
+.t-notas__armando { font-size: 14px; color: var(--t-gris-2); margin-left: 6px; }
+.t-notas__estado label { display: flex; align-items: flex-start; gap: 8px; cursor: pointer; }
+.t-notas__estado span { font-size: 14.5px; color: var(--t-gris-2); }
+.t-notas__estado strong { color: var(--t-tinta); }
+.t-notas__hecha th, .t-notas__hecha td { background: var(--gris-claro-3); }
+/* Ventanas: la vista previa y el cotejo de la planilla necesitan más ancho */
+.t-panel--ancho { width: 860px; }
+.t-notas__previa { background: #C9D1DB; padding: 16px; overflow: auto; }
+.t-notas__previa .t-nota { zoom: .8; margin: 0 auto 12px; box-shadow: 0 2px 10px rgba(0, 0, 0, .15); }
+.t-notas__firma-img { display: flex; align-items: center; gap: 16px; }
+.t-notas__firma-img img { max-height: 60px; max-width: 200px; border: 1px solid var(--borde); }
+.t-notas__subir-base { align-self: flex-start; cursor: pointer; }
+.t-notas__cotejo-marco { display: flex; flex-direction: column; gap: 8px; }
+.t-notas__det { border: 1px solid var(--t-borde); background: var(--blanco); }
+.t-notas__det summary { padding: 10px 14px; cursor: pointer; font-size: 16.5px; color: var(--tinta-2); }
+.t-notas__det summary strong { color: var(--t-tinta); font-size: 18px; }
+.t-notas__cotejo { margin: 0; padding: 0 14px 10px; list-style: none; display: flex; flex-direction: column; gap: 8px; font-size: 15px; }
+.t-notas__cotejo li { display: flex; flex-direction: column; gap: 1px; color: var(--tinta-2); }
+.t-notas__cotejo li strong { color: var(--t-tinta); }
+.t-notas__mas { color: var(--t-gris-2); }
+.t-notas__pendientes { display: flex; flex-direction: column; gap: 8px; }
+.t-notas__pendientes .t-notas__cotejo { padding: 0; }
+.t-notas__pendiente select { height: 38px; max-width: 100%; border: 1.5px solid var(--borde-campo); border-radius: 3px; font: inherit; font-size: 15px; }
+@media (max-width: 1279px) {
+  .t-notas__cabeza { padding: 18px 24px 0; }
+}
+@media (max-width: 899px) {
+  .t-notas__cabeza { padding: 16px 16px 0; }
+  .t-notas__titulo { font-size: 24px; }
+  .t-notas__grilla, .t-notas__formatos { grid-template-columns: 1fr; }
+  .t-notas__filtros .t-select { width: 100%; }
+  .t-notas__filtros .t-selector { flex: 1 1 100%; }
+  .t-notas__acciones { white-space: normal; display: flex; flex-wrap: wrap; gap: 6px 10px; flex-basis: 100%; }
+  .t-notas__tabla .t-notas__marcar { width: auto; }
+  .t-notas__escuela, .t-notas__quien, .t-notas__medio { flex-basis: 100%; }
+  .t-panel--ancho { width: 100%; }
+  .t-notas__previa { padding: 8px; }
+  .t-notas__previa .t-nota { zoom: .42; }
+  .t-notas__pie .t-exportar, .t-notas__acciones-lote .t-exportar { flex: 1 1 100%; }
+}
+
+/* ---------- La hoja de la nota (A4), la misma en la vista previa, el PDF y la impresión ---------- */
+.t-nota {
+  width: 210mm; min-height: 297mm; background: #fff; color: #000; margin: 0 auto; padding: 12mm 25mm 22mm 30mm;
+  font-family: "Times New Roman", Times, serif; font-size: 12pt; line-height: 1.35; box-sizing: border-box;
+}
+.t-nota__pliego .t-nota + .t-nota { break-before: page; page-break-before: always; }
+.t-nota__cab { display: grid; grid-template-columns: 34mm 1fr 34mm; align-items: center; gap: 4mm; margin-bottom: 5mm; }
+.t-nota__cab img { max-width: 34mm; max-height: 20mm; display: block; }
+.t-nota__cab-izq img { margin-right: auto; }
+.t-nota__cab-der img { margin-left: auto; }
+.t-nota__lemas { text-align: center; font-size: 9pt; line-height: 1.25; }
+.t-nota__nro, .t-nota__fecha { text-align: left; margin: 0 0 4mm 33%; }
+.t-nota__fecha { margin-bottom: 6mm; }
+.t-nota__para { display: grid; grid-template-columns: 31% 1fr; border-bottom: 1px solid #000; margin: 0 -4mm 5mm -2mm; text-transform: uppercase; line-height: 1.25; }
+.t-nota__para > div { padding: 0 3mm 4mm; }
+.t-nota__de { display: flex; align-items: center; white-space: pre-line; }
+.t-nota__a { border-left: 1px solid #000; padding-top: 1mm; }
+.t-nota__cuerpo { text-align: justify; line-height: 1.4; }
+.t-nota__cuerpo p { margin: 0 0 2.5mm; text-indent: 2.5cm; }
+.t-nota__cuerpo p:first-child { text-indent: 6.5cm; }
+.t-nota__cuerpo ul, .t-nota__cuerpo ol { margin: 0 0 2.5mm; }
+.t-nota__firma { margin-top: 14mm; margin-left: 45%; text-align: center; line-height: 1.3; break-inside: avoid; }
+.t-nota__firma img, .t-nota__firma2 img { max-height: 22mm; display: block; margin: 0 auto 4px; }
+.t-nota__linea { border-top: 1px solid #000; padding-top: 4px; }
+.t-nota--clasica { font-family: Arial, Helvetica, sans-serif; font-size: 11pt; padding: 12mm 22mm 20mm 25mm; }
+.t-nota__cab2 { display: flex; justify-content: space-between; align-items: flex-start; margin: 0 -6mm 7mm; }
+.t-nota__cab2 img { max-width: 32mm; max-height: 20mm; }
+.t-nota__bloque { margin: 0 0 16mm 55%; line-height: 1.45; }
+.t-nota__ref2 { font-size: 10pt; line-height: 1.3; }
+.t-nota__dest2 { line-height: 1.3; margin-bottom: 6mm; }
+.t-nota--clasica .t-nota__cuerpo { line-height: 1.6; }
+.t-nota--clasica .t-nota__cuerpo p, .t-nota--clasica .t-nota__cuerpo p:first-child { text-indent: 6.5cm; margin: 0 0 4mm; }
+.t-nota--clasica .t-nota__cuerpo p.t-nota__saludo { text-indent: 0; margin-bottom: 5mm; }
+.t-nota__firma2 { margin: 16mm 0 0 25%; width: 50%; text-align: center; line-height: 1.35; break-inside: avoid; }
+.t-nota--anexo .t-nota__banda { background: #1F4E5F; color: #fff; font-weight: bold; font-size: 13pt; padding: 3mm 4mm 4mm; margin: 0 -6mm 2mm; }
+.t-nota--anexo .t-nota__banda small { display: block; font-size: 8pt; color: #AFCBD6; letter-spacing: .05em; }
+.t-nota__gris { font-size: 8.5pt; font-style: italic; color: #777; margin: 0 0 4mm; }
+.t-nota--anexo h3 { color: #3C7A8C; font-size: 12pt; margin: 3mm 0 2mm; }
+.t-nota--anexo table { width: 100%; border-collapse: collapse; margin-bottom: 4mm; }
+.t-nota__enc th { width: 36%; background: #DCE6EC; color: #1F4E5F; font-size: 9pt; text-align: left; border: 1px solid #000; padding: 2mm; height: 11mm; vertical-align: top; }
+.t-nota__enc td { border: 1px solid #000; padding: 2mm; font-size: 10pt; vertical-align: top; }
+.t-nota__reg th { background: #DCE6EC; color: #1F4E5F; font-size: 8pt; border: 1px solid #000; padding: 1.5mm; text-align: center; }
+.t-nota__reg td { border: 1px solid #000; height: 10mm; }
+.t-nota__firmas { display: flex; justify-content: space-between; margin-top: 14mm; font-size: 9pt; color: #666; }
+.t-nota__firmas div { width: 42%; border-top: 1px solid #ccc; padding-top: 2mm; }
+.t-nota__firmas div + div { text-align: right; }
+/* Donde se arma el PDF: fuera de la pantalla, a tamaño real */
+.t-nota-render { position: fixed; left: -10000px; top: 0; }
+.t-nota__pliego--pdf .t-nota { min-height: 0; }
+@page nota { size: A4 portrait; margin: 0; }
+@media print {
+  .t-doc--notas .t-nota { page: nota; min-height: auto; margin: 0; break-after: page; }
+  .t-doc--notas .t-nota:last-child { break-after: auto; }
+}
+.t-notas__cuerpo > .t-contexto .t-exportar { flex-shrink: 0; white-space: nowrap; }
+.t-notas__buscar .t-select { background-image: none; }
+/* Un nombre largo en la lista no puede ensanchar la ventana más que la pantalla */
+.t-panel--ancho > *, .t-panel--ancho .t-ficha__campo { min-width: 0; }
+.t-panel--ancho select { width: 100%; max-width: 100%; }

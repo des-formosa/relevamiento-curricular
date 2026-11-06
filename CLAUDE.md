@@ -44,6 +44,7 @@ sistema aguanta.
 | Catálogo curricular (áreas, espacios, ejes, saberes, contenidos sugeridos) | Supabase Storage (bucket `catalogo`), con `datos/catalogo.json` del repo como respaldo | el equipo, desde el panel: edita en la base y publica con un botón |
 | Escuelas y departamentos | Supabase Storage (`catalogo/escuelas.json`), con `datos/escuelas.json` del repo (generado del Excel oficial) como respaldo | el equipo, desde la sección «Escuelas» del panel: edita en la base y publica con un botón (desde el 30/10/2026) |
 | Aportes de los docentes | Supabase | el formulario, vía una función RPC |
+| Contactos de las escuelas, notas a las escuelas y lo enviado | Supabase | el equipo, desde Seguimiento (la ficha, «Notas a las escuelas») |
 | Usuarios del dashboard | Supabase Auth | administrador |
 
 **Sin build, sin framework, sin npm.** HTML + CSS + JavaScript vanilla. GitHub Pages sirve los
@@ -69,12 +70,13 @@ fijada, nunca por bundler.
 │   ├── dashboard.js        panel: sesión, selectores, Detalle, Mapa de calor, exportar, Seguimiento
 │   ├── editor.js           edición del catálogo desde el panel, con historial
 │   ├── archivo.js          exportar el catálogo a Excel/JSON e importarlo corregido
+│   ├── notas.js            notas a las escuelas y la base de directivos (dentro de Seguimiento)
 │   ├── tour.js             recorrido guiado del panel y del editor
 │   ├── tablero.css         estilos propios del panel (usa los tokens de estilos.css)
 │   ├── fuentes/            Kumbh Sans, Didact Gothic y Noto Serif Ahom en woff2, embebidas
 │   └── img/                logos oficiales, más los símbolos recortados que se usan en pantalla;
 │                           el logo de ReSaP (resap-original.png, la placa) y sus recortes, que
-│                           regenera recortar_resap.py
+│                           regenera recortar_resap.py; nota-logo-*.png/jpg, los de la nota modelo
 ├── datos/
 │   ├── catalogo.json       848 saberes, 4.273 contenidos sugeridos
 │   ├── contenidos/         contenidos propuestos por materia + aplicar.py
@@ -103,6 +105,7 @@ fijada, nunca por bundler.
     ├── 15_unificar_escuelas.sql  unir una escuela escrita a mano con la de la nómina
     ├── 16_editar_escuelas.sql  editar escuelas y departamentos desde el panel, y publicarlos
     ├── 17_textos_libres.sql  juntar lo escrito a mano que es lo mismo, y los «no lo trabajo»
+    ├── 18_notas.sql        la base de directivos (cargar_directivos) y las notas a las escuelas
     ├── privado/            lo que genera generar_contactos.py: datos personales, no se versiona
     ├── mantenimiento/      scripts de una sola vez, con fecha; no forman parte de la instalación
     └── generar_cargas.py   regenera 06, 07 y 08 cuando cambian los JSON
@@ -632,7 +635,8 @@ desde acá con su aviso de uso interno. El enlace del pie se sacó: la solapa ya
 
 - **Barra:** Alcance (toda la provincia, un departamento o una escuela, agrupadas por
   departamento como en Resultados, más las que agregaron los docentes), «Reportes para las
-  escuelas (PDF)» con un departamento elegido (ver abajo) y «Descargar el Excel».
+  escuelas (PDF)» con un departamento elegido (ver abajo), «Notas a las escuelas» (ver «Notas
+  a las escuelas y la base de directivos») y «Descargar el Excel».
 - **Línea de contexto con la respuesta:** «Cargaron 487 docentes de 135 de las 288 escuelas.
   153 escuelas todavía no cargaron.» Nunca «Faltan 153» a secas: el equipo preguntó «¿faltan
   qué?». Lo mismo en la tabla («Escuelas sin cargas») y en cada departamento («20 sin cargas
@@ -878,6 +882,78 @@ Al principio no tenía recorrido guiado («si algo necesitara explicación, esta
 30/10/2026, con la ficha, el Excel por alcance y las escritas a mano sumados, el equipo pidió
 que los recorridos explicaran todo lo nuevo: ver «El recorrido guiado».
 
+### Notas a las escuelas y la base de directivos (assets/notas.js + sql/18)
+
+Lo pidió el equipo técnico el 06/11/2026. Tenían el «Distribuidor de Notas DES», una página
+aparte que guardaba la base de directivos y lo enviado en cada computadora, y una base de
+directivos unificada en Excel. Pidieron cotejarla con lo que ya tenía el panel y sumarlo, **sin
+otra página ni otro link**: «la idea es centralizar la gestión». Por eso vive dentro de
+Seguimiento, con el botón «Notas a las escuelas» de su barra (`#seguimiento=&notas=1`, y con
+una nota abierta `&nota=5&paso=enviar`). La cabecera sigue con cinco solapas.
+
+**Actualizar contactos (Excel).** Sube la base de directivos (una fila por director de
+E.P.E.S., coordinador de anexos o delegación) y, **antes de cargar nada**, muestra cómo
+quedaría: cuántas escuelas cambian de persona o de celular (con el antes y el después), cuántas
+suman contacto, cuántas quedan igual, cuáles corrigió el equipo (no se tocan), cuáles no están
+en la planilla (quedan como están), cuántas suman su nombre propio y qué celulares no tienen 10
+números. Con la base del 06/11, de 84 coordinadores y ~145 anexos se reconocen solos todos
+menos 6 entradas, que se eligen en una lista («No los reconocimos: elegí cuál es»).
+
+- Directores: «EPES Nº 10», «EPES EIB Nº 3» → `epes-10`, `epes-eib-3`. La E.I.B. N° 13 no está
+  en la nómina: queda para elegir.
+- Coordinadores: la columna Anexos se parte por comas y cada nombre se busca primero entre los
+  anexos de esa E.P.E.S. (con su sede, `sedeDe()`) y después en toda la nómina. Se ignoran
+  «AEIB», «Cnia.», «Paraje»… y los plurales («Bañaderos» = «El Bañadero»). Si hay dos que
+  coinciden, no se adivina. Un coordinador queda como **contacto propio de cada anexo**: el
+  anexo deja de mostrar el de su sede, en la ficha, en «Mandarle el avance» y en el Excel.
+- Las delegaciones no se cargan: sus correos ya estaban (`correos_oficiales`).
+- «A/C» delante del nombre es `a_cargo`; «Sit. revista» es `revista`. La ficha los muestra al
+  lado del cargo («Director/a · a cargo · suplente»).
+
+`cargar_directivos(filas, escuelas)` aplica la regla de siempre: **vale lo de la planilla,
+salvo en las escuelas donde el equipo agregó o corrigió algo desde la ficha** (origen `panel`).
+Reemplaza lo que vino de una planilla anterior (`planilla_directivos` o `base_directivos`), no
+toca los correos oficiales, no repite un correo que la escuela ya tiene, deja vacío un celular
+que no pasaría la validación de la ficha y completa la `denominacion` de la escuela si no tenía
+(queda en el historial de Escuelas, como cambio sin publicar) y su `direccion`. Las planillas
+de directivos de antes (`generar_contactos.py`) no pisan lo de la base: solo cargan donde no
+hay ningún contacto.
+
+**Las notas.** Tres pasos, como el Distribuidor:
+
+1. **Redactar:** nombre de la nota (para la lista), número, fecha, referencia, formato
+   (*Carta*: fecha y número a la derecha, destinatario en negrita y S/D; *Nota múltiple*: las
+   leyendas del año y el cuadro «DE LA: / A:» de la nota modelo), el **Anexo 2 – Planilla de la
+   escuela** como segunda hoja (con su nombre y CUE), un renglón más para el destinatario, la
+   firma y el texto. El texto admite campos (`{{ESCUELA}}`, `{{DIRECTOR}}`, `{{ANEXOS}}`…), se
+   puede subir de un Word (mammoth por CDN; si el Word ya trae Ref., «Por su intermedio…» y la
+   firma, se toman) y se guarda solo mientras se escribe. Si otra persona la cambió en el medio,
+   no se pisa y lo dice.
+2. **A quién:** los destinatarios salen de los contactos del panel: el director de cada E.P.E.S.,
+   cada coordinador (una sola nota para todos sus anexos) y cada delegación. Filtros por
+   departamento, cargo, modalidad, texto y **«Solo las escuelas que todavía no cargaron en
+   ReSaP»**. El nombre de la escuela abre su ficha, para corregir ahí.
+3. **Enviar:** «WhatsApp» baja el PDF de esa escuela y abre el chat del director con el mensaje
+   escrito (`wa.me/549…`); el PDF se arrastra al chat, porque ninguna página puede adjuntarlo
+   sola. «Correo» abre Gmail con el correo oficial, el asunto y el mensaje. También «Mandar a la
+   siguiente pendiente», «Bajar todas (ZIP de PDF)», «Imprimir todas» y el registro en Excel.
+   En el teléfono, «Compartir» manda el PDF con el menú del celular.
+
+**Lo enviado queda en la base** (`notas_envios`), no en el navegador: dos personas pueden
+repartirse el envío; «Actualizar» trae lo que marcaron los demás. Al tocar WhatsApp o Correo
+queda marcada como enviada; si no salió, se destilda. El membrete (leyendas del año, remitente,
+firma con su imagen opcional, tratamientos) es uno solo para todas las notas
+(`notas_membrete`). Los logos son los de la nota modelo (`assets/img/nota-logo-*`).
+
+El PDF lo arma html2pdf.js 0.10.1 (cdnjs) a partir de la misma hoja de la vista previa; el ZIP,
+JSZip 3.10.1. Las hojas son A4: al imprimir usan una página con nombre (`@page nota`) sin
+márgenes, porque los de la hoja ya están adentro. Un detalle: html2pdf copia la hoja a otro
+lado para dibujarla, así que lo que cambia su medida va en una clase de la hoja misma
+(`t-nota__pliego--pdf`); en la caja de afuera no aplica y salía una página en blanco.
+
+Sin `sql/18` corrido, la pantalla de notas lo dice y el resto del panel anda igual; los
+contactos se leen sin `revista` ni `a_cargo`.
+
 ### Escuelas: editar la nómina (pantalla «Escuelas», sql/16)
 
 Lo pidió el equipo el 30/10/2026: «editar toda la info de escuelas, departamentos y anexos en
@@ -1047,7 +1123,8 @@ formulario solo entra por `registrar_aporte`.
 
 Son veinte personas que entran cada tanto, no todos los días. En vez de un instructivo que
 nadie lee, el panel se explica solo: ilumina una parte de la pantalla y dice qué mira, con
-«Saltar», «Anterior» y «Siguiente». Cuatro recorridos, uno por pantalla:
+«Saltar», «Anterior» y «Siguiente». Cinco recorridos, uno por pantalla (versión `v9` desde el
+06/11/2026, con las notas):
 
 - **Resultados**, diez pasos (el de «Datos de ejemplo» se sacó con el interruptor; el último,
   sumado el 30/10/2026, señala la cabecera y cuenta para qué son Seguimiento y Escuelas).
@@ -1060,6 +1137,11 @@ nadie lee, el panel se explica solo: ilumina una parte de la pantalla y dice qu�
 - **Escuelas** (30/10/2026), ocho: que editar no es publicar, buscar y filtrar, los
   departamentos, corregir una escuela, dar de baja (que no borra), agregar una escuela o un
   anexo, y publicar.
+- **Notas** (06/11/2026), cinco: qué es, nota nueva o de base, los tres pasos, actualizar los
+  contactos con la base de directivos y el membrete. Seguimiento suma un paso que señala el botón.
+
+Un recorrido que se cierra no vuelve a abrirse solo: la apertura se demora un instante y, si en
+ese instante se cerró, ya no abre (pasaba con pantallas que se dibujan varias veces al cargar).
 
 Arranca solo la primera vez que se entra a cada pantalla (queda anotado en `localStorage`,
 claves `relevamiento.tour.<modo>.<versión>`) y se vuelve a ver desde «¿Cómo se usa?» en la
@@ -1131,6 +1213,21 @@ Agregados al implementar (sql/01_esquema.sql):
   `panel_resultados()` y los filtros del panel, que siguen pidiendo solo `false`.
 - `equipo_planificacion(usuario_id)`: además de existir en Supabase Auth, el usuario del
   dashboard tiene que estar en esta tabla para ver algo.
+
+Contactos y notas (sql/13, sql/18):
+
+```sql
+contactos_escuela(id, escuela_id fk, nombre, cargo, celular, correo, revista, a_cargo,
+                  origen,   -- 'planilla_directivos' | 'correos_oficiales' | 'base_directivos' | 'panel'
+                  actualizado_por, actualizado_en)
+escuelas.direccion                                   -- de la base de directivos; no se publica
+notas(id, titulo, numero, fecha, asunto, formato, anexo, dest_extra, firma, cuerpo, mensaje,
+      destinatarios text[], archivada, creada_*, actualizada_*)
+notas_envios(nota_id fk cascade, destino, canal, enviado_por, enviado_en, pk(nota_id, destino))
+notas_membrete(id = 1, datos jsonb)
+```
+
+Los destinos son `dir:<escuela>`, `coord:<anexo>+<anexo>…` y `dz:<correo>`.
 
 **No existe tabla de trimestres.** El trimestre es un atributo de `saberes`, no algo que el
 docente elija.
@@ -1571,7 +1668,28 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
   «usuario ni contraseña», «Para cargar», «no hace falta cargarla» ni el link, y los dos siguen
   con la grilla y los anexos. La N° 25 con tres anexos entra en una hoja
 
+- **Notas a las escuelas y la base de directivos** (06/11/2026): ver «Notas a las escuelas y la
+  base de directivos». `sql/18` probado contra PostgreSQL 16, instalando del `01` al `18` en una
+  base vacía: se puede repetir (y `sql/13` también, con el origen nuevo); la carga respeta las
+  escuelas corregidas por el equipo, deja las que no vienen en la planilla, no repite el correo
+  oficial, anula un celular inválido, salta filas repetidas y completa el nombre propio solo si
+  faltaba (con su línea en el historial de Escuelas); las notas validan nombre y fecha, avisan
+  si otra persona guardó en el medio, marcan y desmarcan envíos, y el membrete rechaza una firma
+  muy pesada; un usuario que no es del equipo y `anon` no leen ni escriben. En Chromium con un
+  Supabase simulado y la base real del 06/11: el cotejo da 17 cambios, 147 altas (los anexos con
+  su coordinador), 79 iguales, 1 respetada y 6 para elegir; cargar deja a cada director con su
+  situación de revista y a cada anexo con su coordinador; la nota se guarda sola, el texto toma
+  los campos, «Solo las que todavía no cargaron» y la búsqueda filtran sin perder el foco, el
+  PDF sale en dos hojas (nota y Anexo 2 con el CUE), WhatsApp abre `wa.me/549…` con el mensaje,
+  el ZIP trae un PDF por escuela, «Imprimir todas» da dos A4 por escuela, lo enviado sobrevive a
+  recargar y la ficha se abre desde la lista. Sin scroll horizontal en 1024, 1280 y un teléfono
+  de 390 px. Los recorridos en `v9`
+
 **Pendiente**
+- Correr `sql/18_notas.sql` en el SQL Editor de Supabase, y después, desde Seguimiento → «Notas a
+  las escuelas» → «Actualizar contactos (Excel)», subir la base de directivos, revisar el cotejo,
+  elegir las 6 entradas que no se reconocen y cargar. Después, publicar en Escuelas para que los
+  docentes vean los nombres propios
 - El equipo revisa la lista (Excel «unificacion-textos-libres», con una columna
   «Observaciones») y lo que no corresponda se separa con `separar_variante()` o
   `restaurar_texto_no()`
