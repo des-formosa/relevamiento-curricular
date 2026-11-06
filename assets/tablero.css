@@ -2271,3 +2271,15 @@ body.tour-abierto { overflow: hidden; }
 /* Un nombre largo en la lista no puede ensanchar la ventana más que la pantalla */
 .t-panel--ancho > *, .t-panel--ancho .t-ficha__campo { min-width: 0; }
 .t-panel--ancho select { width: 100%; max-width: 100%; }
+/* Un título por delegación zonal en las listas de destinatarios y de envío */
+.t-notas__tabla tr.t-notas__grupo th {
+  padding: 18px 16px 8px; background: var(--papel); border-top: 1px solid var(--t-borde);
+  font-size: 13px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--azul);
+}
+.t-notas__tabla tbody tr.t-notas__grupo:first-child th { padding-top: 12px; border-top: none; }
+.t-notas__grupo-cuenta { margin-left: 10px; font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--t-gris-2); }
+.t-notas__grupo .t-ficha__enlace { margin-left: 12px; font-size: 14px; letter-spacing: 0; text-transform: none; }
+@media (max-width: 899px) {
+  .t-notas__tabla tr.t-notas__grupo { padding: 14px 12px 6px; background: var(--papel); }
+  .t-notas__tabla tr.t-notas__grupo th { flex-basis: 100%; padding: 0; background: none; border: none; }
+}

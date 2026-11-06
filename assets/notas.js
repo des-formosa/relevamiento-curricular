@@ -78,7 +78,7 @@ const Notas = (function () {
     guardando: false,
     estadoGuardado: '',
     conflicto: false,
-    filtros: { dep: '', cargo: '', mod: '', texto: '', faltan: false },
+    filtros: { deleg: '', dep: '', cargo: '', mod: '', texto: '', faltan: false },
     previa: null,        // id del destinatario que se mira en la vista previa
     aviso: null,         // { texto, error } arriba de la lista de envío
     enviando: null,      // id del destinatario cuyo PDF se está armando
@@ -399,10 +399,14 @@ const Notas = (function () {
         deps: [...new Set(escuelas.map((x) => x.departamento_id))],
       });
     }
-    // El orden de la nómina, con cada coordinador detrás de su E.P.E.S.
+    // Por delegación zonal, que es como se reparten las notas (pedido del
+    // equipo, 06/11/2026), en orden alfabético; la delegación misma, primera
+    // en su grupo. Adentro, el orden de la nómina, con cada coordinador detrás
+    // de su E.P.E.S. Sin delegación cargada, al final.
     const orden = new Map(d.nominaOrdenada().map((e, i) => [e.id, i]));
-    const pos = (r) => (r.tipo === 'delegacion' ? 1e6 : (orden.get(r.referencia.id) || 0) + (r.tipo === 'coordinador' ? 0.5 : 0));
-    lista.sort((a, b) => pos(a) - pos(b) || a.nombre.localeCompare(b.nombre));
+    const pos = (r) => (r.tipo === 'delegacion' ? -1 : (orden.get(r.referencia.id) || 0) + (r.tipo === 'coordinador' ? 0.5 : 0));
+    for (const r of lista) r.grupo = normalizarTexto(r.delegacion || '');
+    lista.sort((a, b) => (!a.grupo - !b.grupo) || a.grupo.localeCompare(b.grupo, 'es') || pos(a) - pos(b) || a.nombre.localeCompare(b.nombre));
     cacheDest = lista;
     return lista;
   }
@@ -410,6 +414,22 @@ const Notas = (function () {
   const nombreDestino = (r) => (r.tipo === 'delegacion' ? r.nombre
     : r.tipo === 'coordinador' ? `Anexos de ${r.referencia.nombre}` : r.escuela.nombre);
   const cargoDe = (r) => (r.tipo === 'coordinador' ? 'Coordinador/a' : r.tipo === 'delegacion' ? 'Delegado/a Zonal' : 'Director/a');
+  const nombreGrupo = (r) => (r.delegacion ? `Delegación zonal ${r.delegacion}` : 'Sin delegación cargada');
+  // Las delegaciones que hay, para el filtro: [clave, nombre]
+  const delegaciones = () => {
+    const m = new Map();
+    for (const r of destinatarios()) if (r.grupo && !m.has(r.grupo)) m.set(r.grupo, r.delegacion);
+    return [...m];
+  };
+  // Las filas de una tabla con un título por delegación; titulo(grupo) lo arma cada vista
+  function porDelegacion(lista, fila, tituloGrupo) {
+    let actual = null;
+    return lista.map((r) => {
+      const cabeza = r.grupo !== actual ? tituloGrupo(r, lista.filter((x) => x.grupo === r.grupo)) : '';
+      actual = r.grupo;
+      return cabeza + fila(r);
+    }).join('');
+  }
 
   // Sin cargas todavía: la escuela o alguno de sus anexos (para el coordinador)
   function faltaCargar(r) {
@@ -422,7 +442,8 @@ const Notas = (function () {
   function filtrar(lista) {
     const f = st.filtros;
     const q = normalizarTexto(f.texto || '');
-    return lista.filter((r) => (!f.dep || r.deps.includes(f.dep))
+    return lista.filter((r) => (!f.deleg || r.grupo === f.deleg)
+      && (!f.dep || r.deps.includes(f.dep))
       && (!f.cargo || r.tipo === f.cargo)
       && (!f.mod || modalidad(r.referencia) === f.mod)
       && (!f.faltan || faltaCargar(r))
@@ -664,7 +685,7 @@ const Notas = (function () {
     const filas = elegidos().map((r) => {
       const e = enviada(r.id);
       return {
-        Nota: n.numero, Asunto: n.asunto, Escuela: r.referencia ? conDenominacion(r.referencia) : r.nombre,
+        Nota: n.numero, Asunto: n.asunto, Delegación: r.delegacion, Escuela: r.referencia ? conDenominacion(r.referencia) : r.nombre,
         Anexos: r.anexos.map((x) => x.nombre).join(', '), Localidad: r.referencia ? r.referencia.localidad : '',
         Cargo: cargoDe(r), 'Destinatario/a': r.tipo === 'delegacion' ? '' : titulo(r.nombre), Celular: r.celular, Correo: r.correo,
         Estado: e ? 'ENVIADA' : 'PENDIENTE', 'Por dónde': e ? canal[e.canal] || e.canal : '',
@@ -1066,6 +1087,8 @@ const Notas = (function () {
     return `<div class="t-notas__destinatarios">
       ${sinContactos()}
       <div class="t-selectores t-notas__filtros">
+        <div class="t-selector"><label class="t-selector__etiqueta" for="nt-f-deleg">Delegación</label>
+          <select class="t-select" id="nt-f-deleg" data-cambio="nt-filtro" data-filtro="deleg">${opcion('', 'Todas', f.deleg)}${delegaciones().map(([k, nombre]) => opcion(k, nombre, f.deleg)).join('')}</select></div>
         <div class="t-selector"><label class="t-selector__etiqueta" for="nt-f-dep">Departamento</label>
           <select class="t-select" id="nt-f-dep" data-cambio="nt-filtro" data-filtro="dep">${opcion('', 'Todos', f.dep)}${Catalogo.departamentos().map((x) => opcion(x.id, x.nombre, f.dep)).join('')}</select></div>
         <div class="t-selector"><label class="t-selector__etiqueta" for="nt-f-cargo">Cargo</label>
@@ -1087,7 +1110,12 @@ const Notas = (function () {
       <p class="t-seg-nota">Para corregir un nombre, un celular o un correo, tocá la escuela: se abre su ficha.</p>
       <div class="t-notas__marco-tabla"><table class="t-seg-tabla t-notas__tabla">
         <thead><tr><th scope="col"><span class="oculto-visual">Elegir</span></th><th scope="col">Escuela</th><th scope="col">Cargo</th><th scope="col">Recibe</th><th scope="col">Celular y correo</th></tr></thead>
-        <tbody>${vis.map(fila).join('') || '<tr><td colspan="5" class="t-seg-sin">Nadie coincide con lo que elegiste arriba.</td></tr>'}</tbody>
+        <tbody>${porDelegacion(vis, fila, (r, grupo) => {
+          const todas = grupo.every((x) => n.destinatarios.has(x.id));
+          return `<tr class="t-notas__grupo"><th colspan="5" scope="colgroup"><span class="t-notas__grupo-nombre">${esc(nombreGrupo(r))}</span>
+            <span class="t-notas__grupo-cuenta">${numero(grupo.filter((x) => n.destinatarios.has(x.id)).length)} de ${numero(grupo.length)} ${plural(grupo.length, 'elegido', 'elegidos')}</span>
+            <button type="button" class="t-ficha__enlace" data-accion="nt-marcar-grupo" data-grupo="${esc(r.grupo)}" data-valor="${todas ? '0' : '1'}">${todas ? 'Sacarlas' : `Elegir las ${numero(grupo.length)}`}</button></th></tr>`;
+        }) || '<tr><td colspan="5" class="t-seg-sin">Nadie coincide con lo que elegiste arriba.</td></tr>'}</tbody>
       </table></div>
       <div class="t-notas__pie">
         <button type="button" class="t-exportar t-exportar--claro" data-accion="nt-paso" data-paso="redactar">← Redactar</button>
@@ -1150,7 +1178,8 @@ const Notas = (function () {
         : '«WhatsApp» baja el PDF de esa escuela y abre el chat del director con el mensaje escrito: arrastrá el PDF al chat y mandá. WhatsApp no deja que una página adjunte el archivo sola. Queda marcada como enviada; si no salió, destildala.'}</p>
       <div class="t-notas__marco-tabla"><table class="t-seg-tabla t-notas__tabla t-notas__tabla--enviar">
         <thead><tr><th scope="col">Para</th><th scope="col">Recibe</th><th scope="col">Mandar</th><th scope="col">Estado</th></tr></thead>
-        <tbody>${lista.map(fila).join('')}</tbody>
+        <tbody>${porDelegacion(lista, fila, (r, grupo) => `<tr class="t-notas__grupo"><th colspan="4" scope="colgroup"><span class="t-notas__grupo-nombre">${esc(nombreGrupo(r))}</span>
+          <span class="t-notas__grupo-cuenta">${numero(grupo.filter((x) => enviada(x.id)).length)} de ${numero(grupo.length)} ${plural(grupo.length, 'enviada', 'enviadas')}</span></th></tr>`)}</tbody>
       </table></div>
     </div>`;
   }
@@ -1384,6 +1413,15 @@ const Notas = (function () {
         const n = st.nota;
         if (ds.valor === 'todas') n.destinatarios.clear();
         else for (const r of filtrar(destinatarios())) { if (ds.valor === '1') n.destinatarios.add(r.id); else n.destinatarios.delete(r.id); }
+        marcarSucio();
+        d.render();
+        break;
+      }
+      case 'nt-marcar-grupo': {
+        const n = st.nota;
+        for (const r of filtrar(destinatarios()).filter((x) => x.grupo === ds.grupo)) {
+          if (ds.valor === '1') n.destinatarios.add(r.id); else n.destinatarios.delete(r.id);
+        }
         marcarSucio();
         d.render();
         break;
