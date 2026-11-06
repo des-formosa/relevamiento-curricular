@@ -936,7 +936,13 @@ hay ningún contacto.
    adentro, el orden de la nómina. La delegación de un anexo es la de su sede; sin delegación
    cargada, al final. Filtros por delegación, departamento, cargo, modalidad, texto y **«Solo
    las escuelas que todavía no cargaron en ReSaP»**. El nombre de la escuela abre su ficha, para
-   corregir ahí. En «Enviar» se mantienen los grupos (con cuántas de cada uno ya salieron),
+   corregir ahí. **Cada fila tiene sus botones para mandarle ya** (06/11/2026, pedido del
+   equipo: «un botón al lado de cada escuela para enviar directamente»): WhatsApp, Correo y Ver,
+   los mismos de «Enviar» (`botonesMandar()`). Mandarle desde acá la deja elegida y marcada como
+   enviada, y debajo dice cuándo salió. El cargo va debajo de quien recibe, para dejar lugar. En
+   las dos listas, lo que hay que hacer con el PDF («Se bajó…, arrastralo al chat») aparece en
+   la fila que se tocó, no arriba de todo. La ventana del chat se abre antes de guardar la nota
+   y armar el PDF: después de una espera el navegador la bloquearía. En «Enviar» se mantienen los grupos (con cuántas de cada uno ya salieron),
    «Mandar a la siguiente pendiente» los recorre en ese orden y el registro en Excel suma la
    columna Delegación.
 3. **Enviar:** «WhatsApp» baja el PDF de esa escuela y abre el chat del director con el mensaje

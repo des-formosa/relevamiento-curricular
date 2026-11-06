@@ -2283,3 +2283,16 @@ body.tour-abierto { overflow: hidden; }
   .t-notas__tabla tr.t-notas__grupo { padding: 14px 12px 6px; background: var(--papel); }
   .t-notas__tabla tr.t-notas__grupo th { flex-basis: 100%; padding: 0; background: none; border: none; }
 }
+/* Mandarle a una sola escuela desde «A quién» o «Enviar», con el aviso en su fila */
+.t-notas__mandar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; }
+.t-notas__mandar .t-ficha__si { margin-right: 0; }
+.t-notas__mandar .t-ficha__si:disabled { opacity: .45; cursor: default; }
+.t-notas__ya { display: block; margin-top: 6px; font-size: 14px; color: var(--t-gris-2); white-space: normal; }
+.t-notas__ya strong { color: var(--t-tinta); }
+.t-notas__aviso-fila {
+  margin: 8px 0 0; max-width: 300px; padding: 6px 10px; background: var(--azul-suave); border-left: 3px solid var(--azul);
+  font-size: 14px; line-height: 1.4; color: var(--t-tinta); white-space: normal;
+}
+.t-notas__aviso-fila--error { background: var(--ocre-fila); border-left-color: var(--ladrillo); }
+.t-notas__tabla .t-notas__acciones { width: 270px; }
+@media (min-width: 900px) { .t-notas__mandar { flex-wrap: nowrap; } }

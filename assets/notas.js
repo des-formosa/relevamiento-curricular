@@ -597,15 +597,20 @@ const Notas = (function () {
   async function enviar(id, canal) {
     const r = porId(id);
     if (!r || st.enviando) return;
-    if (!(await guardar())) { d.render(); return; }
-    if (canal === 'whatsapp' && !r.celular) { st.aviso = { texto: `${nombreDestino(r)} no tiene celular cargado. Agregalo desde su ficha (tocando el nombre) o mandala por correo.`, error: true }; d.render(); return; }
-    if (canal === 'correo' && !r.correo) { st.aviso = { texto: `${nombreDestino(r)} no tiene correo cargado. Agregalo desde su ficha (tocando el nombre).`, error: true }; d.render(); return; }
+    // El aviso va en la fila de esa escuela, al lado de sus botones: arriba de
+    // todo quedaba lejos de donde se tocó
+    const decir = (texto, error) => { st.aviso = { texto, error: !!error, id }; };
+    if (canal === 'whatsapp' && !r.celular) { decir('No tiene celular cargado. Agregalo desde su ficha (tocando el nombre de la escuela) o mandala por correo.', true); d.render(); return; }
+    if (canal === 'correo' && !r.correo) { decir('No tiene correo cargado. Agregalo desde su ficha (tocando el nombre de la escuela).', true); d.render(); return; }
     const telefono = d.conElTelefono();
-    // La ventana se abre en el mismo toque (si no, el navegador la bloquea) y
-    // se carga cuando el PDF ya bajó
+    // La ventana se abre en el mismo toque, antes de cualquier espera (si no,
+    // el navegador la bloquea), y se carga cuando el PDF ya bajó
     const ventana = canal === 'pdf' || canal === 'compartir' || (telefono && canal === 'whatsapp') ? null : window.open('about:blank', '_blank');
+    // Mandarle desde «A quién» también la deja elegida: así cuenta en «Enviar» y en el registro
+    if (canal !== 'pdf' && !st.nota.destinatarios.has(id)) { st.nota.destinatarios.add(id); st.sucio = true; }
+    if (!(await guardar())) { if (ventana) ventana.close(); d.render(); return; }
     st.enviando = id;
-    st.aviso = { texto: `Armando el PDF de ${nombreDestino(r)}…` };
+    decir('Armando el PDF…');
     d.render();
     let blob;
     try {
@@ -613,7 +618,7 @@ const Notas = (function () {
     } catch (e) {
       if (ventana) ventana.close();
       st.enviando = null;
-      st.aviso = { texto: (e && e.message) || 'No se pudo armar el PDF. Volvé a intentar.', error: true };
+      decir((e && e.message) || 'No se pudo armar el PDF. Volvé a intentar.', true);
       d.render();
       return;
     }
@@ -626,7 +631,7 @@ const Notas = (function () {
         if (navigator.canShare && navigator.canShare({ files: [f] })) {
           await navigator.share({ files: [f], text: texto, title: st.nota.asunto || st.nota.titulo });
           await marcar(id, 'whatsapp');
-          st.aviso = { texto: `Listo: ${nombreDestino(r)} quedó como enviada.` };
+          decir('Listo: quedó como enviada.');
           d.render();
           return;
         }
@@ -634,12 +639,12 @@ const Notas = (function () {
         if (e && e.name === 'AbortError') { st.aviso = null; d.render(); return; }
       }
       bajar(blob, archivo);
-      st.aviso = { texto: `Este celular no deja compartir el PDF: se bajó «${archivo}». Mandalo desde WhatsApp.` };
+      decir(`Este celular no deja compartir el PDF: se bajó «${archivo}». Mandalo desde WhatsApp.`);
       d.render();
       return;
     }
     bajar(blob, archivo);
-    if (canal === 'pdf') { st.aviso = { texto: `Se bajó «${archivo}».` }; d.render(); return; }
+    if (canal === 'pdf') { decir(`Se bajó «${archivo}».`); d.render(); return; }
     let url;
     if (canal === 'whatsapp') {
       url = telefono ? `whatsapp://send?phone=${celularWa(r.celular)}&text=${encodeURIComponent(texto)}`
@@ -649,10 +654,31 @@ const Notas = (function () {
     }
     if (ventana) ventana.location.href = url; else window.location.href = url;
     await marcar(id, canal);
-    st.aviso = canal === 'whatsapp'
-      ? { texto: `Se bajó «${archivo}» y se abrió el chat de ${r.nombre ? titulo(r.nombre) : nombreDestino(r)}. Arrastrá el PDF al chat y mandá.` }
-      : { texto: `Se bajó «${archivo}» y se abrió Gmail para ${r.correo}. Adjuntá el PDF y mandá.` };
+    decir(canal === 'whatsapp'
+      ? `Se bajó «${archivo}» y se abrió el chat de ${r.nombre ? titulo(r.nombre) : nombreDestino(r)}. Arrastrá el PDF al chat y mandá.`
+      : `Se bajó «${archivo}» y se abrió Gmail para ${r.correo}. Adjuntá el PDF y mandá.`);
     d.render();
+  }
+
+  // Los botones para mandarle a un destinatario, en «A quién» y en «Enviar»,
+  // con lo que pasó con el último envío debajo
+  const CANALES = { whatsapp: 'por WhatsApp', correo: 'por correo', a_mano: 'marcada a mano' };
+  function botonesMandar(r, completo) {
+    const ocupado = !!(st.enviando || st.lote);
+    const id = esc(r.id);
+    const principal = d.conElTelefono() && d.puedeCompartir()
+      ? `<button type="button" class="t-ficha__si" data-accion="nt-enviar" data-canal="compartir" data-id="${id}" ${ocupado ? 'disabled' : ''}>Compartir</button>`
+      : `<button type="button" class="t-ficha__si" data-accion="nt-enviar" data-canal="whatsapp" data-id="${id}" ${ocupado || !r.celular ? 'disabled' : ''} title="${r.celular ? 'Baja el PDF y abre el chat con el mensaje escrito' : 'Sin celular cargado'}">WhatsApp</button>`;
+    const e = enviada(r.id);
+    const av = st.aviso && st.aviso.id === r.id ? st.aviso : null;
+    return `<div class="t-notas__mandar">
+        ${principal}
+        <button type="button" class="t-ficha__si t-notas__claro" data-accion="nt-enviar" data-canal="correo" data-id="${id}" ${ocupado || !r.correo ? 'disabled' : ''} title="${r.correo ? 'Baja el PDF y abre Gmail con el mensaje escrito' : 'Sin correo cargado'}">Correo</button>
+        ${completo ? `<button type="button" class="t-ficha__enlace" data-accion="nt-enviar" data-canal="pdf" data-id="${id}" ${ocupado ? 'disabled' : ''}>PDF</button>` : ''}
+        <button type="button" class="t-ficha__enlace" data-accion="nt-previa" data-id="${id}">Ver</button>
+      </div>
+      ${!completo && e ? `<span class="t-notas__ya"><strong>Enviada</strong> ${esc(CANALES[e.canal] || '')} · ${esc(cuandoEnvio(e.enviado_en))}</span>` : ''}
+      ${av ? `<p class="t-notas__aviso-fila ${av.error ? 't-notas__aviso-fila--error' : ''}" role="${av.error ? 'alert' : 'status'}">${esc(av.texto)}</p>` : ''}`;
   }
 
   async function zip() {
@@ -1051,7 +1077,7 @@ const Notas = (function () {
       return `<div class="t-notas__aviso t-notas__aviso--error" role="alert">Otra persona del equipo cambió esta nota mientras la tenías abierta, y no se guardó lo tuyo.
         <button type="button" class="t-ficha__enlace" data-accion="nt-recargar">Volver a abrirla</button></div>`;
     }
-    if (!st.aviso) return '';
+    if (!st.aviso || st.aviso.id) return '';
     return `<div class="t-notas__aviso ${st.aviso.error ? 't-notas__aviso--error' : ''}" role="${st.aviso.error ? 'alert' : 'status'}">${esc(st.aviso.texto)}</div>`;
   }
 
@@ -1073,15 +1099,16 @@ const Notas = (function () {
         : r.tipo === 'coordinador'
           ? `<button type="button" class="t-seg-enlace" data-ficha="${esc(r.escuela.id)}" data-accion="abrir-ficha" data-id="${esc(r.escuela.id)}">${esc(r.anexos.map((x) => x.localidad || x.nombre).join(', '))}</button><span>Anexos de ${esc(ref.nombre)}</span>`
           : `<button type="button" class="t-seg-enlace" data-ficha="${esc(ref.id)}" data-accion="abrir-ficha" data-id="${esc(ref.id)}">${esc(ref.nombre)}</button><span>${esc([ref.localidad, (Catalogo.departamento(ref.departamento_id) || {}).nombre].filter(Boolean).join(' · '))}</span>`;
-      const quien = r.tipo === 'delegacion' ? '<span class="t-notas__falta">—</span>'
-        : r.nombre ? `${esc(titulo(r.nombre))}${r.aCargo ? ' <span class="t-notas__marca">a cargo</span>' : ''}${r.revista ? `<span>${esc(r.revista.toLowerCase())}</span>` : ''}`
-          : '<span class="t-notas__falta">Sin contacto cargado</span>';
+      const cargo = [cargoDe(r), r.revista ? r.revista.toLowerCase() : ''].filter(Boolean).join(' · ');
+      const quien = r.tipo === 'delegacion' ? `<span class="t-notas__falta">—</span><span>${esc(cargo)}</span>`
+        : r.nombre ? `${esc(titulo(r.nombre))}${r.aCargo ? ' <span class="t-notas__marca">a cargo</span>' : ''}<span>${esc(cargo)}</span>`
+          : `<span class="t-notas__falta">Sin contacto cargado</span><span>${esc(cargo)}</span>`;
       return `<tr>
         <td class="t-notas__marcar"><input type="checkbox" data-cambio="nt-elegir" data-id="${esc(r.id)}" ${n.destinatarios.has(r.id) ? 'checked' : ''} aria-label="Mandarle a ${esc(nombreDestino(r))}"></td>
         <td class="t-notas__escuela">${escuela}</td>
-        <td>${esc(cargoDe(r))}</td>
         <td class="t-notas__quien">${quien}</td>
         <td class="t-notas__medio">${r.celular ? esc(d.celularLegible(r.celular)) : '<span class="t-notas__falta">sin celular</span>'}${r.correo ? `<span>${esc(r.correo)}</span>` : ''}</td>
+        <td class="t-notas__acciones">${botonesMandar(r, false)}</td>
       </tr>`;
     };
     return `<div class="t-notas__destinatarios">
@@ -1107,9 +1134,10 @@ const Notas = (function () {
         <button type="button" class="t-ficha__enlace" data-accion="nt-marcar" data-valor="0" ${vis.length ? '' : 'disabled'}>Sacar las que se ven</button>
         <button type="button" class="t-ficha__enlace" data-accion="nt-marcar" data-valor="todas" ${n.destinatarios.size ? '' : 'disabled'}>Sacar todas</button>
       </div>
-      <p class="t-seg-nota">Para corregir un nombre, un celular o un correo, tocá la escuela: se abre su ficha.</p>
+      ${aviso()}
+      <p class="t-seg-nota">Para corregir un nombre, un celular o un correo, tocá la escuela: se abre su ficha. Para mandarle a una sola, usá sus botones: queda elegida y marcada como enviada.</p>
       <div class="t-notas__marco-tabla"><table class="t-seg-tabla t-notas__tabla">
-        <thead><tr><th scope="col"><span class="oculto-visual">Elegir</span></th><th scope="col">Escuela</th><th scope="col">Cargo</th><th scope="col">Recibe</th><th scope="col">Celular y correo</th></tr></thead>
+        <thead><tr><th scope="col"><span class="oculto-visual">Elegir</span></th><th scope="col">Escuela</th><th scope="col">Recibe</th><th scope="col">Celular y correo</th><th scope="col">Mandarle ya</th></tr></thead>
         <tbody>${porDelegacion(vis, fila, (r, grupo) => {
           const todas = grupo.every((x) => n.destinatarios.has(x.id));
           return `<tr class="t-notas__grupo"><th colspan="5" scope="colgroup"><span class="t-notas__grupo-nombre">${esc(nombreGrupo(r))}</span>
@@ -1133,26 +1161,15 @@ const Notas = (function () {
     const hechas = lista.filter((r) => enviada(r.id)).length;
     const sinCel = lista.filter((r) => !r.celular).length;
     const ocupado = !!(st.enviando || st.lote);
-    const canales = { whatsapp: 'por WhatsApp', correo: 'por correo', a_mano: 'marcada a mano' };
     const telefono = d.conElTelefono();
-    const puedeCompartir = d.puedeCompartir();
     const fila = (r) => {
       const e = enviada(r.id);
-      const armando = st.enviando === r.id;
       return `<tr class="${e ? 't-notas__hecha' : ''}">
         <th scope="row" class="t-notas__escuela">${esc(nombreDestino(r))}<span>${esc(r.tipo === 'coordinador' ? r.anexos.map((x) => x.localidad || x.nombre).join(', ') : r.referencia ? r.referencia.localidad : '')}</span></th>
         <td class="t-notas__quien">${r.nombre && r.tipo !== 'delegacion' ? esc(titulo(r.nombre)) : esc(cargoDe(r))}<span>${r.celular ? esc(d.celularLegible(r.celular)) : 'sin celular'}${r.correo ? ` · ${esc(r.correo)}` : ''}</span></td>
-        <td class="t-notas__acciones">
-          ${telefono && puedeCompartir
-            ? `<button type="button" class="t-ficha__si" data-accion="nt-enviar" data-canal="compartir" data-id="${esc(r.id)}" ${ocupado ? 'disabled' : ''}>Compartir</button>`
-            : `<button type="button" class="t-ficha__si" data-accion="nt-enviar" data-canal="whatsapp" data-id="${esc(r.id)}" ${ocupado || !r.celular ? 'disabled' : ''} title="${r.celular ? 'Baja el PDF y abre el chat con el mensaje escrito' : 'Sin celular cargado'}">WhatsApp</button>`}
-          <button type="button" class="t-ficha__si t-notas__claro" data-accion="nt-enviar" data-canal="correo" data-id="${esc(r.id)}" ${ocupado || !r.correo ? 'disabled' : ''} title="${r.correo ? 'Baja el PDF y abre Gmail con el mensaje escrito' : 'Sin correo cargado'}">Correo</button>
-          <button type="button" class="t-ficha__enlace" data-accion="nt-enviar" data-canal="pdf" data-id="${esc(r.id)}" ${ocupado ? 'disabled' : ''}>PDF</button>
-          <button type="button" class="t-ficha__enlace" data-accion="nt-previa" data-id="${esc(r.id)}">Ver</button>
-          ${armando ? '<span class="t-notas__armando">Armando…</span>' : ''}
-        </td>
+        <td class="t-notas__acciones">${botonesMandar(r, true)}</td>
         <td class="t-notas__estado"><label><input type="checkbox" data-cambio="nt-hecha" data-id="${esc(r.id)}" ${e ? 'checked' : ''}>
-          ${e ? `<span><strong>Enviada</strong> ${esc(canales[e.canal] || '')} · ${esc(cuandoEnvio(e.enviado_en))}</span>` : '<span>Pendiente</span>'}</label></td>
+          ${e ? `<span><strong>Enviada</strong> ${esc(CANALES[e.canal] || '')} · ${esc(cuandoEnvio(e.enviado_en))}</span>` : '<span>Pendiente</span>'}</label></td>
       </tr>`;
     };
     const pct = lista.length ? Math.round((hechas / lista.length) * 100) : 0;
@@ -1327,7 +1344,7 @@ const Notas = (function () {
     await guardar();
     st.paso = paso;
     st.aviso = null;
-    if (paso === 'enviar' && st.nota) { try { st.envios = await traerEnvios(); } catch (e) { /* queda lo que había */ } }
+    if ((paso === 'enviar' || paso === 'destinatarios') && st.nota) { try { st.envios = await traerEnvios(); } catch (e) { /* queda lo que había */ } }
     d.escribirHash();
     d.render();
     window.scrollTo(0, 0);
