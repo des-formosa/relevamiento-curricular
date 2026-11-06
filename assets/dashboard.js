@@ -137,6 +137,7 @@
     h.set('seguimiento', estado.seguimiento.lugar || '');
     if (estado.seguimiento.soloFaltan) h.set('faltan', '1');
     if (estado.seguimiento.agregadas) h.set('agregadas', '1');
+    Notas.escribirHash(h);
     history.replaceState(null, '', '#' + h.toString());
   }
 
@@ -302,7 +303,13 @@
   // Los contactos de las escuelas (sql/13). Son pocos y se traen de una vez.
   // Si la tabla todavía no existe, el seguimiento anda igual y la ficha lo dice.
   async function traerContactos() {
-    const { data, error } = await sb.from('contactos_escuela').select('id, escuela_id, nombre, cargo, celular, correo').order('id');
+    // Con sql/18, la situación de revista y si está a cargo; sin él, lo de antes
+    let data = null;
+    let error = null;
+    for (const columnas of ['id, escuela_id, nombre, cargo, celular, correo, origen, revista, a_cargo', 'id, escuela_id, nombre, cargo, celular, correo, origen', 'id, escuela_id, nombre, cargo, celular, correo']) {
+      ({ data, error } = await sb.from('contactos_escuela').select(columnas).order('id'));
+      if (!error) break;
+    }
     if (error) return null;
     const porEscuela = new Map();
     for (const c of data || []) {
@@ -362,6 +369,17 @@
     if (!fila) { estado.pantalla = 'sin-permiso'; render(); return; }
     estado.nombre = (fila.nombre || '').trim() || null;
     Editor.iniciar(sb, { render, refrescar: () => Editor.cargar(estado.espacio_id, estado.anio) });
+    Notas.iniciar(sb, {
+      render,
+      escribirHash: escribirHashSeguimiento,
+      salirAlSeguimiento: () => { escribirHashSeguimiento(); render(); window.scrollTo(0, 0); },
+      listo: () => !estado.seguimiento.cargando,
+      contactos: () => estado.seguimiento.contactos,
+      recargarContactos: async () => { estado.seguimiento.contactos = await traerContactos(); },
+      sedes: () => estado.seguimiento.sedes,
+      nominaOrdenada, esAnexo, sedeDe, escuelaSeg, celularLegible, conElTelefono, puedeCompartir, cargarSheetJS, imprimir, cuandoFue,
+      iconoCerrar: Icono.cerrar,
+    });
     await cargarEscuelasAgregadas();
     // Un link compartido (con la selección en el hash) va directo a lo que
     // muestra; entrar al panel a secas, al inicio
@@ -370,6 +388,7 @@
     if (hash.has('seguimiento')) {
       estado.seguimiento.soloFaltan = hash.get('faltan') === '1';
       estado.seguimiento.agregadas = hash.get('agregadas') === '1';
+      Notas.leerHash(hash);
       irAlSeguimiento(hash.get('seguimiento'));
       return;
     }
@@ -415,6 +434,8 @@
     render();
     window.scrollTo(0, 0);
     cargarSeguimiento();
+    // Entrando por un link con las notas abiertas (#seguimiento=&notas=1)
+    if (Notas.activo()) Notas.entrar(true);
   }
 
   async function ingresar(email, clave) {
@@ -1647,6 +1668,7 @@
       <div class="espaciador"></div>
       <div class="t-selectores__acciones">
         ${reporte}
+        <button type="button" class="t-exportar t-exportar--claro" data-accion="seg-notas" title="Redactar una nota y mandársela a los directores, coordinadores o delegaciones">Notas a las escuelas</button>
         <button type="button" class="t-exportar" data-accion="abrir-control">${Icono.descargar}Descargar el Excel</button>
       </div>
     </div>`;
@@ -2529,7 +2551,7 @@
       ].filter(Boolean);
       return `<div class="t-ficha__contacto ${f.quitando === c.id && propio ? 't-ficha__contacto--quitando' : ''}">
         <div class="t-ficha__contacto-cabeza">
-          <div class="t-ficha__nombre">${esc(c.nombre || 'Sin nombre')}${c.cargo ? ` <span>${esc(c.cargo)}</span>` : ''}</div>
+          <div class="t-ficha__nombre">${esc(c.nombre || 'Sin nombre')}${c.cargo || c.revista || c.a_cargo ? ` <span>${esc([c.cargo, c.a_cargo ? 'a cargo' : '', c.revista ? c.revista.toLowerCase() : ''].filter(Boolean).join(' · '))}</span>` : ''}</div>
           ${f.quitando === c.id ? '' : acciones}
         </div>
         ${medios.length ? medios.map((m) => `<div class="t-ficha__medio">${m}</div>`).join('') : '<div class="t-ficha__medio t-ficha__medio--falta">Sin celular ni correo</div>'}
@@ -2780,7 +2802,7 @@
     // La vista de la escuela muestra los mismos contactos: se redibuja detrás
     function despuesDeCambiar() {
       const id = f.id;
-      if (estado.seguimiento.lugar === id) render();
+      if (estado.seguimiento.lugar === id || Notas.activo()) render();
       f.id = id;
       dibujar();
     }
@@ -3243,6 +3265,14 @@
 
   function pantallaSeguimiento() {
     const s = estado.seguimiento;
+    // Las notas a las escuelas viven dentro del seguimiento, con su propia barra
+    if (Notas.activo()) {
+      return `<div class="tablero">
+        ${cabecera()}
+        ${Notas.pantalla()}
+        ${estado.documento || ''}
+      </div>`;
+    }
     let contenido = '';
     if (s.cargando) {
       contenido = '<div class="t-cuerpo"><div class="t-estado"><div class="t-estado__texto">Contando las cargas de cada escuela…</div></div></div>';
@@ -3334,7 +3364,8 @@
   }
 
   // Qué recorrido corresponde a la pantalla que se está mirando
-  const modoTour = () => (['seguimiento', 'escuelas'].includes(estado.pantalla) ? estado.pantalla
+  const modoTour = () => (estado.pantalla === 'seguimiento' && Notas.activo() ? 'notas'
+    : ['seguimiento', 'escuelas'].includes(estado.pantalla) ? estado.pantalla
     : estado.modo === 'catalogo' ? 'catalogo' : 'resultados');
 
   function render() {
@@ -3343,13 +3374,16 @@
     app.innerHTML = fn();
     if (estado.pantalla !== 'seguimiento' && Ficha.abierta()) Ficha.cerrar();
     animarLoNuevo(habiaPanel);
-    document.body.style.overflow = estado.exportar ? 'hidden' : '';
+    const notaAbierta = estado.pantalla === 'seguimiento' && Notas.activo() && (Notas.estado.modal || Notas.estado.previa !== null);
+    document.body.style.overflow = estado.exportar || notaAbierta ? 'hidden' : '';
     // La primera vez que se entra a cada pantalla, el recorrido arranca solo
     if (estado.pantalla === 'panel' && !estado.cargandoDatos && !Editor.estado.cargando) {
       Tour.quizas(estado.modo === 'catalogo' ? 'catalogo' : 'resultados');
     }
     // Seguimiento y Escuelas, cuando ya tienen la lista en pantalla
-    if (estado.pantalla === 'seguimiento' && estado.seguimiento.datos && !estado.seguimiento.cargando) Tour.quizas('seguimiento');
+    if (estado.pantalla === 'seguimiento' && Notas.activo()) {
+      if (Notas.estado.lista && !Notas.estado.cargando && !Notas.estado.modal) Tour.quizas('notas');
+    } else if (estado.pantalla === 'seguimiento' && estado.seguimiento.datos && !estado.seguimiento.cargando) Tour.quizas('seguimiento');
     if (estado.pantalla === 'escuelas' && estado.escuelasEd.lista && !estado.escuelasEd.error) Tour.quizas('escuelas');
   }
 
@@ -3370,6 +3404,7 @@
     if (d.ficha && conElDedo) { Ficha.abrir(d.ficha, objetivo, true); return; }
     if (d.accion === 'abrir-ficha') { Ficha.abrir(d.id, objetivo, true); return; }
     if (d.accion.startsWith('ed-') || d.accion.startsWith('ar-')) { Editor.manejar(d.accion, d, objetivo); return; }
+    if (d.accion.startsWith('nt-')) { Notas.manejar(d.accion, d, objetivo); return; }
     switch (d.accion) {
       case 'salir': salir(); break;
       case 'reintentar-permiso': estado.pantalla = 'cargando'; render(); verificarSesion(); break;
@@ -3378,7 +3413,7 @@
       case 'ir-inicio': irAlInicio(); break;
       case 'ir-resultados': irAlPanel('resultados'); break;
       case 'ir-catalogo': irAlPanel('catalogo'); break;
-      case 'ir-seguimiento': irAlSeguimiento(); break;
+      case 'ir-seguimiento': Notas.salir(); irAlSeguimiento(); break;
       case 'ir-escuelas': irAEscuelas(); break;
       case 'esc-reintentar': cargarEscuelasEd(); break;
       case 'esc-agregar': Object.assign(estado.escuelasEd, { editando: 'nuevo', quitando: null, editandoDepto: null, errorForm: null, aviso: null }); render(); enfocarEscuelaEd(); break;
@@ -3393,6 +3428,7 @@
       case 'esc-ver-dep': estado.escuelasEd.dep = d.id; escribirHashEscuelas(); render(); window.scrollTo(0, 0); break;
       case 'esc-contacto': irAlSeguimiento(d.id); break;
       case 'seg-reintentar': cargarSeguimiento(); break;
+      case 'seg-notas': Ficha.cerrar(); Notas.entrar(false); escribirHashSeguimiento(); render(); window.scrollTo(0, 0); break;
       case 'seg-solo': {
         const s = estado.seguimiento;
         const solo = d.solo === '1';
@@ -3467,6 +3503,7 @@
     if (subida) { Editor.manejar('ar-elegir', subida.dataset, subida); return; }
     const el = e.target.closest('[data-cambio]');
     if (!el) return;
+    if (el.dataset.cambio.startsWith('nt-')) { Notas.cambio(el); return; }
     switch (el.dataset.cambio) {
       case 'materia': {
         estado.espacio_id = el.value;
@@ -3505,6 +3542,8 @@
 
   // Buscar en la nómina mientras se escribe: se redibuja y el cursor vuelve a su lugar
   app.addEventListener('input', (e) => {
+    const nt = e.target.closest('[data-entrada^="nt-"]');
+    if (nt) { Notas.entrada(nt); return; }
     const el = e.target.closest('[data-entrada="esc-buscar"]');
     if (!el) return;
     const pos = el.selectionStart;
@@ -3515,6 +3554,8 @@
   });
 
   app.addEventListener('submit', (e) => {
+    const nota = e.target.closest('[data-form^="nt-"]');
+    if (nota) { e.preventDefault(); Notas.enviarForm(nota); return; }
     const escuela = e.target.closest('[data-form="esc-escuela"]');
     if (escuela) { e.preventDefault(); guardarEscuelaEd(escuela); return; }
     const depto = e.target.closest('[data-form="esc-depto"]');
@@ -3532,6 +3573,7 @@
 
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && Ficha.abierta()) { Ficha.cerrar(); return; }
+    if (e.key === 'Escape' && estado.pantalla === 'seguimiento' && Notas.activo() && Notas.escape()) return;
     if (e.key === 'Escape' && estado.exportar && !estado.exportar.descargando) { estado.exportar = null; render(); }
   });
 

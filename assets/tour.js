@@ -22,7 +22,8 @@ const Tour = (function () {
   // v6 (30/10/2026): las secciones Seguimiento y Escuelas, con su recorrido
   // v7 (30/10/2026): el reporte para la escuela, en Seguimiento
   // v8 (29/10/2026): mandarle el avance al director por WhatsApp o correo
-  const VERSION = 'v8';
+  // v9 (06/11/2026): las notas a las escuelas y la base de directivos, en Seguimiento
+  const VERSION = 'v9';
 
   let capa = null;
   let pasos = [];
@@ -140,10 +141,44 @@ const Tour = (function () {
         texto: 'Baja lo que estás mirando: con «Solo las que no cargaron», la lista de escuelas con su contacto. Trae nombres y celulares: es de uso interno, no para repartir. Para mandarle el avance a una escuela, elegila arriba: aparece «Mandarle el avance al director».',
       },
       {
+        objetivo: '[data-accion="seg-notas"]',
+        titulo: 'Notas a las escuelas',
+        texto: 'Una nota de la Dirección, escrita una vez, sale con el encabezado de cada escuela y su director, y se manda por WhatsApp o correo desde acá. Ahí también se actualizan los contactos con la base de directivos.',
+      },
+      {
         objetivo: '[data-solo="agregadas"]',
         opcional: true,
         titulo: 'Las escuelas escritas a mano',
         texto: 'Algunos docentes escribieron su escuela aunque estaba en la nómina, o la escribieron de dos formas distintas. Acá se elige cuál es y se unifican: sus cargas pasan a esa escuela. Se puede deshacer.',
+      },
+    ],
+
+    notas: [
+      {
+        titulo: 'Notas a las escuelas',
+        texto: 'Una nota se escribe una vez y sale una hoja por destinatario, con su escuela, su director y, si es para un coordinador, sus anexos. Lo que ya se mandó queda marcado para todo el equipo: dos personas pueden repartirse el envío.',
+      },
+      {
+        objetivo: '[data-accion="nt-nueva"]',
+        opcional: true,
+        titulo: 'Una nota nueva, o una de base',
+        texto: '«+ Nota nueva» empieza de cero. «Usar de base» copia el texto de una nota que ya mandaron, para cambiarle el número, la fecha y lo que haga falta.',
+      },
+      {
+        objetivo: '.t-notas__pasos',
+        opcional: true,
+        titulo: 'Tres pasos',
+        texto: 'Redactar (el texto, el número, la fecha, el formato), elegir a quién (por departamento, cargo o modalidad, o solo las escuelas que todavía no cargaron) y enviar. Se guarda solo mientras escribís.',
+      },
+      {
+        objetivo: '[data-modal="contactos"]',
+        titulo: 'Los contactos, al día',
+        texto: 'Subí la base de directivos (el Excel): antes de cargar nada, muestra qué cambia en cada escuela. Vale lo de la planilla, salvo donde alguien del equipo corrigió un contacto desde la ficha. Los coordinadores quedan como contacto de sus anexos.',
+      },
+      {
+        objetivo: '[data-modal="membrete"]',
+        titulo: 'Membrete y firma',
+        texto: 'Las leyendas del año, el remitente, la firma (con su imagen, si querés) y cómo se nombra a quien recibe. Valen para todas las notas.',
       },
     ],
 
@@ -452,7 +487,9 @@ const Tour = (function () {
   // Lo llama el panel cuando termina de dibujar: la primera vez arranca solo
   function quizas(modo) {
     if (capa || leido(modo)) return;
-    setTimeout(() => { if (!capa) iniciar(modo); }, 400);
+    // Se vuelve a mirar al cumplirse la espera: un dibujo anterior pudo dejar
+    // pendiente la apertura y el recorrido ya se cerró (si no, reaparecía)
+    setTimeout(() => { if (!capa && !leido(modo)) iniciar(modo); }, 400);
   }
 
   return { iniciar, quizas, leido, abierto: () => Boolean(capa) };

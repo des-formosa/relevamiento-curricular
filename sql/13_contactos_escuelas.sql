@@ -27,11 +27,12 @@ create table if not exists public.contactos_escuela (
   correo           text check (correo ~* '^[^@\s]+@[^@\s]+\.[^@\s]+$'),
   -- 'planilla_directivos' = vino de la carga inicial; 'correos_oficiales' = el
   -- correo de la escuela y el de su delegación zonal (datos/generar_correos.py);
-  -- 'panel' = lo escribió el equipo. Volver a cargar una planilla reemplaza
-  -- solo lo suyo.
+  -- 'panel' = lo escribió el equipo; 'base_directivos' = la base unificada de
+  -- directivos, cargada desde el panel (sql/18). Volver a cargar una planilla
+  -- reemplaza solo lo suyo.
   origen           text not null default 'panel'
                    constraint contactos_escuela_origen_check
-                   check (origen in ('planilla_directivos', 'panel', 'correos_oficiales')),
+                   check (origen in ('planilla_directivos', 'panel', 'correos_oficiales', 'base_directivos')),
   actualizado_por  uuid references auth.users (id) on delete set null,
   actualizado_en   timestamptz not null default now(),
   -- Un contacto sin nada no sirve
@@ -41,7 +42,7 @@ create table if not exists public.contactos_escuela (
 -- Si la tabla ya existía con los dos orígenes de antes
 alter table public.contactos_escuela drop constraint if exists contactos_escuela_origen_check;
 alter table public.contactos_escuela add constraint contactos_escuela_origen_check
-  check (origen in ('planilla_directivos', 'panel', 'correos_oficiales'));
+  check (origen in ('planilla_directivos', 'panel', 'correos_oficiales', 'base_directivos'));
 
 create index if not exists contactos_escuela_idx on public.contactos_escuela (escuela_id);
 
