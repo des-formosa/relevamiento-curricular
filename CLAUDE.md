@@ -930,7 +930,14 @@ hay ningún contacto.
    firma, se toman) y se guarda solo mientras se escribe. Si otra persona la cambió en el medio,
    no se pisa y lo dice.
 2. **A quién:** los destinatarios salen de los contactos del panel: el director de cada E.P.E.S.,
-   cada coordinador (una sola nota para todos sus anexos) y cada delegación. **Van agrupados
+   cada contacto propio de un anexo (el coordinador, o quien haya cargado el equipo desde la
+   ficha con el cargo que sea; una sola nota por persona para todos sus anexos, y la misma
+   persona es el mismo nombre en cualquier orden: «Ruiz Ramon» y «Ramón Ruiz»), **cada anexo
+   sin contacto propio** y cada delegación. El anexo sin contacto le llega al director de su
+   sede, como en la ficha, con el anexo en el encabezado («Sede: E.P.E.S. E.I.B. N° 5»). Hasta
+   el 06/11/2026 esos anexos no aparecían y el equipo no encontraba El Breal ni Pozo la Chiva
+   para mandarles la nota; tampoco contaba un contacto de anexo cargado a mano como
+   «Director». El filtro de cargo tiene «Anexos sin contacto propio». **Van agrupados
    por delegación zonal** (06/11/2026, pedido del equipo: así se reparten las notas), en orden
    alfabético, con la delegación misma primera y cada grupo con «Elegir las N» o «Sacarlas»;
    adentro, el orden de la nómina. La delegación de un anexo es la de su sede; sin delegación

@@ -370,12 +370,38 @@ const Notas = (function () {
           deps: [e.departamento_id],
         });
       } else {
-        // Un coordinador que lleva varios anexos recibe una sola nota
+        // Un anexo con contacto propio (coordinador, o quien haya cargado el
+        // equipo en la ficha, con el cargo que sea): una nota por persona, con
+        // todos sus anexos. La misma persona es el mismo celular, o el mismo
+        // nombre escrito en otro orden («Ruiz Ramon» y «Ramón Ruiz»).
         const sede = d.sedeDe(e.id);
-        for (const c of suyos.filter((x) => persona(x) && esCoordinador(x))) {
-          const k = `${sede ? sede.id : ''}|${normalizarTexto(c.nombre || '')}|${c.celular || ''}`;
+        const gente = suyos.filter(persona);
+        for (const c of gente) {
+          const k = `${sede ? sede.id : ''}|${claveNombre(sinAC(c.nombre)) || c.celular}`;
           if (!coords.has(k)) coords.set(k, { c, sede, anexos: [] });
-          coords.get(k).anexos.push(e);
+          const g = coords.get(k);
+          // Si uno de los dos tiene celular, vale ese
+          if (!g.c.celular && c.celular) g.c = c;
+          if (!g.anexos.includes(e)) g.anexos.push(e);
+        }
+        // Sin contacto propio también tiene que aparecer (si no, no había cómo
+        // encontrarlo para mandarle la nota): le llega al director de su sede,
+        // como en la ficha y en «Mandarle el avance»
+        if (!gente.length) {
+          const deSede = sede ? de(sede.id) : [];
+          const suGente = deSede.filter(persona);
+          const dir = suGente.find((c) => /direct/i.test(c.cargo || '') && c.celular)
+            || suGente.find((c) => /direct/i.test(c.cargo || '')) || suGente.find((c) => c.celular) || suGente[0] || null;
+          const oficial = deSede.find(esCorreoOficial);
+          const deleg = deSede.find(esDelegacion);
+          lista.push({
+            id: `anexo:${e.id}`, tipo: 'anexo', escuela: e, referencia: sede || e, anexos: [e], contacto: dir,
+            nombre: sinAC(dir && dir.nombre), celular: dir ? dir.celular || '' : '',
+            correo: (oficial && oficial.correo) || (dir && dir.correo) || '',
+            revista: '', aCargo: !!(dir && (dir.a_cargo || esAC(dir.nombre))),
+            delegacion: deleg ? deleg.nombre.replace(/^delegaci[oó]n zonal\s*/i, '') : '',
+            deps: [e.departamento_id],
+          });
         }
       }
     }
@@ -385,6 +411,7 @@ const Notas = (function () {
       const deleg = de(ref.id).find(esDelegacion);
       lista.push({
         id: `coord:${anexos.map((x) => x.id).join('+')}`, tipo: 'coordinador', escuela: anexos[0], referencia: ref, anexos, contacto: c,
+        esDirector: /direct/i.test(c.cargo || '') && !esCoordinador(c),
         nombre: sinAC(c.nombre), celular: c.celular || '', correo: c.correo || (oficial && oficial.correo) || '',
         revista: c.revista || '', aCargo: !!(c.a_cargo || esAC(c.nombre)),
         delegacion: deleg ? deleg.nombre.replace(/^delegaci[oó]n zonal\s*/i, '') : '',
@@ -404,7 +431,7 @@ const Notas = (function () {
     // en su grupo. Adentro, el orden de la nómina, con cada coordinador detrás
     // de su E.P.E.S. Sin delegación cargada, al final.
     const orden = new Map(d.nominaOrdenada().map((e, i) => [e.id, i]));
-    const pos = (r) => (r.tipo === 'delegacion' ? -1 : (orden.get(r.referencia.id) || 0) + (r.tipo === 'coordinador' ? 0.5 : 0));
+    const pos = (r) => (r.tipo === 'delegacion' ? -1 : r.tipo === 'director' ? orden.get(r.escuela.id) || 0 : orden.get(r.anexos[0].id) || 0);
     for (const r of lista) r.grupo = normalizarTexto(r.delegacion || '');
     lista.sort((a, b) => (!a.grupo - !b.grupo) || a.grupo.localeCompare(b.grupo, 'es') || pos(a) - pos(b) || a.nombre.localeCompare(b.nombre));
     cacheDest = lista;
@@ -413,7 +440,8 @@ const Notas = (function () {
   const porId = (id) => destinatarios().find((r) => r.id === id) || null;
   const nombreDestino = (r) => (r.tipo === 'delegacion' ? r.nombre
     : r.tipo === 'coordinador' ? `Anexos de ${r.referencia.nombre}` : r.escuela.nombre);
-  const cargoDe = (r) => (r.tipo === 'coordinador' ? 'Coordinador/a' : r.tipo === 'delegacion' ? 'Delegado/a Zonal' : 'Director/a');
+  const cargoDe = (r) => (r.tipo === 'coordinador' ? (r.esDirector ? 'Director/a de anexo' : 'Coordinador/a')
+    : r.tipo === 'delegacion' ? 'Delegado/a Zonal' : r.tipo === 'anexo' ? 'Director/a de la sede' : 'Director/a');
   const nombreGrupo = (r) => (r.delegacion ? `Delegación zonal ${r.delegacion}` : 'Sin delegación cargada');
   // Las delegaciones que hay, para el filtro: [clave, nombre]
   const delegaciones = () => {
@@ -435,7 +463,7 @@ const Notas = (function () {
   function faltaCargar(r) {
     const sin = (e) => { const x = d.escuelaSeg(e.id); return !!(x && !x.escuela.docentes); };
     if (r.tipo === 'director') return sin(r.escuela);
-    if (r.tipo === 'coordinador') return r.anexos.some(sin);
+    if (r.tipo === 'coordinador' || r.tipo === 'anexo') return r.anexos.some(sin);
     return false;
   }
 
@@ -460,8 +488,8 @@ const Notas = (function () {
     const ref = r.referencia;
     const dep = ref ? Catalogo.departamento(ref.departamento_id) : null;
     return {
-      ESCUELA: r.tipo === 'delegacion' ? r.nombre : ref.nombre,
-      ESCUELA_COMPLETA: r.tipo === 'delegacion' ? r.nombre : conDenominacion(ref),
+      ESCUELA: r.tipo === 'delegacion' ? r.nombre : r.tipo === 'anexo' || r.esDirector ? r.anexos.map((x) => x.nombre).join(', ') : ref.nombre,
+      ESCUELA_COMPLETA: r.tipo === 'delegacion' ? r.nombre : r.tipo === 'anexo' || r.esDirector ? r.anexos.map((x) => x.nombre).join(', ') : conDenominacion(ref),
       DIRECTOR: r.nombre ? titulo(r.nombre) : cargoDe(r),
       CARGO: cargoDe(r),
       ANEXOS: r.anexos.map((x) => x.localidad || x.nombre).join(', '),
@@ -490,7 +518,9 @@ const Notas = (function () {
     const anexos = campos(r).ANEXOS;
     const dest = r.tipo === 'delegacion'
       ? [`Al/a la ${m.tratD}`, r.nombre]
-      : [`Al/a la ${r.tipo === 'coordinador' ? m.tratC + (anexos ? `: ${anexos}` : '') : m.trat + ac}`,
+      : r.tipo === 'anexo' || r.esDirector
+        ? [`Al/a la ${m.trat + ac}`, r.anexos.map((x) => x.nombre).join(', '), `Sede: ${conDenominacion(r.referencia)}`, r.nombre ? `${m.prof} ${titulo(r.nombre)}` : '']
+      : [`Al/a la ${r.tipo === 'coordinador' && !r.esDirector ? m.tratC + (anexos ? `: ${anexos}` : '') : m.trat + ac}`,
         (r.tipo === 'coordinador' ? 'Escuela de referencia: ' : '') + conDenominacion(r.referencia),
         r.nombre ? `${m.prof} ${titulo(r.nombre)}` : ''];
     const lineas = dest.filter((l) => String(l || '').trim()).map((l) => `<b>${esc(l)}</b>`);
@@ -519,7 +549,10 @@ const Notas = (function () {
     const ref = r.referencia;
     const lineas = r.tipo === 'delegacion'
       ? [m.tratD, r.nombre]
-      : [r.tipo === 'coordinador' ? m.tratC + (anexos ? `: ${anexos}` : '') : m.trat + ac,
+      : r.tipo === 'anexo' || r.esDirector
+        ? [m.trat + ac, r.anexos.map((x) => x.nombre).join(', '), `Sede: ${conDenominacion(ref)}`, r.nombre ? `${m.prof} ${titulo(r.nombre)}` : '',
+          (r.escuela.localidad || '') + (r.delegacion ? ` – Delegación Zonal ${r.delegacion}` : '')]
+      : [r.tipo === 'coordinador' && !r.esDirector ? m.tratC + (anexos ? `: ${anexos}` : '') : m.trat + ac,
         (r.tipo === 'coordinador' ? 'Escuela de referencia: ' : '') + conDenominacion(ref),
         r.nombre ? `${m.prof} ${titulo(r.nombre)}` : '',
         (ref.localidad || '') + (r.delegacion ? ` – Delegación Zonal ${r.delegacion}` : '')];
@@ -542,7 +575,7 @@ const Notas = (function () {
   // El Anexo 2 de la nota INVOLUCRADOS, con los datos de la escuela completos
   function anexoPlanilla(r) {
     const fila = (k, v) => `<tr><th>${k}</th><td>${esc(v || '')}</td></tr>`;
-    const ref = r.referencia;
+    const ref = (r.tipo === 'anexo' || r.tipo === 'coordinador') && r.anexos.length === 1 ? r.anexos[0] : r.referencia;
     const dep = ref ? Catalogo.departamento(ref.departamento_id) : null;
     const escuela = r.tipo === 'delegacion' ? '' : `${conDenominacion(ref)}${ref.cue ? ` – CUE: ${ref.cue}` : ' – CUE:'}`;
     const lugar = ref ? [ref.localidad, dep && `departamento ${dep.nombre}`].filter(Boolean).join(' – ') : '';
@@ -552,7 +585,7 @@ const Notas = (function () {
       <p class="t-nota__gris">Una por institución. El referente ESI completa una línea por cada ficha de implementación recibida y eleva la planilla en cada corte.</p>
       <h3>Encabezado</h3>
       <table class="t-nota__enc">${fila('Escuela y CUE', escuela)}${fila('Localidad y departamento', lugar)}
-        ${fila('Referente ESI y contacto', '')}${fila('Director/a', r.tipo === 'director' ? titulo(r.nombre) : '')}${fila('Corte al que corresponde', '1° corte')}</table>
+        ${fila('Referente ESI y contacto', '')}${fila('Director/a', r.tipo === 'director' || r.tipo === 'anexo' || r.esDirector ? titulo(r.nombre) : '')}${fila('Corte al que corresponde', '1° corte')}</table>
       <h3>Registro de implementaciones</h3>
       <table class="t-nota__reg"><tr><th>Fecha</th><th>Docente</th><th>Espacio curricular</th><th>Curso y año</th><th>Actividad</th><th>Fichas recibidas</th><th>¿Adjunta evidencia?</th><th>¿Ficha visada?</th></tr>
         ${'<tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>'.repeat(9)}</table>
@@ -1096,6 +1129,8 @@ const Notas = (function () {
       const ref = r.referencia;
       const escuela = r.tipo === 'delegacion'
         ? `<strong>${esc(r.nombre)}</strong><span>${numero(r.escuelas.length)} ${plural(r.escuelas.length, 'escuela', 'escuelas')}</span>`
+        : r.tipo === 'anexo'
+          ? `<button type="button" class="t-seg-enlace" data-ficha="${esc(r.escuela.id)}" data-accion="abrir-ficha" data-id="${esc(r.escuela.id)}">${esc(r.escuela.nombre)}</button><span>Anexo de ${esc(ref.nombre)} · sin contacto propio: le llega al director de la sede</span>`
         : r.tipo === 'coordinador'
           ? `<button type="button" class="t-seg-enlace" data-ficha="${esc(r.escuela.id)}" data-accion="abrir-ficha" data-id="${esc(r.escuela.id)}">${esc(r.anexos.map((x) => x.localidad || x.nombre).join(', '))}</button><span>Anexos de ${esc(ref.nombre)}</span>`
           : `<button type="button" class="t-seg-enlace" data-ficha="${esc(ref.id)}" data-accion="abrir-ficha" data-id="${esc(ref.id)}">${esc(ref.nombre)}</button><span>${esc([ref.localidad, (Catalogo.departamento(ref.departamento_id) || {}).nombre].filter(Boolean).join(' · '))}</span>`;
@@ -1119,7 +1154,7 @@ const Notas = (function () {
         <div class="t-selector"><label class="t-selector__etiqueta" for="nt-f-dep">Departamento</label>
           <select class="t-select" id="nt-f-dep" data-cambio="nt-filtro" data-filtro="dep">${opcion('', 'Todos', f.dep)}${Catalogo.departamentos().map((x) => opcion(x.id, x.nombre, f.dep)).join('')}</select></div>
         <div class="t-selector"><label class="t-selector__etiqueta" for="nt-f-cargo">Cargo</label>
-          <select class="t-select" id="nt-f-cargo" data-cambio="nt-filtro" data-filtro="cargo">${opcion('', 'Todos', f.cargo)}${opcion('director', 'Directores/as', f.cargo)}${opcion('coordinador', 'Coordinadores/as de anexos', f.cargo)}${opcion('delegacion', 'Delegaciones zonales', f.cargo)}</select></div>
+          <select class="t-select" id="nt-f-cargo" data-cambio="nt-filtro" data-filtro="cargo">${opcion('', 'Todos', f.cargo)}${opcion('director', 'Directores/as', f.cargo)}${opcion('coordinador', 'Coordinadores/as de anexos', f.cargo)}${opcion('anexo', 'Anexos sin contacto propio', f.cargo)}${opcion('delegacion', 'Delegaciones zonales', f.cargo)}</select></div>
         <div class="t-selector"><label class="t-selector__etiqueta" for="nt-f-mod">Modalidad</label>
           <select class="t-select" id="nt-f-mod" data-cambio="nt-filtro" data-filtro="mod">${opcion('', 'Todas', f.mod)}${opcion('comun', 'E.P.E.S. común', f.mod)}${opcion('eib', 'E.I.B.', f.mod)}${opcion('agraria', 'Agraria', f.mod)}</select></div>
         <div class="t-selector t-notas__buscar"><label class="t-selector__etiqueta" for="nt-f-texto">Buscar</label>
@@ -1128,7 +1163,7 @@ const Notas = (function () {
       <label class="t-notas__casilla"><input type="checkbox" data-cambio="nt-filtro" data-filtro="faltan" ${f.faltan ? 'checked' : ''}> Solo las escuelas que todavía no cargaron en ReSaP</label>
       <div class="t-notas__seleccion">
         <strong>${numero(n.destinatarios.size)} ${plural(n.destinatarios.size, 'elegido', 'elegidos')}</strong>
-        <span>${numero(cuenta('director'))} ${plural(cuenta('director'), 'director', 'directores')} · ${numero(cuenta('coordinador'))} ${plural(cuenta('coordinador'), 'coordinador', 'coordinadores')} · ${numero(cuenta('delegacion'))} ${plural(cuenta('delegacion'), 'delegación', 'delegaciones')}</span>
+        <span>${numero(cuenta('director'))} ${plural(cuenta('director'), 'director', 'directores')} · ${numero(cuenta('coordinador'))} ${plural(cuenta('coordinador'), 'coordinador', 'coordinadores')} · ${numero(cuenta('anexo'))} ${plural(cuenta('anexo'), 'anexo sin contacto', 'anexos sin contacto')} · ${numero(cuenta('delegacion'))} ${plural(cuenta('delegacion'), 'delegación', 'delegaciones')}</span>
         <span class="espaciador"></span>
         <button type="button" class="t-ficha__enlace" data-accion="nt-marcar" data-valor="1" ${vis.length ? '' : 'disabled'}>Elegir las ${numero(vis.length)} que se ven</button>
         <button type="button" class="t-ficha__enlace" data-accion="nt-marcar" data-valor="0" ${vis.length ? '' : 'disabled'}>Sacar las que se ven</button>
@@ -1165,7 +1200,7 @@ const Notas = (function () {
     const fila = (r) => {
       const e = enviada(r.id);
       return `<tr class="${e ? 't-notas__hecha' : ''}">
-        <th scope="row" class="t-notas__escuela">${esc(nombreDestino(r))}<span>${esc(r.tipo === 'coordinador' ? r.anexos.map((x) => x.localidad || x.nombre).join(', ') : r.referencia ? r.referencia.localidad : '')}</span></th>
+        <th scope="row" class="t-notas__escuela">${esc(nombreDestino(r))}<span>${esc(r.tipo === 'coordinador' ? r.anexos.map((x) => x.localidad || x.nombre).join(', ') : r.tipo === 'anexo' ? `Anexo de ${r.referencia.nombre}` : r.referencia ? r.referencia.localidad : '')}</span></th>
         <td class="t-notas__quien">${r.nombre && r.tipo !== 'delegacion' ? esc(titulo(r.nombre)) : esc(cargoDe(r))}<span>${r.celular ? esc(d.celularLegible(r.celular)) : 'sin celular'}${r.correo ? ` · ${esc(r.correo)}` : ''}</span></td>
         <td class="t-notas__acciones">${botonesMandar(r, true)}</td>
         <td class="t-notas__estado"><label><input type="checkbox" data-cambio="nt-hecha" data-id="${esc(r.id)}" ${e ? 'checked' : ''}>
