@@ -6,8 +6,12 @@
    dice qué mira: cómo leer los resultados, y con el mismo formato cómo editar
    el catálogo, cómo seguir la carga y cómo editar la nómina de escuelas.
 
-   Aparece solo la primera vez (queda anotado en el navegador) y se puede
-   volver a ver desde «¿Cómo se usa?» en la cabecera. Siempre se puede saltear.
+   El recorrido entero aparece solo la primera vez que se entra a cada
+   pantalla (queda anotado en el navegador) y se puede volver a ver desde
+   «¿Cómo se usa?» en la cabecera. Siempre se puede saltear. Cuando algo
+   cambia, no vuelve entero: aparece un aviso chico arriba a la derecha,
+   «Novedades en esta pantalla», y «Ver qué cambió» muestra solo los pasos
+   nuevos (pedido del equipo, 06/11/2026: «que se muestre una sola vez»).
 
    Vive fuera de #app: el panel se redibuja entero en cada acción y se lo
    llevaría puesto.
@@ -17,13 +21,16 @@ const Tour = (function () {
   'use strict';
 
   const CLAVE = 'relevamiento.tour.';
-  // Subir la versión hace que el recorrido vuelva a aparecer solo una vez a
-  // todos: se usa cuando cambia algo que el equipo ya había visto explicado.
+  // Cuando cambia algo que el equipo ya había visto explicado, se sube la
+  // versión y se marca el paso con nuevo: 'vN'. Quien ya había visto la
+  // pantalla recibe el aviso de novedades con esos pasos, no el recorrido
+  // entero. Subir la versión sin pasos nuevos en una pantalla no avisa nada.
   // v6 (30/10/2026): las secciones Seguimiento y Escuelas, con su recorrido
   // v7 (30/10/2026): el reporte para la escuela, en Seguimiento
   // v8 (29/10/2026): mandarle el avance al director por WhatsApp o correo
   // v9 (06/11/2026): las notas a las escuelas y la base de directivos, en Seguimiento
-  const VERSION = 'v9';
+  // v10 (06/11/2026): las notas por delegación y mandarle a una sola; el aviso de novedades
+  const VERSION = 'v10';
 
   let capa = null;
   let pasos = [];
@@ -35,6 +42,7 @@ const Tour = (function () {
 
   // objetivo: selector de lo que se ilumina. Sin objetivo, la tarjeta va centrada.
   // opcional: si el elemento no está en pantalla, el paso se saltea.
+  // nuevo: la versión en que se sumó el paso (para el aviso de novedades).
   const RECORRIDOS = {
     resultados: [
       {
@@ -126,12 +134,14 @@ const Tour = (function () {
       {
         objetivo: '.t-selectores [data-accion="seg-reporte"]',
         opcional: true,
+        nuevo: 'v7',
         titulo: 'Los reportes de las escuelas',
         texto: 'Un PDF con una hoja por escuela del departamento, para mandarle a cada director: cuántos docentes cargaron cada materia en cada año, cómo van sus anexos y el link para cargar. Sin nombres de docentes.',
       },
       {
         objetivo: '[data-accion="seg-mandar"]',
         opcional: true,
+        nuevo: 'v8',
         titulo: 'Mandarle el avance al director',
         texto: '«Por WhatsApp» abre el chat del director con un mensaje corto ya escrito y deja copiada una imagen del avance: en el chat, pegala con Ctrl+V y mandá. «Por correo» hace lo mismo con su correo oficial. En el celular, abre la aplicación directo en su chat: la imagen se pega manteniendo apretado donde se escribe.',
       },
@@ -142,6 +152,7 @@ const Tour = (function () {
       },
       {
         objetivo: '[data-accion="seg-notas"]',
+        nuevo: 'v9',
         titulo: 'Notas a las escuelas',
         texto: 'Una nota de la Dirección, escrita una vez, sale con el encabezado de cada escuela y su director, y se manda por WhatsApp o correo desde acá. Ahí también se actualizan los contactos con la base de directivos.',
       },
@@ -168,7 +179,14 @@ const Tour = (function () {
         objetivo: '.t-notas__pasos',
         opcional: true,
         titulo: 'Tres pasos',
-        texto: 'Redactar (el texto, el número, la fecha, el formato), elegir a quién (por departamento, cargo o modalidad, o solo las escuelas que todavía no cargaron) y enviar. Se guarda solo mientras escribís.',
+        texto: 'Redactar (el texto, el número, la fecha, el formato), elegir a quién (por delegación, departamento, cargo o modalidad, o solo las escuelas que todavía no cargaron) y enviar. Se guarda solo mientras escribís.',
+      },
+      {
+        objetivo: '.t-notas__mandar',
+        opcional: true,
+        nuevo: 'v10',
+        titulo: 'Por delegación, y a una sola escuela',
+        texto: 'En «A quién» las escuelas van agrupadas por delegación zonal, con «Elegir las N» para tomar una delegación entera. Y cada escuela tiene sus botones: WhatsApp o Correo le manda la nota ya, sin pasar por «Enviar», y queda marcada como enviada.',
       },
       {
         objetivo: '[data-modal="contactos"]',
@@ -303,12 +321,27 @@ const Tour = (function () {
       .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
 
-  function leido(modo) {
-    try { return localStorage.getItem(CLAVE + modo + '.' + VERSION) === 'si'; } catch (e) { return true; }
+  const numero = (v) => Number(String(v || '').replace(/\D/g, '')) || 0;
+  // La última versión de esta pantalla que se vio: 0 si nunca. Antes se
+  // anotaba una clave por versión («relevamiento.tour.notas.v9» = 'si'):
+  // también cuentan, así nadie vuelve a ver el recorrido entero
+  function vista(modo) {
+    try {
+      const v = localStorage.getItem(`${CLAVE}${modo}.visto`);
+      if (v) return numero(v);
+      let max = 0;
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i) || '';
+        if (k.startsWith(`${CLAVE}${modo}.v`) && localStorage.getItem(k) === 'si') max = Math.max(max, numero(k.slice(CLAVE.length + modo.length + 1)));
+      }
+      return max;
+    } catch (e) { return numero(VERSION); }
   }
+  const leido = (modo) => vista(modo) >= numero(VERSION);
   function marcarLeido(modo) {
-    try { localStorage.setItem(CLAVE + modo + '.' + VERSION, 'si'); } catch (e) { /* modo privado */ }
+    try { localStorage.setItem(`${CLAVE}${modo}.visto`, VERSION); } catch (e) { /* modo privado */ }
   }
+  const nuevosDe = (modo, desde) => (RECORRIDOS[modo] || []).filter((p) => p.nuevo && numero(p.nuevo) > desde);
 
   const esAngosto = () => window.matchMedia('(max-width: 899px)').matches;
 
@@ -473,8 +506,12 @@ const Tour = (function () {
   function iniciar(modo, opciones) {
     const recorrido = RECORRIDOS[modo];
     if (!recorrido) return;
-    // Los pasos opcionales solo entran si su elemento está en pantalla
-    pasos = recorrido.filter((p) => !p.opcional || objetivoDe(p));
+    quitarAviso();
+    const solo = (opciones || {}).pasos;
+    // Los pasos opcionales solo entran si su elemento está en pantalla. Las
+    // novedades entran todas: si su elemento no está, la tarjeta va centrada
+    pasos = solo ? solo.map((p) => (objetivoDe(p) ? p : { ...p, objetivo: null }))
+      : recorrido.filter((p) => !p.opcional || objetivoDe(p));
     if (!pasos.length) return;
     indice = 0;
     modoActual = modo;
@@ -484,13 +521,61 @@ const Tour = (function () {
     pintar();
   }
 
-  // Lo llama el panel cuando termina de dibujar: la primera vez arranca solo
-  function quizas(modo) {
-    if (capa || leido(modo)) return;
-    // Se vuelve a mirar al cumplirse la espera: un dibujo anterior pudo dejar
-    // pendiente la apertura y el recorrido ya se cerró (si no, reaparecía)
-    setTimeout(() => { if (!capa && !leido(modo)) iniciar(modo); }, 400);
+  /* ---------- El aviso de novedades ---------- */
+
+  // Arriba a la derecha, debajo de la cabecera, sin velo ni foco: se puede
+  // seguir trabajando. Se va al verlo o con la cruz, y no vuelve.
+  let aviso = null;
+  let avisoModo = null;
+  function quitarAviso() {
+    if (aviso) aviso.remove();
+    aviso = null;
+    avisoModo = null;
+  }
+  function mostrarAviso(modo, nuevos) {
+    if (avisoModo === modo) return;
+    quitarAviso();
+    avisoModo = modo;
+    aviso = document.createElement('div');
+    aviso.className = 'tour-aviso';
+    aviso.setAttribute('role', 'status');
+    aviso.innerHTML = `<div class="tour-aviso__texto">
+        <span class="tour-aviso__titulo">Novedades en esta pantalla</span>
+        <span>${nuevos.length === 1 ? esc(nuevos[0].titulo) : `${nuevos.length} cosas nuevas: ${esc(nuevos.map((p) => p.titulo).join(' · '))}`}</span>
+        <button type="button" class="tour-aviso__ver" data-aviso="ver">Ver qué cambió</button>
+      </div>
+      <button type="button" class="tour-aviso__cerrar" data-aviso="cerrar" aria-label="Cerrar el aviso de novedades" title="No mostrar más">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>`;
+    aviso.addEventListener('click', (e) => {
+      const b = e.target.closest('[data-aviso]');
+      if (!b) return;
+      if (b.dataset.aviso === 'ver') iniciar(modo, { pasos: nuevos });
+      else { marcarLeido(modo); quitarAviso(); }
+    });
+    document.body.appendChild(aviso);
   }
 
-  return { iniciar, quizas, leido, abierto: () => Boolean(capa) };
+  // Lo llama el panel cuando termina de dibujar. La primera vez que se entra
+  // a una pantalla arranca el recorrido entero; si ya se había visto y hay
+  // pasos nuevos, el aviso; si no hay nada nuevo, nada.
+  function quizas(modo) {
+    if (avisoModo && avisoModo !== modo) quitarAviso();
+    if (capa || leido(modo)) return;
+    const visto = vista(modo);
+    if (visto) {
+      const nuevos = nuevosDe(modo, visto);
+      if (nuevos.length) mostrarAviso(modo, nuevos);
+      else marcarLeido(modo);
+      return;
+    }
+    // Se vuelve a mirar al cumplirse la espera: un dibujo anterior pudo dejar
+    // pendiente la apertura y el recorrido ya se cerró (si no, reaparecía)
+    setTimeout(() => { if (!capa && !vista(modo)) iniciar(modo); }, 400);
+  }
+
+  // Otra pantalla sin recorrido (el inicio): el aviso no queda colgado
+  const salir = () => quitarAviso();
+
+  return { iniciar, quizas, leido, salir, abierto: () => Boolean(capa) };
 })();
