@@ -930,7 +930,14 @@ hay ningún contacto.
    firma, se toman) y se guarda solo mientras se escribe. Si otra persona la cambió en el medio,
    no se pisa y lo dice.
 2. **A quién:** los destinatarios salen de los contactos del panel: el director de cada E.P.E.S.,
-   cada coordinador (una sola nota para todos sus anexos) y cada delegación. **Van agrupados
+   cada contacto propio de un anexo (el coordinador, o quien haya cargado el equipo desde la
+   ficha con el cargo que sea; una sola nota por persona para todos sus anexos, y la misma
+   persona es el mismo nombre en cualquier orden: «Ruiz Ramon» y «Ramón Ruiz»), **cada anexo
+   sin contacto propio** y cada delegación. El anexo sin contacto le llega al director de su
+   sede, como en la ficha, con el anexo en el encabezado («Sede: E.P.E.S. E.I.B. N° 5»). Hasta
+   el 06/11/2026 esos anexos no aparecían y el equipo no encontraba El Breal ni Pozo la Chiva
+   para mandarles la nota; tampoco contaba un contacto de anexo cargado a mano como
+   «Director». El filtro de cargo tiene «Anexos sin contacto propio». **Van agrupados
    por delegación zonal** (06/11/2026, pedido del equipo: así se reparten las notas), en orden
    alfabético, con la delegación misma primera y cada grupo con «Elegir las N» o «Sacarlas»;
    adentro, el orden de la nómina. La delegación de un anexo es la de su sede; sin delegación
@@ -1155,10 +1162,17 @@ nadie lee, el panel se explica solo: ilumina una parte de la pantalla y dice qu�
 Un recorrido que se cierra no vuelve a abrirse solo: la apertura se demora un instante y, si en
 ese instante se cerró, ya no abre (pasaba con pantallas que se dibujan varias veces al cargar).
 
-Arranca solo la primera vez que se entra a cada pantalla (queda anotado en `localStorage`,
-claves `relevamiento.tour.<modo>.<versión>`) y se vuelve a ver desde «¿Cómo se usa?» en la
-cabecera. Cuando cambia algo que el equipo ya había visto explicado, se sube `VERSION` en
-`tour.js` y el recorrido le vuelve a aparecer solo una vez a todos. Los
+Arranca solo **una vez**: la primera vez que se entra a cada pantalla (queda anotado en
+`localStorage`, clave `relevamiento.tour.<modo>.visto` con la última versión vista; las claves
+viejas `relevamiento.tour.<modo>.vN` también cuentan), y se vuelve a ver desde «¿Cómo se usa?»
+en la cabecera. Hasta el 06/11/2026, subir `VERSION` hacía que el recorrido entero le volviera a
+aparecer a todos, y el equipo pidió que se mostrara una sola vez. Ahora, cuando cambia algo, se
+sube `VERSION` y se marca el paso nuevo con `nuevo: 'vN'`: a quien ya había visto la pantalla le
+aparece un **aviso chico arriba a la derecha** (en el teléfono, abajo), «Novedades en esta
+pantalla», sin velo ni foco, con «Ver qué cambió» (solo los pasos nuevos; si su elemento no
+está en pantalla, la tarjeta va centrada) y una cruz que lo descarta para siempre. Una pantalla
+sin pasos nuevos no avisa nada. Versión `v10`: el paso de las notas por delegación y mandarle a
+una sola escuela. Los
 pasos marcados `opcional` se saltean si su elemento no está en pantalla, así el recorrido no
 señala un vacío cuando todavía no hay datos. Vive fuera de `#app` porque el panel se redibuja
 entero en cada acción.

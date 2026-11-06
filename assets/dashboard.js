@@ -3376,7 +3376,9 @@
     animarLoNuevo(habiaPanel);
     const notaAbierta = estado.pantalla === 'seguimiento' && Notas.activo() && (Notas.estado.modal || Notas.estado.previa !== null);
     document.body.style.overflow = estado.exportar || notaAbierta ? 'hidden' : '';
-    // La primera vez que se entra a cada pantalla, el recorrido arranca solo
+    if (!['panel', 'seguimiento', 'escuelas'].includes(estado.pantalla)) Tour.salir();
+    // La primera vez que se entra a cada pantalla, el recorrido arranca solo;
+    // después, si hay algo nuevo, el aviso de novedades (tour.js)
     if (estado.pantalla === 'panel' && !estado.cargandoDatos && !Editor.estado.cargando) {
       Tour.quizas(estado.modo === 'catalogo' ? 'catalogo' : 'resultados');
     }
