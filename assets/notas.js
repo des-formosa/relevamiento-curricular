@@ -611,7 +611,10 @@ const Notas = (function () {
     try {
       await Promise.all([...caja.querySelectorAll('img')].map((i) => (i.complete ? null : new Promise((ok) => { i.onload = ok; i.onerror = ok; }))));
       return await window.html2pdf().set({
-        margin: 0, image: { type: 'jpeg', quality: 0.95 }, html2canvas: { scale: 2, useCORS: true },
+        // scrollX/scrollY en 0: sin esto, html2canvas corre la hoja tanto como
+        // se bajó en el panel, y con la lista larga la nota salía en blanco o
+        // con el encabezado al pie de la segunda hoja (lo vio el equipo el 06/11)
+        margin: 0, image: { type: 'jpeg', quality: 0.95 }, html2canvas: { scale: 2, useCORS: true, scrollX: 0, scrollY: 0 },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }, pagebreak: { mode: ['css', 'legacy'] },
       }).from(caja.firstElementChild).outputPdf('blob');
     } finally {
