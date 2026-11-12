@@ -30,7 +30,8 @@ const Tour = (function () {
   // v8 (29/10/2026): mandarle el avance al director por WhatsApp o correo
   // v9 (06/11/2026): las notas a las escuelas y la base de directivos, en Seguimiento
   // v10 (06/11/2026): las notas por delegación y mandarle a una sola; el aviso de novedades
-  const VERSION = 'v10';
+  // v11 (12/11/2026): la sección Diseño, para cerrar el diseño curricular unificado
+  const VERSION = 'v11';
 
   let capa = null;
   let pasos = [];
@@ -96,6 +97,45 @@ const Tour = (function () {
         objetivo: '.t-nav',
         titulo: 'Las otras secciones',
         texto: '«Seguimiento» muestra qué escuelas ya cargaron y a cuáles hay que llamar, con el contacto de cada una. «Escuelas» es la nómina que ven los docentes al elegir su escuela, y ahí se corrige. Cada sección tiene su «¿Cómo se usa?».',
+      },
+      {
+        objetivo: '[data-accion="ir-diseno"]',
+        nuevo: 'v11',
+        titulo: 'Nuevo: cerrar el diseño curricular',
+        texto: 'En «Diseño», el panel arma el diseño curricular unificado con lo que cargaron los docentes. El equipo lo revisa año por año, lo cierra y descarga el documento para entregar, con carátula y marco argumentativo.',
+      },
+    ],
+
+    diseno: [
+      {
+        titulo: 'Cerrar el diseño curricular unificado',
+        texto: 'Con lo que cargaron los docentes, el panel arma una propuesta de diseño para cada año de cada materia. El equipo la revisa, la corrige y la cierra. Al final, se descarga el documento para entregar.',
+      },
+      {
+        objetivo: '.t-contexto__texto',
+        titulo: 'Cuánto falta',
+        texto: 'Cuántos años de materia ya están cerrados. Mientras falte alguno, el documento sale como borrador.',
+      },
+      {
+        objetivo: '.ds-tabla',
+        titulo: 'Un casillero por año',
+        texto: '«Sin revisar» es la propuesta tal como sale de las cargas. «En revisión», alguien del equipo ya la cambió. «Cerrado», quedó así para el documento. Tocá uno para abrirlo.',
+      },
+      {
+        objetivo: '.ds-celda',
+        opcional: true,
+        titulo: 'Adentro de cada año',
+        texto: 'Cada saber dice cuántos docentes lo trabajan. Los de poco acuerdo vienen marcados «para revisar»: decidís si quedan o salen. Los contenidos se tildan o destildan, se corrigen, se ordenan y se agregan. Todo se guarda solo, y lo ve el resto del equipo.',
+      },
+      {
+        objetivo: '[data-accion="ds-documento"]',
+        titulo: 'Carátula, marco y criterios',
+        texto: 'La carátula (título, autoridades, fecha), el marco argumentativo y con qué porcentajes se arma la propuesta. Valen para el documento entero.',
+      },
+      {
+        objetivo: '[data-accion="ds-descargar"]',
+        titulo: 'El documento',
+        texto: 'Arma el PDF completo: carátula, índice, marco argumentativo, cómo leerlo y las 16 materias. Se puede bajar en cualquier momento; dentro de cada materia, «Esta materia (PDF)» baja solo esa, para revisarla en papel.',
       },
     ],
 

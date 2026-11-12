@@ -45,6 +45,7 @@ sistema aguanta.
 | Escuelas y departamentos | Supabase Storage (`catalogo/escuelas.json`), con `datos/escuelas.json` del repo (generado del Excel oficial) como respaldo | el equipo, desde la sección «Escuelas» del panel: edita en la base y publica con un botón (desde el 30/10/2026) |
 | Aportes de los docentes | Supabase | el formulario, vía una función RPC |
 | Contactos de las escuelas, notas a las escuelas y lo enviado | Supabase | el equipo, desde Seguimiento (la ficha, «Notas a las escuelas») |
+| Diseño curricular unificado (lo que el equipo revisa y cierra, carátula, marco) | Supabase | el equipo, desde la sección «Diseño» del panel |
 | Usuarios del dashboard | Supabase Auth | administrador |
 
 **Sin build, sin framework, sin npm.** HTML + CSS + JavaScript vanilla. GitHub Pages sirve los
@@ -71,6 +72,7 @@ fijada, nunca por bundler.
 │   ├── editor.js           edición del catálogo desde el panel, con historial
 │   ├── archivo.js          exportar el catálogo a Excel/JSON e importarlo corregido
 │   ├── notas.js            notas a las escuelas y la base de directivos (dentro de Seguimiento)
+│   ├── diseno.js           el diseño curricular unificado: propuesta, edición, cierre y documento
 │   ├── tour.js             recorrido guiado del panel y del editor
 │   ├── tablero.css         estilos propios del panel (usa los tokens de estilos.css)
 │   ├── fuentes/            Kumbh Sans, Didact Gothic y Noto Serif Ahom en woff2, embebidas
@@ -106,6 +108,7 @@ fijada, nunca por bundler.
     ├── 16_editar_escuelas.sql  editar escuelas y departamentos desde el panel, y publicarlos
     ├── 17_textos_libres.sql  juntar lo escrito a mano que es lo mismo, y los «no lo trabajo»
     ├── 18_notas.sql        la base de directivos (cargar_directivos) y las notas a las escuelas
+    ├── 19_diseno_unificado.sql  el diseño unificado: propuesta desde las cargas, edición y cierre
     ├── privado/            lo que genera generar_contactos.py: datos personales, no se versiona
     ├── mantenimiento/      scripts de una sola vez, con fecha; no forman parte de la instalación
     └── generar_cargas.py   regenera 06, 07 y 08 cuando cambian los JSON
@@ -493,7 +496,8 @@ y el equipo la sintió cargada. Quedó: «Hola, Ana» chico, la marca ReSaP como
 (logo, nombre completo, filete tricolor y eslogan), una línea de cómo va la carga y los cuatro caminos: «Ver los
 resultados», «Seguir la carga» (sumado el 27/10/2026, con el seguimiento), «Editar el
 catálogo» y «Editar las escuelas» (sumado el 30/10/2026, con la sección Escuelas); desde
-760 px van de a dos, más angosto uno debajo del otro. De a cuatro en una fila no: cada tarjeta
+760 px van de a dos, más angosto uno debajo del otro. El quinto, «Cerrar el diseño
+curricular» (12/11/2026), ocupa la fila entera debajo de los otros cuatro. De a cuatro en una fila no: cada tarjeta
 quedaba de 250 px y el texto se partía en cuatro renglones. Desde el panel se vuelve con «Inicio». **Un link
 compartido** (con `materia=` o `seguimiento=` en el hash) no pasa por el inicio: va directo a
 lo que muestra. Salir borra el hash, así el que entra después arranca por el inicio.
@@ -502,12 +506,15 @@ lo que muestra. Salir borra el hash, así el que entra después arranca por el i
 parecidos y un botón «Editar catálogo» que cambiaba de texto según dónde estabas; el equipo se
 confundía. Quedó así:
 
-- **Cabecera: solo navegación.** «Inicio · Resultados · Catálogo · Seguimiento · Escuelas», con
+- **Cabecera: solo navegación.** «Inicio · Resultados · Catálogo · Seguimiento · Escuelas ·
+  Diseño» (la sexta, 12/11/2026), con
   el lugar actual subrayado como solapa, y después «¿Cómo se usa?» y «Salir». Todos enlaces sin
   recuadro (`.t-enlace-cab`), así entra en una fila desde 1280 px. Con la quinta solapa
   (30/10/2026) no entraba en «Resultados» a 1280: la fecha se ve recién desde 1800 px y entre
-  1101 y 1399 los enlaces se aprietan un poco. En el teléfono, desde 360 px van cuatro solapas
-  en un renglón, y «Escuelas» y «Salir» en el de abajo.
+  1101 y 1399 los enlaces se aprietan un poco. Con «Diseño», entre 1101 y 1365 se aprietan un
+  poco más (menos margen y letra de 14,5 px), y la cabecera sigue en una fila desde 1280. En el
+  teléfono, desde 360 px van cuatro solapas en un renglón, y «Escuelas», «Diseño», «¿Cómo se
+  usa?» y «Salir» en el de abajo.
 - **Resultados**, en la barra de selectores: **«Descargar resultados»** (el reporte de la
   materia). Si no entra al lado de los selectores, baja a una segunda línea.
 - **Catálogo**, en la barra del editor: «Historial», **«Descargar para revisar»** (la currícula
@@ -973,6 +980,81 @@ lado para dibujarla, así que lo que cambia su medida va en una clase de la hoja
 Sin `sql/18` corrido, la pantalla de notas lo dice y el resto del panel anda igual; los
 contactos se leen sin `revista` ni `a_cargo`.
 
+### Diseño curricular unificado (pantalla «Diseño», assets/diseno.js + sql/19)
+
+Lo pidió el equipo técnico el 12/11/2026, con la carga terminada: «que la página pueda cerrar
+el diseño curricular completo» y entregarlo, usando como insumo lo que cargaron los docentes
+(las coincidencias para jerarquizar y priorizar saberes y contenidos), en un documento con
+carátula y el **marco argumentativo** que mandaron en un Word
+(«Marco_argumentativo_diseno_unificado.docx»), y que el equipo pueda editarlo y cerrarlo.
+Decidido con el equipo: **solo el Ciclo Básico** (lo que tiene ReSaP), los saberes de poco
+acuerdo **se dejan marcados para revisar** (no se sacan solos) y la entrega es en **PDF**.
+
+Es la sexta solapa de la cabecera, «Diseño» (`#diseno=`, `#diseno=matematica&anio=1`,
+`#diseno=&documento=1`). **No toca el catálogo ni lo que ve el docente.**
+
+**La unidad es un año de una materia** (38: las 12 materias por año según `anios_dictados`,
+y las cuatro artísticas una sola vez, «Todo el ciclo», con `anio = 0`, porque el diseño no
+las diferencia por año; su propuesta suma las cargas de los tres años).
+
+**La propuesta.** `diseno_propuesta(materia, año)` cuenta lo cargado (solo envíos reales,
+saberes activos que el docente ve): por saber, cuántos lo informaron, cuántos lo trabajan y
+cuántos no; por contenido (agrupado por texto normalizado, como el panel), cuántos lo
+eligieron; y trae también las sugerencias del catálogo que nadie eligió. Con eso `armar()`, en
+el navegador:
+- un saber queda **en el diseño** si lo trabaja al menos el 50 % de los que lo informaron y lo
+  informaron al menos 5; si no, queda **«para revisar»** (con el motivo: poco acuerdo o pocos
+  docentes). Nunca sale solo;
+- un contenido entra si lo eligió al menos el 30 % de los que trabajan el saber; si ninguno
+  llega, el más elegido. Van **de más a menos elegidos**; los demás quedan en «Otros que
+  eligieron los docentes», para tildarlos;
+- el orden de los saberes es el del equipo (`saberes.orden`), no el del acuerdo: es el
+  ciclado de la materia.
+Los tres números son los **criterios**, que se cambian en «Carátula, marco y criterios».
+
+**Editar.** Mientras nadie toca un año, se ve la propuesta recalculada con las cargas de
+hoy y no se guarda nada. En el primer cambio queda guardado en `diseno_materias` como una foto
+(los números incluidos), y desde ahí se edita sobre la foto: cargas posteriores no la
+cambian, salvo «Volver a armar desde las cargas» (lo anterior queda en `diseno_versiones`).
+Se puede: decidir los «para revisar» («Queda en el diseño» / «Sacarlo del diseño»), sacar o
+volver a poner cualquier saber, corregir su texto, eje y trimestre (queda marcado «texto
+corregido» y se ve cómo estaba), moverlo con flechas, agregar saberes; tildar y destildar
+contenidos, corregirlos, ordenarlos y agregar los del equipo (marcados «agregado por el
+equipo»; los escritos a mano por docentes, «escrito por docentes»). Cada cambio se guarda solo
+(`guardar_diseno_materia`), y si otra persona guardó en el medio no se pisa: lo dice, con
+«Traer la última versión». La **presentación de la materia** (opcional, la misma para todos
+sus años) va en `diseno_presentaciones`.
+
+**Cerrar.** «Cerrar 1° año» (`cerrar_diseno_materia`) no deja si queda algún saber «para
+revisar» (pasa a esa solapa y lo dice) o si no queda ninguno en el diseño. Cerrado, no se
+cambia hasta «Reabrir». El resumen es una grilla materia × año con «Sin revisar», «En
+revisión» o «Cerrado», quién y cuándo, la línea «Cerrados 12 de 38… hasta cerrarlos todos, el
+documento sale como borrador» y «Seguir con…» el próximo que falta.
+
+**Carátula, marco y criterios** (`diseno_documento`, una fila; se guarda sola mientras se
+escribe): título, subtítulo, bajada, lugar y año, vigencia y autoridades (una por renglón; sin
+nombres inventados: arranca vacío), con los campos `{{DOCENTES}}`, `{{CARGAS}}` y
+`{{ESCUELAS}}`; el marco argumentativo, que arranca con el texto del Word del equipo, se edita
+ahí (título, párrafo, negrita, listas, cita) o se reemplaza subiendo otro Word (mammoth); al
+lado se ven los números de hoy del relevamiento, porque el texto trae los suyos escritos
+(«5.000 docentes, 11.428 cargas») y hay que compararlos antes de entregar. Dos opciones del
+documento: mostrar el acuerdo de cada saber (sí, por defecto) y el porcentaje de cada
+contenido (no).
+
+**El documento** («Descargar el diseño (PDF)», `imprimir()` como los demás reportes): la
+carátula en una hoja (logos del Ministerio y la DES, título, filete tricolor, bajada,
+autoridades, ReSaP, lugar y vigencia; «Borrador · faltan cerrar N de 38» mientras falte), el
+índice, el marco, «Cómo leer este diseño» (escrito con los criterios) y las 16 materias por
+área, cada una en hoja nueva y cada año también, con los saberes que quedaron numerados por
+año, por trimestre, con su eje, su acuerdo y sus contenidos. Los años que nadie revisó salen
+con la propuesta de hoy y marcados. Dentro de una materia, «Esta materia (PDF)» baja solo
+esa. Con los datos simulados, el diseño completo da unas 165 hojas.
+
+Todo se escribe por funciones `security definer` que verifican `es_equipo()`; las tablas las
+lee solo el equipo. Sin `sql/19` corrido, la pantalla dice que falta y el resto del panel anda
+igual. El recorrido guiado tiene seis pasos (`v11`), y Resultados suma uno nuevo que señala la
+solapa.
+
 ### Escuelas: editar la nómina (pantalla «Escuelas», sql/16)
 
 Lo pidió el equipo el 30/10/2026: «editar toda la info de escuelas, departamentos y anexos en
@@ -1142,8 +1224,8 @@ formulario solo entra por `registrar_aporte`.
 
 Son veinte personas que entran cada tanto, no todos los días. En vez de un instructivo que
 nadie lee, el panel se explica solo: ilumina una parte de la pantalla y dice qué mira, con
-«Saltar», «Anterior» y «Siguiente». Cinco recorridos, uno por pantalla (versión `v9` desde el
-06/11/2026, con las notas):
+«Saltar», «Anterior» y «Siguiente». Seis recorridos, uno por pantalla (versión `v9` desde el
+06/11/2026, con las notas; `v11` desde el 12/11/2026, con el diseño):
 
 - **Resultados**, diez pasos (el de «Datos de ejemplo» se sacó con el interruptor; el último,
   sumado el 30/10/2026, señala la cabecera y cuenta para qué son Seguimiento y Escuelas).
@@ -1158,6 +1240,8 @@ nadie lee, el panel se explica solo: ilumina una parte de la pantalla y dice qu�
   anexo, y publicar.
 - **Notas** (06/11/2026), cinco: qué es, nota nueva o de base, los tres pasos, actualizar los
   contactos con la base de directivos y el membrete. Seguimiento suma un paso que señala el botón.
+- **Diseño** (12/11/2026), seis: qué es, cuánto falta, la grilla, adentro de cada año, carátula
+  y criterios, y el documento.
 
 Un recorrido que se cierra no vuelve a abrirse solo: la apertura se demora un instante y, si en
 ese instante se cerró, ya no abre (pasaba con pantallas que se dibujan varias veces al cargar).
@@ -1711,7 +1795,23 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
   recargar y la ficha se abre desde la lista. Sin scroll horizontal en 1024, 1280 y un teléfono
   de 390 px. Los recorridos en `v9`
 
+- **Diseño curricular unificado** (12/11/2026): ver «Diseño curricular unificado». `sql/19`
+  probado contra PostgreSQL 16, instalando del `01` al `19` en una base vacía y repitiéndolo:
+  la propuesta cuenta bien (con 700 docentes y 1.400 cargas simuladas), guardar no pisa lo de
+  otra persona, un año no se cierra con saberes para revisar ni vacío, cerrado no se cambia ni
+  se vuelve a armar, el año tiene que dictarse, y un usuario que no es del equipo y `anon` no
+  leen ni escriben. En Chromium, con el panel hablando con esa base: la propuesta no se guarda
+  hasta el primer cambio; incluir, corregir, agregar (sin repetidos), decidir los para
+  revisar, mover y cerrar quedan en la base; cerrado no se toca; el aviso cuando otra persona
+  cambió y «Traer la última versión»; la carátula y el marco se guardan solos; el PDF completo
+  (carátula, índice, marco, cómo leer, 38 años) y el de una materia. Sin scroll horizontal en
+  1280, 1024 y un teléfono de 390 px, y la cabecera en una fila de 1280 a 1920. **No se probó
+  con las cargas reales**: la base de ReSaP no estaba conectada a esta sesión
+
 **Pendiente**
+- Correr `sql/19_diseno_unificado.sql` en el SQL Editor de Supabase. Después, en «Diseño»,
+  revisar los criterios, completar la carátula (autoridades) y revisar los números del marco
+  argumentativo, que vinieron escritos en el Word
 - Correr `sql/18_notas.sql` en el SQL Editor de Supabase, y después, desde Seguimiento → «Notas a
   las escuelas» → «Actualizar contactos (Excel)», subir la base de directivos, revisar el cotejo,
   elegir las 6 entradas que no se reconocen y cargar. Después, publicar en Escuelas para que los
