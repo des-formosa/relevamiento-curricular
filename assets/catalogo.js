@@ -148,6 +148,7 @@ const Catalogo = (function () {
   function espacio(id) { return idx.espacioPorId.get(id) || null; }
   function espaciosPorArea(areaId) { return idx.espaciosPorArea.get(areaId) || []; }
   function eje(id) { return idx.ejePorId.get(id) || null; }
+  function ejesPorEspacio(espacioId) { return idx.ejesPorEspacio.get(espacioId) || []; }
   function saber(id) { return idx.saberPorId.get(id) || null; }
   function contenido(id) { return idx.contenidoPorId.get(id) || null; }
 
@@ -270,7 +271,7 @@ const Catalogo = (function () {
     origenEscuelas: () => origenEscuelas,
     reemplazarEscuelas,
     version: () => (datos ? datos.exportado_en || null : null),
-    areas, area, espacio, espaciosPorArea, espaciosAgrupados, eje, saber, contenido,
+    areas, area, espacio, espaciosPorArea, espaciosAgrupados, eje, ejesPorEspacio, saber, contenido,
     esArtistica, nombreCorto, subtituloArea,
     saberesPorTramo, contenidosDeSaber, sugerencias,
     departamentos, departamento, escuela, buscarEscuelas,

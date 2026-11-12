@@ -141,6 +141,13 @@
     history.replaceState(null, '', '#' + h.toString());
   }
 
+  // El diseño unificado: «#diseno=» (todas), «#diseno=matematica&anio=1», «#diseno=&documento=1»
+  function escribirHashDiseno() {
+    const h = new URLSearchParams();
+    Diseno.escribirHash(h);
+    history.replaceState(null, '', '#' + h.toString());
+  }
+
   /* ======================================================================
      Datos
      ====================================================================== */
@@ -380,11 +387,19 @@
       nominaOrdenada, esAnexo, sedeDe, escuelaSeg, celularLegible, conElTelefono, puedeCompartir, cargarSheetJS, imprimir, cuandoFue,
       iconoCerrar: Icono.cerrar,
     });
+    Diseno.iniciar(sb, {
+      render,
+      imprimir,
+      partirEje,
+      escribirHash: escribirHashDiseno,
+      nombreUsuario: () => estado.nombre,
+    });
     await cargarEscuelasAgregadas();
     // Un link compartido (con la selección en el hash) va directo a lo que
     // muestra; entrar al panel a secas, al inicio
     const hash = new URLSearchParams(window.location.hash.replace(/^#/, ''));
     if (hash.has('escuelas')) { irAEscuelas(hash.get('escuelas')); return; }
+    if (hash.has('diseno')) { irAlDiseno(hash); return; }
     if (hash.has('seguimiento')) {
       estado.seguimiento.soloFaltan = hash.get('faltan') === '1';
       estado.seguimiento.agregadas = hash.get('agregadas') === '1';
@@ -399,6 +414,7 @@
   // El inicio: el nombre del sistema, una línea de cómo va la carga y los tres
   // caminos. Trae una sola consulta liviana; si falla, la pantalla igual se ve.
   async function irAlInicio() {
+    Diseno.salir();
     estado.pantalla = 'inicio';
     estado.modo = 'resultados';
     estado.exportar = null;
@@ -414,6 +430,7 @@
   }
 
   function irAlPanel(modo) {
+    Diseno.salir();
     estado.pantalla = 'panel';
     estado.modo = modo;
     Editor.limpiar();
@@ -425,6 +442,7 @@
 
   // Las cargas se cuentan de nuevo cada vez que se entra: así está al día
   function irAlSeguimiento(lugar) {
+    Diseno.salir();
     estado.pantalla = 'seguimiento';
     estado.modo = 'resultados';
     estado.exportar = null;
@@ -436,6 +454,21 @@
     cargarSeguimiento();
     // Entrando por un link con las notas abiertas (#seguimiento=&notas=1)
     if (Notas.activo()) Notas.entrar(true);
+  }
+
+  // El diseño curricular unificado (assets/diseno.js). Se trae cada vez que
+  // se entra, así se ve lo que cerraron los demás.
+  function irAlDiseno(hash) {
+    estado.pantalla = 'diseno';
+    estado.modo = 'resultados';
+    estado.exportar = null;
+    Editor.limpiar();
+    Notas.salir();
+    Ficha.cerrar();
+    const entrada = hash || new URLSearchParams('diseno=');
+    Diseno.entrar(entrada);
+    escribirHashDiseno();
+    window.scrollTo(0, 0);
   }
 
   async function ingresar(email, clave) {
@@ -465,6 +498,7 @@
     // mano: el que entra después tiene que ver los resultados, no el editor
     estado.modo = 'resultados';
     Editor.limpiar();
+    Diseno.salir();
     estado.seguimiento = { lugar: null, soloFaltan: false, agregadas: false, datos: null, contactos: null, sedes: null, cargando: false, error: null };
     Ficha.cerrar();
     history.replaceState(null, '', window.location.pathname + window.location.search);
@@ -503,7 +537,7 @@
       </div>
       <div class="t-cabecera__derecha">
         <div class="t-cabecera__fecha">Datos al ${esc(fechaLarga(new Date()))}</div>
-        ${['inicio', 'panel', 'seguimiento', 'escuelas'].includes(estado.pantalla) ? navegacion() : ''}
+        ${['inicio', 'panel', 'seguimiento', 'escuelas', 'diseno'].includes(estado.pantalla) ? navegacion() : ''}
       </div>
     </header>`;
   }
@@ -530,10 +564,10 @@
     </span>`;
 
   // La cabecera solo lleva por dónde moverse: Inicio, Resultados, Catálogo,
-  // Seguimiento y Escuelas, con el lugar actual marcado, y la ayuda y la salida. Las
+  // Seguimiento, Escuelas y Diseño, con el lugar actual marcado, y la ayuda y la salida. Las
   // acciones de cada pantalla van en su propia barra, al lado de lo que afectan.
   function navegacion() {
-    const actual = ['inicio', 'seguimiento', 'escuelas'].includes(estado.pantalla) ? estado.pantalla : estado.modo === 'catalogo' ? 'catalogo' : 'resultados';
+    const actual = ['inicio', 'seguimiento', 'escuelas', 'diseno'].includes(estado.pantalla) ? estado.pantalla : estado.modo === 'catalogo' ? 'catalogo' : 'resultados';
     const enlace = (id, accion, texto) =>
       `<button type="button" class="t-enlace-cab ${actual === id ? 't-enlace-cab--actual' : ''}" data-accion="${accion}" ${actual === id ? 'aria-current="page"' : ''}>${texto}</button>`;
     return `<nav class="t-nav" aria-label="Secciones">
@@ -542,9 +576,10 @@
         ${enlace('catalogo', 'ir-catalogo', 'Catálogo')}
         ${enlace('seguimiento', 'ir-seguimiento', 'Seguimiento')}
         ${enlace('escuelas', 'ir-escuelas', 'Escuelas')}
+        ${enlace('diseno', 'ir-diseno', 'Diseño')}
       </nav>
       <span class="t-nav__separador" aria-hidden="true"></span>
-      ${['panel', 'seguimiento', 'escuelas'].includes(estado.pantalla) ? '<button type="button" class="t-enlace-cab t-ayuda" data-accion="tour" title="Ver cómo se usa esta pantalla">¿Cómo se usa?</button>' : ''}
+      ${['panel', 'seguimiento', 'escuelas', 'diseno'].includes(estado.pantalla) ? '<button type="button" class="t-enlace-cab t-ayuda" data-accion="tour" title="Ver cómo se usa esta pantalla">¿Cómo se usa?</button>' : ''}
       <button type="button" class="t-enlace-cab" data-accion="salir">Salir</button>`;
   }
 
@@ -1616,6 +1651,10 @@
               svg('<path d="M3 21h18"/><path d="M5 21V10l7-5 7 5v11"/><path d="M10 21v-5h4v5"/>', { tam: 28, color: '#003380', grosor: 2 }),
               'Editar las escuelas',
               'La nómina de escuelas, anexos y departamentos.')}
+            ${opcion('ir-diseno',
+              svg('<path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4"/><path d="M9 13l2 2 4-4"/>', { tam: 28, color: '#003380', grosor: 2 }),
+              'Cerrar el diseño curricular',
+              'El diseño unificado que sale de las cargas: revisarlo, cerrarlo y descargarlo para entregar.')}
           </div>
         </div>
       </main>
@@ -3311,6 +3350,14 @@
     </div>`;
   }
 
+  function pantallaDiseno() {
+    return `<div class="tablero">
+      ${cabecera()}
+      ${Diseno.pantalla()}
+      ${estado.documento || ''}
+    </div>`;
+  }
+
   function pantallaCargando() {
     return `<div class="tablero">${cabecera()}<div class="t-estado"><div class="t-estado__texto">Cargando…</div></div></div>`;
   }
@@ -3365,18 +3412,18 @@
 
   // Qué recorrido corresponde a la pantalla que se está mirando
   const modoTour = () => (estado.pantalla === 'seguimiento' && Notas.activo() ? 'notas'
-    : ['seguimiento', 'escuelas'].includes(estado.pantalla) ? estado.pantalla
+    : ['seguimiento', 'escuelas', 'diseno'].includes(estado.pantalla) ? estado.pantalla
     : estado.modo === 'catalogo' ? 'catalogo' : 'resultados');
 
   function render() {
-    const fn = { ingreso: pantallaIngreso, 'sin-permiso': pantallaSinPermiso, inicio: pantallaInicio, panel: pantallaPanel, seguimiento: pantallaSeguimiento, escuelas: pantallaEscuelas }[estado.pantalla] || pantallaCargando;
+    const fn = { ingreso: pantallaIngreso, 'sin-permiso': pantallaSinPermiso, inicio: pantallaInicio, panel: pantallaPanel, seguimiento: pantallaSeguimiento, escuelas: pantallaEscuelas, diseno: pantallaDiseno }[estado.pantalla] || pantallaCargando;
     const habiaPanel = !!app.querySelector('.t-panel');
     app.innerHTML = fn();
     if (estado.pantalla !== 'seguimiento' && Ficha.abierta()) Ficha.cerrar();
     animarLoNuevo(habiaPanel);
     const notaAbierta = estado.pantalla === 'seguimiento' && Notas.activo() && (Notas.estado.modal || Notas.estado.previa !== null);
     document.body.style.overflow = estado.exportar || notaAbierta ? 'hidden' : '';
-    if (!['panel', 'seguimiento', 'escuelas'].includes(estado.pantalla)) Tour.salir();
+    if (!['panel', 'seguimiento', 'escuelas', 'diseno'].includes(estado.pantalla)) Tour.salir();
     // La primera vez que se entra a cada pantalla, el recorrido arranca solo;
     // después, si hay algo nuevo, el aviso de novedades (tour.js)
     if (estado.pantalla === 'panel' && !estado.cargandoDatos && !Editor.estado.cargando) {
@@ -3387,6 +3434,7 @@
       if (Notas.estado.lista && !Notas.estado.cargando && !Notas.estado.modal) Tour.quizas('notas');
     } else if (estado.pantalla === 'seguimiento' && estado.seguimiento.datos && !estado.seguimiento.cargando) Tour.quizas('seguimiento');
     if (estado.pantalla === 'escuelas' && estado.escuelasEd.lista && !estado.escuelasEd.error) Tour.quizas('escuelas');
+    if (estado.pantalla === 'diseno' && Diseno.estado.general && !Diseno.estado.cargando && Diseno.estado.vista === 'resumen') Tour.quizas('diseno');
   }
 
   /* ======================================================================
@@ -3407,6 +3455,7 @@
     if (d.accion === 'abrir-ficha') { Ficha.abrir(d.id, objetivo, true); return; }
     if (d.accion.startsWith('ed-') || d.accion.startsWith('ar-')) { Editor.manejar(d.accion, d, objetivo); return; }
     if (d.accion.startsWith('nt-')) { Notas.manejar(d.accion, d, objetivo); return; }
+    if (d.accion.startsWith('ds-')) { Diseno.manejar(d.accion, d, objetivo); return; }
     switch (d.accion) {
       case 'salir': salir(); break;
       case 'reintentar-permiso': estado.pantalla = 'cargando'; render(); verificarSesion(); break;
@@ -3417,6 +3466,7 @@
       case 'ir-catalogo': irAlPanel('catalogo'); break;
       case 'ir-seguimiento': Notas.salir(); irAlSeguimiento(); break;
       case 'ir-escuelas': irAEscuelas(); break;
+      case 'ir-diseno': irAlDiseno(); break;
       case 'esc-reintentar': cargarEscuelasEd(); break;
       case 'esc-agregar': Object.assign(estado.escuelasEd, { editando: 'nuevo', quitando: null, editandoDepto: null, errorForm: null, aviso: null }); render(); enfocarEscuelaEd(); break;
       case 'esc-editar': Object.assign(estado.escuelasEd, { editando: d.id, quitando: null, editandoDepto: null, errorForm: null, aviso: null }); render(); enfocarEscuelaEd(); break;
@@ -3506,6 +3556,7 @@
     const el = e.target.closest('[data-cambio]');
     if (!el) return;
     if (el.dataset.cambio.startsWith('nt-')) { Notas.cambio(el); return; }
+    if (el.dataset.cambio.startsWith('ds-')) { Diseno.cambio(el); return; }
     switch (el.dataset.cambio) {
       case 'materia': {
         estado.espacio_id = el.value;
@@ -3546,6 +3597,8 @@
   app.addEventListener('input', (e) => {
     const nt = e.target.closest('[data-entrada^="nt-"]');
     if (nt) { Notas.entrada(nt); return; }
+    const ds = e.target.closest('[data-entrada^="ds-"]');
+    if (ds) { Diseno.entrada(ds); return; }
     const el = e.target.closest('[data-entrada="esc-buscar"]');
     if (!el) return;
     const pos = el.selectionStart;
@@ -3558,6 +3611,8 @@
   app.addEventListener('submit', (e) => {
     const nota = e.target.closest('[data-form^="nt-"]');
     if (nota) { e.preventDefault(); Notas.enviarForm(nota); return; }
+    const diseno = e.target.closest('[data-form^="ds-"]');
+    if (diseno) { e.preventDefault(); Diseno.enviarForm(diseno); return; }
     const escuela = e.target.closest('[data-form="esc-escuela"]');
     if (escuela) { e.preventDefault(); guardarEscuelaEd(escuela); return; }
     const depto = e.target.closest('[data-form="esc-depto"]');
@@ -3576,6 +3631,7 @@
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && Ficha.abierta()) { Ficha.cerrar(); return; }
     if (e.key === 'Escape' && estado.pantalla === 'seguimiento' && Notas.activo() && Notas.escape()) return;
+    if (e.key === 'Escape' && estado.pantalla === 'diseno' && Diseno.escape()) return;
     if (e.key === 'Escape' && estado.exportar && !estado.exportar.descargando) { estado.exportar = null; render(); }
   });
 
