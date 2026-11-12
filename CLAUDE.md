@@ -1051,8 +1051,18 @@ reportes; el **Word** (.docx de verdad) lo arma la librería docx 8.5.0 (jsDeliv
 navegador, con la misma estructura: carátula con los logos (los de la nota modelo, en jpg y
 png, porque Word no lee webp) y el filete tricolor, índice, marco, «Cómo leer», y las
 materias con los títulos como estilos de Word (Título 1 la materia, 2 el año, 3 el
-trimestre: anda el panel de navegación y se puede insertar un índice automático), y el número
-de página al pie. El nombre del .docx va sin acentos ni eñes («Diseno Curricular Unificado -
+trimestre, con su nivel de esquema: anda el panel de navegación), y el número de página al
+pie. **El índice del Word es un índice de Word** (pedido del equipo el mismo día: «va a hacer
+todo mucho más fácil en el doc»): un campo TOC con sus entradas ya armadas (marco, cómo leer,
+cada materia y cada año), cada una un enlace a su título. Los números de página no se pueden
+saber en el navegador: el archivo le pide a Word que actualice los campos al abrirlo
+(`updateFields`), Word pregunta y, con «Sí», los completa; si después se edita, clic derecho en
+el índice → «Actualizar campos». Las entradas funcionan como enlaces aunque no se actualice.
+La librería no deja armar un TOC con entradas, así que el comienzo y el fin del campo van como
+XML (`ImportedXmlComponent`) y las entradas con `InternalHyperlink` y `PageReference`. El año
+quedó solo en su título («1° año») y lo de cuántos docentes pasó al renglón de abajo, para que
+la entrada del índice sea corta. En el PDF, el índice es clickeable: cada línea lleva a su
+materia (Chrome conserva los enlaces internos al guardar como PDF). El nombre del .docx va sin acentos ni eñes («Diseno Curricular Unificado -
 Ciclo Basico - fecha.docx»): con ellos Chrome a veces lo baja como «download». El PDF lleva la
 carátula en una hoja (logos del Ministerio y la DES, título, filete tricolor, bajada,
 autoridades, ReSaP, lugar y vigencia; «Borrador · faltan cerrar N de 38» mientras falte), el
@@ -1824,7 +1834,8 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
   (Físico-Química 3°: 18 de 23). La ventana de descargar probada en Chromium: todas o elegidas
   (sin ninguna no deja), con o sin carátula, el PDF de dos materias con el borrador contado
   sobre sus 6 años, el Word completo (132 hojas al abrirlo con LibreOffice, 19 títulos 1, 38
-  de año y 114 de trimestre) y el de una materia sin carátula; entra en 1366 × 768 y en el
+  de año y 114 de trimestre; actualizando los campos, el índice se llena con los números de
+  página: Lengua en la 6, Matemática en la 56) y el de una materia sin carátula; entra en 1366 × 768 y en el
   teléfono sin scroll horizontal
 
 **Pendiente**

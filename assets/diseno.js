@@ -1140,7 +1140,7 @@ const Diseno = (function () {
       : x.progreso ? `<p class="t-panel__nota" role="status">${esc(x.progreso)}</p>`
       : `<p class="t-panel__nota">${x.formato === 'pdf'
         ? 'Se abre la ventana de impresión: elegí <strong>«Guardar como PDF»</strong>.'
-        : 'Se baja un archivo <strong>.docx</strong> que se abre con Word (o Google Docs, o LibreOffice) para retocar el texto antes de entregarlo.'}
+        : 'Se baja un archivo <strong>.docx</strong> para retocar el texto en Word. Al abrirlo, Word pregunta si actualizar los campos: decí <strong>«Sí»</strong> y el índice se completa con los números de página.'}
         ${cuantas ? ` Van ${x.todas ? 'las 16 materias' : `${cuantas} ${plural(cuantas, 'materia', 'materias')}`}${x.conMarco ? ', con la carátula, el índice y el marco' : ''}.` : ''}</p>`;
     return `<div class="t-velo" data-accion="ds-desc-cerrar"></div>
     <div class="t-panel t-panel--ancho ds-desc" role="dialog" aria-modal="true" aria-labelledby="ds-desc-titulo">
@@ -1317,12 +1317,12 @@ const Diseno = (function () {
     const indice = `<section class="t-dis__indice">
       <h2 class="t-dis__seccion">Contenido</h2>
       <ol class="t-dis__indice-lista">
-        <li>Marco argumentativo</li>
-        <li>Cómo leer este diseño</li>
+        <li><a href="#dis-marco">Marco argumentativo</a></li>
+        <li><a href="#dis-lectura">Cómo leer este diseño</a></li>
         ${Catalogo.areas().map((a) => {
           const ms = mo.materias.filter((m) => m.area.id === a.id);
           if (!ms.length) return '';
-          return `<li>${esc(a.nombre)}<ul>${ms.map((m) => `<li>${esc(nombreMateria(m.esp))} <span>${esc(m.esp.saberes_por_ciclo ? 'todo el ciclo' : textoAniosDe(m.anios))}</span></li>`).join('')}</ul></li>`;
+          return `<li>${esc(a.nombre)}<ul>${ms.map((m) => `<li><a href="#dis-${esc(m.esp.id)}">${esc(nombreMateria(m.esp))}</a> <span>${esc(m.esp.saberes_por_ciclo ? 'todo el ciclo' : textoAniosDe(m.anios))}</span></li>`).join('')}</ul></li>`;
         }).join('')}
       </ol>
     </section>`;
@@ -1330,8 +1330,8 @@ const Diseno = (function () {
     return `<article class="t-doc t-dis">
       ${caratula}
       ${indice}
-      <section class="t-dis__marco">${limpiarHTML(conCampos(x.marco))}</section>
-      <section class="t-dis__lectura"><h2 class="t-dis__seccion">Cómo leer este diseño</h2>${cuerpoLectura(x)}</section>
+      <section class="t-dis__marco" id="dis-marco">${limpiarHTML(conCampos(x.marco))}</section>
+      <section class="t-dis__lectura" id="dis-lectura"><h2 class="t-dis__seccion">Cómo leer este diseño</h2>${cuerpoLectura(x)}</section>
       ${mo.materias.map((m) => materiaDocumento(m, mo, false)).join('')}
     </article>`;
   }
@@ -1350,7 +1350,7 @@ const Diseno = (function () {
   // primera: la primera materia de un documento sin carátula, que no salta de hoja
   function materiaDocumento(m, mo, primera) {
     const pres = (st.general.presentaciones || {})[m.esp.id];
-    return `<section class="t-dis__materia${primera ? ' t-dis__materia--suelta' : ''}">
+    return `<section class="t-dis__materia${primera ? ' t-dis__materia--suelta' : ''}" id="dis-${esc(m.esp.id)}">
       <p class="t-dis__area">${esc(m.area.nombre)}</p>
       <h2 class="t-dis__materia-titulo">${esc(m.esp.nombre)}</h2>
       <p class="t-dis__materia-sub">${esc(subtituloMateria(m))}</p>
@@ -1414,6 +1414,37 @@ const Diseno = (function () {
     const sinBordes = { style: D.BorderStyle.NONE, size: 0, color: 'FFFFFF' };
     const bordesNinguno = { top: sinBordes, bottom: sinBordes, left: sinBordes, right: sinBordes, insideHorizontal: sinBordes, insideVertical: sinBordes };
 
+    // El índice: cada título de materia y de año lleva un marcador, y el índice
+    // es un campo TOC de Word que ya viene armado con sus entradas (cada una un
+    // enlace a su marcador y su número de página). Al abrirlo, Word pregunta si
+    // actualizar los campos y completa los números; si se edita el documento,
+    // clic derecho en el índice → «Actualizar campos».
+    const entradas = [];
+    const titulo = (texto, nivel, o = {}) => {
+      const id = `ds_${entradas.length + 1}`;
+      entradas.push({ texto, nivel, id });
+      return parrafo(new D.Bookmark({ id, children: [run(texto)] }),
+        Object.assign({ heading: nivel === 1 ? D.HeadingLevel.HEADING_1 : D.HeadingLevel.HEADING_2 }, o));
+    };
+    const crudo = (xml) => D.ImportedXmlComponent.fromXmlString(xml).root[0];
+    function indiceWord() {
+      if (!entradas.length) return [];
+      const ultimo = entradas.length - 1;
+      return entradas.map((e, i) => parrafo([
+        ...(i === 0 ? [
+          crudo('<w:r><w:fldChar w:fldCharType="begin" w:dirty="true"/></w:r>'),
+          crudo('<w:r><w:instrText xml:space="preserve"> TOC \\o "1-2" \\h \\z \\u </w:instrText></w:r>'),
+          crudo('<w:r><w:fldChar w:fldCharType="separate"/></w:r>'),
+        ] : []),
+        new D.InternalHyperlink({ anchor: e.id, children: [
+          run(e.texto),
+          new D.TextRun({ children: [new D.Tab()] }),
+          new D.PageReference(e.id),
+        ] }),
+        ...(i === ultimo ? [crudo('<w:r><w:fldChar w:fldCharType="end"/></w:r>')] : []),
+      ], { style: e.nivel === 1 ? 'TOC1' : 'TOC2' }));
+    }
+
     // Lo escrito en el marco (HTML limpio) en párrafos de Word
     let listasNumeradas = 0;
     function deHTML(html) {
@@ -1440,7 +1471,7 @@ const Diseno = (function () {
         }
         if (nodo.nodeType !== 1) continue;
         const tag = nodo.tagName;
-        if (tag === 'H2') salida.push(parrafo(corridas(nodo), { heading: D.HeadingLevel.HEADING_1 }));
+        if (tag === 'H2') salida.push(titulo(nodo.textContent.replace(/\s+/g, ' ').trim(), 1));
         else if (tag === 'H3') salida.push(parrafo(corridas(nodo), { style: 'Subtitulo' }));
         else if (tag === 'UL') for (const li of nodo.querySelectorAll(':scope > li')) salida.push(parrafo(corridas(li), { style: 'Texto', bullet: { level: 0 } }));
         else if (tag === 'OL') {
@@ -1461,6 +1492,9 @@ const Diseno = (function () {
     }
 
     const hijos = [];
+    // Con varias materias va índice; con una sola, no hace falta
+    const conIndice = mo.conMarco || mo.materias.length > 1;
+    let lugarIndice = -1;
 
     if (mo.conMarco) {
       const [ministerio, des, simbolo, palabra] = await Promise.all([LOGO_MINISTERIO_JPG, LOGO_DES_PNG, RESAP_SIMBOLO, RESAP_PALABRA].map(bytes));
@@ -1496,19 +1530,9 @@ const Diseno = (function () {
       ], { spacing: { before: 300, after: 160 }, border: { top: { style: D.BorderStyle.SINGLE, size: 4, color: 'D5DCE6', space: 8 } } }));
       hijos.push(parrafo(run(`${conCampos(x.caratula.lugar)}${x.caratula.vigencia ? ` · ${conCampos(x.caratula.vigencia)}` : ''}`, { bold: true, color: '3A4356', size: 22 })));
 
-      // Índice
-      hijos.push(parrafo(run('Contenido'), { heading: D.HeadingLevel.HEADING_1, pageBreakBefore: true }));
-      hijos.push(parrafo(run('Marco argumentativo', { bold: true }), { style: 'Texto' }));
-      hijos.push(parrafo(run('Cómo leer este diseño', { bold: true }), { style: 'Texto' }));
-      for (const a of Catalogo.areas()) {
-        const ms = mo.materias.filter((m) => m.area.id === a.id);
-        if (!ms.length) continue;
-        hijos.push(parrafo(run(a.nombre, { bold: true }), { style: 'Texto', spacing: { before: 160, after: 40 } }));
-        for (const m of ms) {
-          hijos.push(parrafo([run(nombreMateria(m.esp)), run(`  ${m.esp.saberes_por_ciclo ? 'todo el ciclo' : textoAniosDe(m.anios)}`, { color: GRIS, size: 18 })],
-            { style: 'Texto', indent: { left: 400 }, spacing: { after: 40 } }));
-        }
-      }
+      // Índice: se completa al final, cuando ya están todos los títulos
+      hijos.push(parrafo(run('Contenido', { bold: true, color: AZUL, size: 36 }), { pageBreakBefore: true, spacing: { after: 240 } }));
+      lugarIndice = hijos.length;
 
       // Marco argumentativo
       const marco = deHTML(limpiarHTML(conCampos(x.marco)));
@@ -1516,30 +1540,35 @@ const Diseno = (function () {
       hijos.push(...marco);
 
       // Cómo leer
-      hijos.push(parrafo(run('Cómo leer este diseño'), { heading: D.HeadingLevel.HEADING_1, pageBreakBefore: true }));
+      hijos.push(titulo('Cómo leer este diseño', 1, { pageBreakBefore: true }));
       hijos.push(...deHTML(cuerpoLectura(x)));
     } else {
       hijos.push(parrafo(run(`${conCampos(x.caratula.titulo)} · ${conCampos(x.caratula.subtitulo)}`.toUpperCase(), { bold: true, color: AZUL, size: 16 }),
         { spacing: { after: 80 } }));
       if (mo.borrador) hijos.push(parrafo(run(textoBorrador(mo).toUpperCase(), { bold: true, color: LADRILLO, size: 16 }), { spacing: { after: 200 } }));
+      if (conIndice) {
+        hijos.push(parrafo(run('Contenido', { bold: true, color: AZUL, size: 36 }), { spacing: { before: 200, after: 240 } }));
+        lugarIndice = hijos.length;
+      }
     }
 
     // Las materias: cada una en hoja nueva, cada año también
     mo.materias.forEach((m, mi) => {
       hijos.push(parrafo(run(m.area.nombre.toUpperCase(), { bold: true, color: LADRILLO, size: 16 }),
-        { pageBreakBefore: mo.conMarco || mi > 0, keepNext: true, spacing: { after: 40 } }));
-      hijos.push(parrafo(run(m.esp.nombre), { heading: D.HeadingLevel.HEADING_1 }));
+        { pageBreakBefore: conIndice || mi > 0, keepNext: true, spacing: { after: 40 } }));
+      hijos.push(titulo(m.esp.nombre, 1));
       hijos.push(parrafo(run(subtituloMateria(m), { color: '3A4356', size: 22 }),
         { spacing: { after: 200 }, border: { bottom: { style: D.BorderStyle.SINGLE, size: 12, color: AZUL, space: 6 } } }));
       const pres = (st.general.presentaciones || {})[m.esp.id];
       if (pres) for (const p of pres.split(/\n{2,}/)) hijos.push(parrafo(run(p.replace(/\n/g, ' ')), { style: 'Texto' }));
       m.anios.forEach((a, ai) => {
         const estado = estadoAnio(mo, a);
+        // El título del año solo dice el año, así la entrada del índice es corta
+        hijos.push(titulo(textoAnio(a.u.anio), 2, { pageBreakBefore: ai > 0, spacing: { before: 200, after: 40 } }));
         hijos.push(parrafo([
-          run(textoAnio(a.u.anio)),
-          run(`  · ${cuentaAnio(a)}`, { bold: false, color: GRIS, size: 18 }),
+          run(cuentaAnio(a), { color: GRIS, size: 18 }),
           ...(estado ? [run(` · ${estado}`, { bold: true, color: LADRILLO, size: 18 })] : []),
-        ], { heading: D.HeadingLevel.HEADING_2, pageBreakBefore: ai > 0 }));
+        ], { keepNext: true, spacing: { after: 120 } }));
         if (!a.quedan.length) hijos.push(parrafo(run('Sin saberes.', { italics: true, color: GRIS }), { style: 'Texto' }));
         for (const t of [1, 2, 3]) {
           const lista = a.quedan.filter((s) => s.trimestre === t);
@@ -1566,6 +1595,8 @@ const Diseno = (function () {
       });
     });
 
+    if (lugarIndice >= 0) hijos.splice(lugarIndice, 0, ...indiceWord());
+
     const pie = new D.Footer({ children: [parrafo([
       run(`${conCampos(x.caratula.titulo)} · ${conCampos(x.caratula.subtitulo)} · `, { color: GRIS, size: 16 }),
       new D.TextRun({ children: [D.PageNumber.CURRENT], color: GRIS, size: 16 }),
@@ -1574,15 +1605,21 @@ const Diseno = (function () {
     const doc = new D.Document({
       creator: 'ReSaP — Dirección de Educación Secundaria',
       title: conCampos(x.caratula.titulo),
+      // Al abrirlo, Word ofrece actualizar los campos: así el índice trae los números de página
+      features: { updateFields: true },
       styles: {
         default: {
           document: { run: { font: 'Arial', size: 22, color: TINTA } },
-          heading1: { run: { font: 'Arial', size: 36, bold: true, color: AZUL }, paragraph: { spacing: { before: 120, after: 200 }, keepNext: true } },
-          heading2: { run: { font: 'Arial', size: 30, bold: true, color: AZUL }, paragraph: { spacing: { before: 200, after: 120 }, keepNext: true } },
-          heading3: { run: { font: 'Arial', size: 21, bold: true, color: AZUL, allCaps: true }, paragraph: { spacing: { before: 260, after: 60 }, keepNext: true,
+          heading1: { run: { font: 'Arial', size: 36, bold: true, color: AZUL }, paragraph: { spacing: { before: 120, after: 200 }, keepNext: true, outlineLevel: 0 } },
+          heading2: { run: { font: 'Arial', size: 30, bold: true, color: AZUL }, paragraph: { spacing: { before: 200, after: 120 }, keepNext: true, outlineLevel: 1 } },
+          heading3: { run: { font: 'Arial', size: 21, bold: true, color: AZUL, allCaps: true }, paragraph: { spacing: { before: 260, after: 60 }, keepNext: true, outlineLevel: 2,
             border: { bottom: { style: D.BorderStyle.SINGLE, size: 4, color: 'D5DCE6', space: 3 } } } },
         },
         paragraphStyles: [
+          { id: 'TOC1', name: 'toc 1', basedOn: 'Normal', next: 'Normal', run: { bold: true, size: 22 },
+            paragraph: { spacing: { before: 120, after: 40 }, tabStops: [{ type: D.TabStopType.RIGHT, position: 9790, leader: 'dot' }] } },
+          { id: 'TOC2', name: 'toc 2', basedOn: 'Normal', next: 'Normal', run: { size: 20, color: '3A4356' },
+            paragraph: { spacing: { after: 20 }, indent: { left: 400 }, tabStops: [{ type: D.TabStopType.RIGHT, position: 9790, leader: 'dot' }] } },
           { id: 'Texto', name: 'Texto', basedOn: 'Normal', run: { size: 22 }, paragraph: { spacing: { after: 120, line: 300 } } },
           { id: 'Subtitulo', name: 'Subtítulo del marco', basedOn: 'Normal', next: 'Texto', run: { size: 26, bold: true, color: AZUL },
             paragraph: { spacing: { before: 240, after: 80 }, keepNext: true } },
