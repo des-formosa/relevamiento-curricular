@@ -988,7 +988,8 @@ el diseño curricular completo» y entregarlo, usando como insumo lo que cargaro
 carátula y el **marco argumentativo** que mandaron en un Word
 («Marco_argumentativo_diseno_unificado.docx»), y que el equipo pueda editarlo y cerrarlo.
 Decidido con el equipo: **solo el Ciclo Básico** (lo que tiene ReSaP), los saberes de poco
-acuerdo **se dejan marcados para revisar** (no se sacan solos) y la entrega es en **PDF**.
+acuerdo **se dejan marcados para revisar** (no se sacan solos) y la entrega es en **PDF**; el
+mismo día pidieron también **Word** y **elegir qué materias** se bajan.
 
 Es la sexta solapa de la cabecera, «Diseño» (`#diseno=`, `#diseno=matematica&anio=1`,
 `#diseno=&documento=1`). **No toca el catálogo ni lo que ve el docente.**
@@ -1041,14 +1042,25 @@ lado se ven los números de hoy del relevamiento, porque el texto trae los suyos
 documento: mostrar el acuerdo de cada saber (sí, por defecto) y el porcentaje de cada
 contenido (no).
 
-**El documento** («Descargar el diseño (PDF)», `imprimir()` como los demás reportes): la
+**El documento.** «Descargar el diseño» abre una ventana con tres decisiones: **qué materias**
+(todas, o las que se tilden, agrupadas por área), **con o sin la carátula, el índice y el
+marco**, y **PDF o Word**. Desde el resumen viene con todas y con carátula; desde adentro de
+una materia («Descargar esta materia»), con esa sola y sin carátula. El borrador cuenta sobre
+los años elegidos («faltan cerrar 5 de 6»). El PDF sale con `imprimir()`, como los demás
+reportes; el **Word** (.docx de verdad) lo arma la librería docx 8.5.0 (jsDelivr) en el
+navegador, con la misma estructura: carátula con los logos (los de la nota modelo, en jpg y
+png, porque Word no lee webp) y el filete tricolor, índice, marco, «Cómo leer», y las
+materias con los títulos como estilos de Word (Título 1 la materia, 2 el año, 3 el
+trimestre: anda el panel de navegación y se puede insertar un índice automático), y el número
+de página al pie. El nombre del .docx va sin acentos ni eñes («Diseno Curricular Unificado -
+Ciclo Basico - fecha.docx»): con ellos Chrome a veces lo baja como «download». El PDF lleva la
 carátula en una hoja (logos del Ministerio y la DES, título, filete tricolor, bajada,
 autoridades, ReSaP, lugar y vigencia; «Borrador · faltan cerrar N de 38» mientras falte), el
 índice, el marco, «Cómo leer este diseño» (escrito con los criterios) y las 16 materias por
 área, cada una en hoja nueva y cada año también, con los saberes que quedaron numerados por
 año, por trimestre, con su eje, su acuerdo y sus contenidos. Los años que nadie revisó salen
 con la propuesta de hoy y marcados. Dentro de una materia, «Esta materia (PDF)» baja solo
-esa. Con los datos simulados, el diseño completo da unas 165 hojas.
+esa. Con los datos simulados, el diseño completo da unas 165 hojas en PDF y 132 en Word.
 
 Todo se escribe por funciones `security definer` que verifican `es_equipo()`; las tablas las
 lee solo el equipo. Sin `sql/19` corrido, la pantalla dice que falta y el resto del panel anda
@@ -1805,13 +1817,20 @@ relevamiento: el gratuito pausa proyectos por inactividad y limita conexiones si
   revisar, mover y cerrar quedan en la base; cerrado no se toca; el aviso cuando otra persona
   cambió y «Traer la última versión»; la carátula y el marco se guardan solos; el PDF completo
   (carátula, índice, marco, cómo leer, 38 años) y el de una materia. Sin scroll horizontal en
-  1280, 1024 y un teléfono de 390 px, y la cabecera en una fila de 1280 a 1920. **No se probó
-  con las cargas reales**: la base de ReSaP no estaba conectada a esta sesión
+  1280, 1024 y un teléfono de 390 px, y la cabecera en una fila de 1280 a 1920. **Instalado en
+  Supabase** el mismo día (desde la sesión, con el conector): `diseno_propuesta()` corrida con
+  las cargas reales (11.428 de 5.000 docentes) da los 38 años sin errores, de 4 saberes
+  (Historia) a 64 (Música), con 139 «para revisar» en total con los criterios por defecto
+  (Físico-Química 3°: 18 de 23). La ventana de descargar probada en Chromium: todas o elegidas
+  (sin ninguna no deja), con o sin carátula, el PDF de dos materias con el borrador contado
+  sobre sus 6 años, el Word completo (132 hojas al abrirlo con LibreOffice, 19 títulos 1, 38
+  de año y 114 de trimestre) y el de una materia sin carátula; entra en 1366 × 768 y en el
+  teléfono sin scroll horizontal
 
 **Pendiente**
-- Correr `sql/19_diseno_unificado.sql` en el SQL Editor de Supabase. Después, en «Diseño»,
-  revisar los criterios, completar la carátula (autoridades) y revisar los números del marco
-  argumentativo, que vinieron escritos en el Word
+- En «Diseño», revisar los criterios, completar la carátula (autoridades) y revisar los números
+  del marco argumentativo: el Word decía 5.000 docentes y 11.428 cargas, y coinciden con la
+  base del 12/11/2026
 - Correr `sql/18_notas.sql` en el SQL Editor de Supabase, y después, desde Seguimiento → «Notas a
   las escuelas» → «Actualizar contactos (Excel)», subir la base de directivos, revisar el cotejo,
   elegir las 6 entradas que no se reconocen y cargar. Después, publicar en Escuelas para que los

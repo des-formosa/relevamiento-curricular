@@ -135,7 +135,7 @@ const Tour = (function () {
       {
         objetivo: '[data-accion="ds-descargar"]',
         titulo: 'El documento',
-        texto: 'Arma el PDF completo: carátula, índice, marco argumentativo, cómo leerlo y las 16 materias. Se puede bajar en cualquier momento; dentro de cada materia, «Esta materia (PDF)» baja solo esa, para revisarla en papel.',
+        texto: 'Arma el documento en PDF (para entregar) o en Word (para retocar el texto): el diseño completo, con carátula, índice, marco argumentativo y las 16 materias, o solo las materias que elijas. Se puede bajar en cualquier momento; mientras falte cerrar algo, sale como borrador.',
       },
     ],
 

@@ -2576,3 +2576,15 @@ body.tour-abierto { overflow: hidden; }
 .ds-sacar:hover { color: var(--ocre); }
 .ed-saber__botones { align-items: center; }
 .ds-volver { align-self: flex-start; }
+
+/* La ventana de descargar el diseño: qué materias, con carátula o no, PDF o Word */
+.ds-desc .t-panel__grupo + .ds-doc__casilla { margin-top: 2px; }
+.ds-desc__materias { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px 18px; padding: 4px 0; }
+.ds-desc__atajos { grid-column: 1 / -1; display: flex; gap: 18px; font-size: 15px; }
+.ds-desc__area { margin: 0; padding: 0; border: none; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.ds-desc__area legend { padding: 0; margin-bottom: 4px; font-size: 11.5px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--t-gris-2); }
+.ds-desc__area .ds-doc__casilla { font-size: 15.5px; }
+@media (max-width: 899px) {
+  .ds-desc__materias { grid-template-columns: 1fr; }
+  .ds-desc .t-formatos { flex-direction: column; }
+}

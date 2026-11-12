@@ -26,8 +26,12 @@ const Diseno = (function () {
   'use strict';
 
   const URL_MAMMOTH = 'https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js';
+  const URL_DOCX = 'https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js';
   const LOGO_MINISTERIO = 'assets/img/logo-ministerio.webp';
   const LOGO_DES = 'assets/img/logo-secundaria.webp';
+  // Word no lee webp: para el .docx, los mismos logos de la nota modelo
+  const LOGO_MINISTERIO_JPG = 'assets/img/nota-logo-ministerio.jpg';
+  const LOGO_DES_PNG = 'assets/img/nota-logo-secundaria.png';
   const RESAP_SIMBOLO = 'assets/img/resap-simbolo.png';
   const RESAP_PALABRA = 'assets/img/resap-palabra.png';
   const ORDINAL = { 1: '1er', 2: '2do', 3: '3er' };
@@ -109,7 +113,7 @@ const Diseno = (function () {
     errorAccion: null,
     aviso: null,
     doc: null,           // { datos, version, guardando, estado, error, conflicto, sucio }
-    generando: null,     // { texto, error }
+    descargar: null,     // la ventana de descargar: { todas, elegidas, conMarco, formato, progreso, error, descargando }
   };
 
   /* ---------- Utilidades ---------- */
@@ -137,6 +141,7 @@ const Diseno = (function () {
     candado: svg('<rect x="5" y="11" width="14" height="9"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>', { tam: 18, color: '#FFFFFF', grosor: 2.2 }),
     abierto: svg('<rect x="5" y="11" width="14" height="9"/><path d="M8 11V8a4 4 0 0 1 7.5-2"/>', { tam: 18, grosor: 2.2 }),
     chevron: svg('<path d="M6 9l6 6 6-6"/>', { tam: 16, grosor: 2.6 }),
+    cerrar: svg('<path d="M6 6l12 12"/><path d="M18 6L6 18"/>', { tam: 21, color: '#535D71' }),
   };
 
   // «hoy 10:42», «ayer 18:05», «12 nov»
@@ -646,6 +651,10 @@ const Diseno = (function () {
   /* ---------- Pantallas ---------- */
 
   function pantalla() {
+    return contenido() + panelDescargar();
+  }
+
+  function contenido() {
     if (st.cargando && !st.general) return `${barraResumen()}<div class="t-cuerpo"><div class="t-estado"><div class="t-estado__texto">Trayendo cómo va el diseño…</div></div></div>`;
     if (st.sinTablas) {
       return `${barraResumen()}<div class="t-cuerpo"><div class="ds-cuerpo">
@@ -662,24 +671,21 @@ const Diseno = (function () {
   }
 
   function barraResumen() {
-    const listo = st.general && !st.generando;
+    const listo = !!st.general;
     return `<div class="t-selectores ds-barra">
       <div class="ds-barra__titulo">Diseño curricular unificado <span>Ciclo Básico</span></div>
       <div class="espaciador"></div>
       <div class="t-selectores__acciones">
         <button type="button" class="t-exportar t-exportar--claro" data-accion="ds-documento"${listo ? '' : ' disabled'}>Carátula, marco y criterios</button>
-        <button type="button" class="t-exportar" data-accion="ds-descargar"${listo ? '' : ' disabled'}>${Icono.descargar}${st.generando && !st.generando.error ? 'Armando el documento…' : 'Descargar el diseño (PDF)'}</button>
+        <button type="button" class="t-exportar" data-accion="ds-descargar"${listo ? '' : ' disabled'}>${Icono.descargar}Descargar el diseño</button>
       </div>
     </div>`;
   }
 
   function avisos() {
-    const g = st.generando;
     return [
       st.aviso ? `<div class="ed-aviso" role="status">${esc(st.aviso)}</div>` : '',
       st.errorAccion ? `<div class="ed-aviso ed-aviso--error" role="alert">${esc(st.errorAccion)}${st.conflicto ? ' <button type="button" class="t-seg-enlace" data-accion="ds-traer">Traer la última versión</button>' : ''}</div>` : '',
-      g && g.texto && !g.error ? `<div class="ed-aviso" role="status">${esc(g.texto)}</div>` : '',
-      g && g.error ? `<div class="ed-aviso ed-aviso--error" role="alert">${esc(g.error)}</div>` : '',
     ].join('');
   }
 
@@ -785,7 +791,7 @@ const Diseno = (function () {
       </div>
       <div class="espaciador"></div>
       <div class="t-selectores__acciones">
-        <button type="button" class="t-exportar t-exportar--claro" data-accion="ds-descargar" data-espacio="${esc(st.espacio_id)}"${st.generando && !st.generando.error ? ' disabled' : ''} title="El diseño de esta materia, todos sus años, para revisarlo en papel">${Icono.bajar}Esta materia (PDF)</button>
+        <button type="button" class="t-exportar t-exportar--claro" data-accion="ds-descargar" data-espacio="${esc(st.espacio_id)}" title="El diseño de esta materia, todos sus años, en PDF o Word, para revisarlo">${Icono.bajar}Descargar esta materia</button>
         ${accion}
       </div>
     </div>`;
@@ -1038,7 +1044,7 @@ const Diseno = (function () {
         <div class="espaciador"></div>
         <span class="ds-doc__guardado" id="ds-doc-guardado">${esc(doc.estado || '')}</span>
         <div class="t-selectores__acciones">
-          <button type="button" class="t-exportar" data-accion="ds-descargar"${st.generando && !st.generando.error ? ' disabled' : ''}>${Icono.descargar}Descargar el diseño (PDF)</button>
+          <button type="button" class="t-exportar" data-accion="ds-descargar">${Icono.descargar}Descargar el diseño</button>
         </div>
       </div>
       <div class="t-cuerpo"><div class="ds-cuerpo ds-doc">
@@ -1096,18 +1102,93 @@ const Diseno = (function () {
       </div></div>`;
   }
 
-  /* ---------- El documento (PDF) ---------- */
+  /* ---------- Descargar: qué materias y en qué formato ---------- */
 
-  async function descargar(soloEspacio) {
-    if (st.generando && !st.generando.error) return;
-    await guardarDoc();
-    st.generando = { texto: 'Trayendo lo que revisó el equipo…' };
+  // La ventana de descargar. Con una materia elegida (desde adentro de ella),
+  // viene solo esa y sin carátula; desde el resumen, todas y con carátula.
+  function abrirDescargar(espacio) {
+    const todas = new Set(Catalogo.areas().flatMap((a) => Catalogo.espaciosPorArea(a.id).map((e) => e.id)));
+    st.descargar = espacio
+      ? { todas: false, elegidas: new Set([espacio]), conMarco: false, formato: 'pdf', progreso: null, error: null, descargando: false }
+      : { todas: true, elegidas: todas, conMarco: true, formato: 'pdf', progreso: null, error: null, descargando: false };
     d.render();
+  }
+
+  function panelDescargar() {
+    const x = st.descargar;
+    if (!x) return '';
+    const opcion = (grupo, valor, elegido, titulo, sub) => `
+      <label class="t-formato ${elegido ? 't-formato--elegido' : ''}" for="${grupo}-${valor}">
+        <span class="t-formato__cabeza"><input type="radio" id="${grupo}-${valor}" name="${grupo}" value="${valor}" ${elegido ? 'checked' : ''} data-cambio="${grupo}"${x.descargando ? ' disabled' : ''}><span class="t-formato__titulo">${titulo}</span></span>
+        <span class="t-formato__sub">${sub}</span>
+      </label>`;
+    const cuantas = x.todas ? 16 : x.elegidas.size;
+    const lista = x.todas ? '' : `
+      <div class="ds-desc__materias">
+        <div class="ds-desc__atajos">
+          <button type="button" class="t-seg-enlace" data-accion="ds-desc-todas">Tildar todas</button>
+          <button type="button" class="t-seg-enlace" data-accion="ds-desc-ninguna">Ninguna</button>
+        </div>
+        ${Catalogo.areas().map((a) => `
+          <fieldset class="ds-desc__area">
+            <legend>${esc(a.nombre)}</legend>
+            ${Catalogo.espaciosPorArea(a.id).map((e) => `
+              <label class="ds-doc__casilla"><input type="checkbox" data-cambio="ds-desc-materia" value="${esc(e.id)}" ${x.elegidas.has(e.id) ? 'checked' : ''}${x.descargando ? ' disabled' : ''}> ${esc(nombreMateria(e))}</label>`).join('')}
+          </fieldset>`).join('')}
+      </div>`;
+    const nota = x.error ? `<p class="t-panel__nota t-panel__nota--error" role="alert">${esc(x.error)}</p>`
+      : x.progreso ? `<p class="t-panel__nota" role="status">${esc(x.progreso)}</p>`
+      : `<p class="t-panel__nota">${x.formato === 'pdf'
+        ? 'Se abre la ventana de impresión: elegí <strong>«Guardar como PDF»</strong>.'
+        : 'Se baja un archivo <strong>.docx</strong> que se abre con Word (o Google Docs, o LibreOffice) para retocar el texto antes de entregarlo.'}
+        ${cuantas ? ` Van ${x.todas ? 'las 16 materias' : `${cuantas} ${plural(cuantas, 'materia', 'materias')}`}${x.conMarco ? ', con la carátula, el índice y el marco' : ''}.` : ''}</p>`;
+    return `<div class="t-velo" data-accion="ds-desc-cerrar"></div>
+    <div class="t-panel t-panel--ancho ds-desc" role="dialog" aria-modal="true" aria-labelledby="ds-desc-titulo">
+      <div class="t-panel__cabecera">
+        <h2 class="t-panel__titulo" id="ds-desc-titulo">Descargar el diseño</h2>
+        <button type="button" class="t-panel__cerrar" data-accion="ds-desc-cerrar" aria-label="Cerrar">${Icono.cerrar}</button>
+      </div>
+      <div class="t-panel__grupo">
+        <div class="t-panel__etiqueta">Qué materias</div>
+        <div class="t-formatos">
+          ${opcion('ds-desc-que', 'todas', x.todas, 'Todas', 'el diseño completo, las 16 materias')}
+          ${opcion('ds-desc-que', 'elegir', !x.todas, 'Elegir materias', x.todas ? 'una o varias' : `${cuantas} ${plural(cuantas, 'elegida', 'elegidas')}`)}
+        </div>
+        ${lista}
+      </div>
+      <label class="ds-doc__casilla"><input type="checkbox" data-cambio="ds-desc-marco" ${x.conMarco ? 'checked' : ''}${x.descargando ? ' disabled' : ''}> Con la carátula, el índice y el marco argumentativo</label>
+      <div class="t-panel__grupo">
+        <div class="t-panel__etiqueta">En qué formato</div>
+        <div class="t-formatos">
+          ${opcion('ds-desc-formato', 'pdf', x.formato === 'pdf', 'PDF', 'para imprimir y entregar')}
+          ${opcion('ds-desc-formato', 'word', x.formato === 'word', 'Word', 'para retocar el texto')}
+        </div>
+      </div>
+      ${nota}
+      <div class="t-panel__acciones">
+        <button type="button" class="t-descargar" data-accion="ds-desc-ir"${x.descargando || !cuantas ? ' disabled' : ''}>${x.descargando ? 'Armando…' : cuantas ? 'Descargar' : 'Elegí al menos una materia'}</button>
+        <button type="button" class="t-cancelar" data-accion="ds-desc-cerrar"${x.descargando ? ' disabled' : ''}>Cancelar</button>
+      </div>
+    </div>`;
+  }
+
+  /* ---------- El documento ---------- */
+
+  async function descargar() {
+    const x = st.descargar;
+    if (!x || x.descargando) return;
+    const elegidas = x.todas ? null : x.elegidas;
+    if (elegidas && !elegidas.size) return;
+    await guardarDoc();
+    const progreso = (texto) => { x.progreso = texto; d.render(); };
+    x.descargando = true;
+    x.error = null;
+    progreso('Trayendo lo que revisó el equipo…');
     try {
       const { data: filas, error } = await sb.from('diseno_materias').select('espacio_id, anio, datos, estado');
       if (error) throw new Error('No pudimos traer lo que guardó el equipo. Revisá la conexión y volvé a intentar.');
       const guardadas = new Map((filas || []).map((f) => [clave(f.espacio_id, f.anio), f]));
-      const lista = unidades().filter((u) => u.conSaberes && (!soloEspacio || u.esp.id === soloEspacio));
+      const lista = unidades().filter((u) => u.conSaberes && (!elegidas || elegidas.has(u.esp.id)));
       const crit = criterios();
       // Los que nadie tocó salen de la propuesta de hoy: se piden de a cuatro
       const faltan = lista.filter((u) => !guardadas.has(clave(u.esp.id, u.anio)));
@@ -1120,46 +1201,96 @@ const Diseno = (function () {
           const crudo = await traerPropuesta(u.esp.id, u.anio);
           propuestas.set(clave(u.esp.id, u.anio), { datos: armar(crudo, crit), estado: 'propuesta' });
           hechas += 1;
-          st.generando = { texto: `Armando la propuesta de los años que nadie revisó (${hechas} de ${faltan.length})…` };
-          d.render();
+          progreso(`Armando la propuesta de los años que nadie revisó (${hechas} de ${faltan.length})…`);
         }
       };
       await Promise.all([trabajar(), trabajar(), trabajar(), trabajar()]);
       const partes = lista.map((u) => Object.assign({ u }, guardadas.get(clave(u.esp.id, u.anio)) || propuestas.get(clave(u.esp.id, u.anio))));
-      const esp = soloEspacio ? Catalogo.espacio(soloEspacio) : null;
-      const html = documento(partes, esp);
-      st.generando = null;
-      const titulo = esp ? `Diseño unificado - ${nombreMateria(esp)} - ${new Date().toISOString().slice(0, 10)}` : `Diseño Curricular Unificado - Ciclo Básico - ${new Date().toISOString().slice(0, 10)}`;
-      d.imprimir(html, titulo);
+      const modelo = prepararDocumento(partes, x.conMarco);
+      const nombre = nombreArchivo(modelo);
+      if (x.formato === 'word') {
+        progreso('Armando el Word…');
+        await bajarWord(modelo, nombre);
+        st.descargar = null;
+        st.aviso = `Se bajó «${nombre.normalize('NFD').replace(/[\u0300-\u036f]/g, '')}.docx». Abrilo con Word para retocarlo.`;
+        d.render();
+        return;
+      }
+      st.descargar = null;
+      d.imprimir(documento(modelo), nombre);
     } catch (e) {
-      st.generando = { error: (e && e.message) || 'No pudimos armar el documento. Volvé a intentar.' };
+      x.descargando = false;
+      x.progreso = null;
+      x.error = (e && e.message) || 'No pudimos armar el documento. Volvé a intentar.';
       d.render();
     }
   }
 
-  // El documento entero, o una materia (soloEsp) para revisar en papel
-  function documento(partes, soloEsp) {
+  function nombreArchivo(modelo) {
+    const fecha = new Date().toISOString().slice(0, 10);
+    if (modelo.materias.length === 16) return `Diseño Curricular Unificado - Ciclo Básico - ${fecha}`;
+    if (modelo.materias.length === 1) return `Diseño unificado - ${nombreMateria(modelo.materias[0].esp)} - ${fecha}`;
+    return `Diseño unificado - ${modelo.materias.length} materias - ${fecha}`;
+  }
+
+  // Lo mismo para el PDF y el Word: las materias elegidas, cada una con sus
+  // años, y de cada año los saberes que quedaron en el diseño, numerados
+  function prepararDocumento(partes, conMarco) {
     const x = datosDocumento();
-    const borrador = partes.some((p) => p.estado !== 'cerrada');
     const sinCerrar = partes.filter((p) => p.estado !== 'cerrada').length;
     const porMateria = new Map();
     for (const p of partes) {
       if (!porMateria.has(p.u.esp.id)) porMateria.set(p.u.esp.id, { esp: p.u.esp, area: p.u.area, anios: [] });
-      porMateria.get(p.u.esp.id).anios.push(p);
+      const quedan = p.datos.saberes.filter((s) => s.estado !== 'fuera');
+      let n = 0;
+      porMateria.get(p.u.esp.id).anios.push({ u: p.u, estado: p.estado, base: p.datos.base || {}, quedan,
+        numerados: new Map(quedan.map((s) => [s.id, ++n])) });
     }
-    const materias = [...porMateria.values()];
-    const marcaBorrador = borrador
-      ? `<div class="t-dis__borrador">Borrador · ${sinCerrar === partes.length ? 'todavía sin cerrar' : `faltan cerrar ${sinCerrar} de ${partes.length}`}</div>` : '';
+    return { x, conMarco, total: partes.length, sinCerrar, borrador: sinCerrar > 0, materias: [...porMateria.values()] };
+  }
 
-    if (soloEsp) {
+  const textoBorrador = (mo) => `Borrador · ${mo.sinCerrar === mo.total ? 'todavía sin cerrar' : `faltan cerrar ${mo.sinCerrar} de ${mo.total}`}`;
+  const autoridades = (x) => String(x.caratula.autoridades || '').split('\n').map((l) => l.trim()).filter(Boolean);
+  const subtituloMateria = (m) => (m.esp.saberes_por_ciclo ? 'Ciclo Básico · los mismos saberes para 1°, 2° y 3° año' : textoAniosDe(m.anios));
+  const cuentaAnio = (a) => `${a.quedan.length} ${plural(a.quedan.length, 'saber', 'saberes')}${a.base.docentes ? ` · basado en ${numero(a.base.docentes)} ${plural(a.base.docentes, 'docente', 'docentes')} de ${numero(a.base.escuelas)} ${plural(a.base.escuelas, 'escuela', 'escuelas')}` : ''}`;
+  const estadoAnio = (mo, a) => (mo.borrador && a.estado !== 'cerrada' ? (a.estado === 'propuesta' ? 'propuesta sin revisar' : 'en revisión') : '');
+  function acuerdoSaber(s, x) {
+    if (!x.opciones.consenso) return '';
+    if (s.origen === 'equipo') return 'Incorporado por el equipo técnico.';
+    if (s.informan) return `Lo trabaja el ${Math.round((100 * s.trabajan) / s.informan)} % de los ${numero(s.informan)} docentes que lo informaron.`;
+    return '';
+  }
+  const pctContenido = (s, c) => (s.trabajan ? Math.round((100 * c.docentes) / s.trabajan) : 0);
+  const conPorcentaje = (s, c, x) => x.opciones.porcentajes && c.docentes && c.origen !== 'equipo';
+
+  // «Cómo leer este diseño», escrito con los criterios
+  function cuerpoLectura(x) {
+    const crit = x.criterios;
+    return `<p>Cada materia presenta, año por año y trimestre por trimestre, los <strong>saberes</strong> que todo estudiante de la provincia debe aprender, en el orden en que se enseñan. Debajo de cada saber van sus <strong>contenidos priorizados</strong>.</p>
+      <p>Saberes y contenidos salen de lo que cargaron los docentes en ReSaP, materia por materia y año por año, y de la revisión del equipo técnico de la Dirección de Educación Secundaria.</p>
+      <ul>
+        <li>Un saber quedó en la propuesta cuando lo trabaja al menos el ${crit.saber} % de los docentes que lo informaron. Los de menos acuerdo, o informados por menos de ${crit.minimo} docentes, los revisó uno por uno el equipo técnico y decidió si quedaban.</li>
+        <li>Los contenidos van <strong>de más a menos elegidos</strong> por los docentes que trabajan el saber. Entraron los que eligió al menos el ${crit.contenido} % de ellos, más los que sumó el equipo técnico.</li>
+        ${x.opciones.consenso ? '<li>Debajo de cada saber dice qué parte de los docentes que lo informaron lo trabaja: es la medida del acuerdo.</li>' : ''}
+        ${x.opciones.porcentajes ? '<li>Al lado de cada contenido, el porcentaje de los docentes que trabajan el saber y lo eligieron.</li>' : ''}
+      </ul>`;
+  }
+
+  /* ---------- El PDF ---------- */
+
+  function documento(mo) {
+    const x = mo.x;
+    const marcaBorrador = mo.borrador ? `<div class="t-dis__borrador">${esc(textoBorrador(mo))}</div>` : '';
+
+    if (!mo.conMarco) {
       return `<article class="t-doc t-dis">
         <div class="t-dis__encabezado">${marcaChica()}${marcaBorrador}</div>
         <p class="t-dis__institucion">${esc(conCampos(x.caratula.titulo))} · ${esc(conCampos(x.caratula.subtitulo))}</p>
-        ${materiaDocumento(materias[0], x, borrador, true)}
+        ${mo.materias.map((m, i) => materiaDocumento(m, mo, i === 0)).join('')}
       </article>`;
     }
 
-    const autoridades = String(x.caratula.autoridades || '').split('\n').map((l) => l.trim()).filter(Boolean);
+    const auts = autoridades(x);
     const caratula = `<section class="t-dis__caratula">
       <div class="t-dis__logos">
         <img src="${LOGO_MINISTERIO}" alt="Ministerio de Cultura y Educación — Provincia de Formosa">
@@ -1173,7 +1304,7 @@ const Diseno = (function () {
         <p class="t-dis__bajada">${esc(conCampos(x.caratula.bajada))}</p>
       </div>
       <div class="t-dis__caratula-pie">
-        ${autoridades.length ? `<div class="t-dis__autoridades">${autoridades.map((l) => `<p>${esc(l)}</p>`).join('')}</div>` : ''}
+        ${auts.length ? `<div class="t-dis__autoridades">${auts.map((l) => `<p>${esc(l)}</p>`).join('')}</div>` : ''}
         <div class="t-dis__resap">
           <img class="t-dis__resap-simbolo" src="${RESAP_SIMBOLO}" alt="">
           <img class="t-dis__resap-palabra" src="${RESAP_PALABRA}" alt="ReSaP">
@@ -1189,34 +1320,19 @@ const Diseno = (function () {
         <li>Marco argumentativo</li>
         <li>Cómo leer este diseño</li>
         ${Catalogo.areas().map((a) => {
-          const ms = materias.filter((m) => m.area.id === a.id);
+          const ms = mo.materias.filter((m) => m.area.id === a.id);
           if (!ms.length) return '';
           return `<li>${esc(a.nombre)}<ul>${ms.map((m) => `<li>${esc(nombreMateria(m.esp))} <span>${esc(m.esp.saberes_por_ciclo ? 'todo el ciclo' : textoAniosDe(m.anios))}</span></li>`).join('')}</ul></li>`;
         }).join('')}
       </ol>
     </section>`;
 
-    const marco = `<section class="t-dis__marco">${limpiarHTML(conCampos(x.marco))}</section>`;
-
-    const crit = x.criterios;
-    const lectura = `<section class="t-dis__lectura">
-      <h2 class="t-dis__seccion">Cómo leer este diseño</h2>
-      <p>Cada materia presenta, año por año y trimestre por trimestre, los <strong>saberes</strong> que todo estudiante de la provincia debe aprender, en el orden en que se enseñan. Debajo de cada saber van sus <strong>contenidos priorizados</strong>.</p>
-      <p>Saberes y contenidos salen de lo que cargaron los docentes en ReSaP, materia por materia y año por año, y de la revisión del equipo técnico de la Dirección de Educación Secundaria.</p>
-      <ul>
-        <li>Un saber quedó en la propuesta cuando lo trabaja al menos el ${crit.saber} % de los docentes que lo informaron. Los de menos acuerdo, o informados por menos de ${crit.minimo} docentes, los revisó uno por uno el equipo técnico y decidió si quedaban.</li>
-        <li>Los contenidos van <strong>de más a menos elegidos</strong> por los docentes que trabajan el saber. Entraron los que eligió al menos el ${crit.contenido} % de ellos, más los que sumó el equipo técnico.</li>
-        ${x.opciones.consenso ? '<li>Debajo de cada saber dice qué parte de los docentes que lo informaron lo trabaja: es la medida del acuerdo.</li>' : ''}
-        ${x.opciones.porcentajes ? '<li>Al lado de cada contenido, el porcentaje de los docentes que trabajan el saber y lo eligieron.</li>' : ''}
-      </ul>
-    </section>`;
-
     return `<article class="t-doc t-dis">
       ${caratula}
       ${indice}
-      ${marco}
-      ${lectura}
-      ${materias.map((m) => materiaDocumento(m, x, borrador, false)).join('')}
+      <section class="t-dis__marco">${limpiarHTML(conCampos(x.marco))}</section>
+      <section class="t-dis__lectura"><h2 class="t-dis__seccion">Cómo leer este diseño</h2>${cuerpoLectura(x)}</section>
+      ${mo.materias.map((m) => materiaDocumento(m, mo, false)).join('')}
     </article>`;
   }
 
@@ -1231,33 +1347,29 @@ const Diseno = (function () {
     return (t.length > 1 ? `${t.slice(0, -1).join(', ')} y ${t[t.length - 1]}` : t[0]) + ' año';
   }
 
-  function materiaDocumento(m, x, borrador, suelta) {
+  // primera: la primera materia de un documento sin carátula, que no salta de hoja
+  function materiaDocumento(m, mo, primera) {
     const pres = (st.general.presentaciones || {})[m.esp.id];
-    return `<section class="t-dis__materia${suelta ? ' t-dis__materia--suelta' : ''}">
+    return `<section class="t-dis__materia${primera ? ' t-dis__materia--suelta' : ''}">
       <p class="t-dis__area">${esc(m.area.nombre)}</p>
       <h2 class="t-dis__materia-titulo">${esc(m.esp.nombre)}</h2>
-      <p class="t-dis__materia-sub">${esc(m.esp.saberes_por_ciclo ? 'Ciclo Básico · los mismos saberes para 1°, 2° y 3° año' : textoAniosDe(m.anios))}</p>
+      <p class="t-dis__materia-sub">${esc(subtituloMateria(m))}</p>
       ${pres ? `<div class="t-dis__presentacion">${pres.split(/\n{2,}/).map((p) => `<p>${esc(p).replace(/\n/g, '<br>')}</p>`).join('')}</div>` : ''}
-      ${m.anios.map((p, i) => anioDocumento(p, x, borrador, i)).join('')}
+      ${m.anios.map((a, i) => anioDocumento(a, mo, i)).join('')}
     </section>`;
   }
 
-  function anioDocumento(p, x, borrador, i) {
-    const datos = p.datos;
-    const base = datos.base || {};
-    const quedan = datos.saberes.filter((s) => s.estado !== 'fuera');
-    let n = 0;
-    const numerados = new Map(quedan.map((s) => [s.id, ++n]));
-    const estadoTexto = borrador && p.estado !== 'cerrada' ? ` · <em>${p.estado === 'propuesta' ? 'propuesta sin revisar' : 'en revisión'}</em>` : '';
+  function anioDocumento(a, mo, i) {
+    const estado = estadoAnio(mo, a);
     const trimestres = [1, 2, 3].map((t) => {
-      const lista = quedan.filter((s) => s.trimestre === t);
+      const lista = a.quedan.filter((s) => s.trimestre === t);
       if (!lista.length) return '';
       const titulo = `<h4 class="t-dis__trimestre">${ORDINAL[t]} trimestre</h4>`;
-      return lista.map((s, j) => saberDocumento(s, numerados.get(s.id), x, base, j === 0 ? titulo : '')).join('');
+      return lista.map((s, j) => saberDocumento(s, a.numerados.get(s.id), mo.x, j === 0 ? titulo : '')).join('');
     }).join('');
     return `<div class="t-dis__anio${i > 0 ? ' t-dis__anio--nueva' : ''}">
-      <h3 class="t-dis__anio-titulo">${esc(textoAnio(p.u.anio))}
-        <span>· ${quedan.length} ${plural(quedan.length, 'saber', 'saberes')}${base.docentes ? ` · basado en ${numero(base.docentes)} ${plural(base.docentes, 'docente', 'docentes')} de ${numero(base.escuelas)} ${plural(base.escuelas, 'escuela', 'escuelas')}` : ''}${estadoTexto}</span></h3>
+      <h3 class="t-dis__anio-titulo">${esc(textoAnio(a.u.anio))}
+        <span>· ${esc(cuentaAnio(a))}${estado ? ` · <em>${estado}</em>` : ''}</span></h3>
       ${trimestres || '<p class="t-dis__vacio">Sin saberes.</p>'}
     </div>`;
   }
@@ -1265,16 +1377,11 @@ const Diseno = (function () {
   // El encabezado del saber y su primer contenido van en un bloque que no se
   // parte (como en el reporte de la materia): un saber largo sigue en la hoja
   // siguiente, pero su encabezado nunca queda solo al pie.
-  function saberDocumento(s, n, x, base, antes) {
+  function saberDocumento(s, n, x, antes) {
     const info = nombreEje(s.eje_id);
     const incluidos = s.contenidos.filter((c) => c.incluido);
-    const pct = (c) => (s.trabajan ? Math.round((100 * c.docentes) / s.trabajan) : 0);
-    const item = (c) => `<li>${esc(c.texto)}${x.opciones.porcentajes && c.docentes && c.origen !== 'equipo' ? ` <span class="t-dis__pct">${pct(c)} %</span>` : ''}</li>`;
-    let acuerdo = '';
-    if (x.opciones.consenso) {
-      if (s.origen === 'equipo') acuerdo = 'Incorporado por el equipo técnico.';
-      else if (s.informan) acuerdo = `Lo trabaja el ${Math.round((100 * s.trabajan) / s.informan)} % de los ${numero(s.informan)} docentes que lo informaron.`;
-    }
+    const item = (c) => `<li>${esc(c.texto)}${conPorcentaje(s, c, x) ? ` <span class="t-dis__pct">${pctContenido(s, c)} %</span>` : ''}</li>`;
+    const acuerdo = acuerdoSaber(s, x);
     const revisar = s.estado === 'revisar' ? ' <em class="t-dis__revisar">(para revisar)</em>' : '';
     return `<div class="t-dis__saber">
       <div class="t-dis__saber-cabeza">
@@ -1288,6 +1395,218 @@ const Diseno = (function () {
     </div>`;
   }
 
+  /* ---------- El Word (.docx) ---------- */
+
+  // Lo arma la librería docx en el navegador, con la misma estructura que el
+  // PDF. Los títulos son estilos de Word (Título 1, 2 y 3): en Word se ve el
+  // panel de navegación y se puede insertar un índice automático.
+  async function bajarWord(mo, nombre) {
+    await cargarScript(URL_DOCX, 'docx');
+    const D = window.docx;
+    const x = mo.x;
+    const AZUL = '003380';
+    const LADRILLO = 'B14A12';
+    const GRIS = '5A6377';
+    const TINTA = '151C2B';
+    const run = (text, o = {}) => new D.TextRun(Object.assign({ text }, o));
+    const parrafo = (hijos, o = {}) => new D.Paragraph(Object.assign({ children: Array.isArray(hijos) ? hijos : [hijos] }, o));
+    const bytes = async (url) => { const r = await fetch(url); if (!r.ok) throw new Error('No se pudo leer un logo.'); return r.arrayBuffer(); };
+    const sinBordes = { style: D.BorderStyle.NONE, size: 0, color: 'FFFFFF' };
+    const bordesNinguno = { top: sinBordes, bottom: sinBordes, left: sinBordes, right: sinBordes, insideHorizontal: sinBordes, insideVertical: sinBordes };
+
+    // Lo escrito en el marco (HTML limpio) en párrafos de Word
+    let listasNumeradas = 0;
+    function deHTML(html) {
+      const raiz = new DOMParser().parseFromString(`<div>${html}</div>`, 'text/html').body.firstElementChild;
+      const corridas = (nodo, f = {}) => {
+        const r = [];
+        for (const h of nodo.childNodes) {
+          if (h.nodeType === 3) {
+            const t = h.textContent.replace(/\s+/g, ' ');
+            if (t.trim() || (t === ' ' && r.length)) r.push(run(t, { bold: f.b, italics: f.i, underline: f.u ? {} : undefined }));
+          } else if (h.nodeType === 1) {
+            const tag = h.tagName;
+            if (tag === 'BR') r.push(run('', { break: 1 }));
+            else r.push(...corridas(h, { b: f.b || tag === 'STRONG' || tag === 'B', i: f.i || tag === 'EM' || tag === 'I', u: f.u || tag === 'U' }));
+          }
+        }
+        return r;
+      };
+      const salida = [];
+      for (const nodo of raiz.childNodes) {
+        if (nodo.nodeType === 3) {
+          if (nodo.textContent.trim()) salida.push(parrafo(run(nodo.textContent.trim()), { style: 'Texto' }));
+          continue;
+        }
+        if (nodo.nodeType !== 1) continue;
+        const tag = nodo.tagName;
+        if (tag === 'H2') salida.push(parrafo(corridas(nodo), { heading: D.HeadingLevel.HEADING_1 }));
+        else if (tag === 'H3') salida.push(parrafo(corridas(nodo), { style: 'Subtitulo' }));
+        else if (tag === 'UL') for (const li of nodo.querySelectorAll(':scope > li')) salida.push(parrafo(corridas(li), { style: 'Texto', bullet: { level: 0 } }));
+        else if (tag === 'OL') {
+          listasNumeradas += 1;
+          for (const li of nodo.querySelectorAll(':scope > li')) salida.push(parrafo(corridas(li), { style: 'Texto', numbering: { reference: 'numerada', level: 0, instance: listasNumeradas } }));
+        } else if (tag === 'BLOCKQUOTE') {
+          const partes = nodo.querySelectorAll('p').length ? [...nodo.querySelectorAll('p')] : [nodo];
+          for (const p of partes) {
+            salida.push(parrafo(corridas(p, { i: true }), {
+              style: 'Texto', indent: { left: 400 },
+              border: { left: { style: D.BorderStyle.SINGLE, size: 18, color: AZUL, space: 10 } },
+              shading: { type: D.ShadingType.CLEAR, fill: 'E8EEF8', color: 'auto' },
+            }));
+          }
+        } else salida.push(parrafo(corridas(nodo), { style: 'Texto' }));
+      }
+      return salida;
+    }
+
+    const hijos = [];
+
+    if (mo.conMarco) {
+      const [ministerio, des, simbolo, palabra] = await Promise.all([LOGO_MINISTERIO_JPG, LOGO_DES_PNG, RESAP_SIMBOLO, RESAP_PALABRA].map(bytes));
+      const celdaLogo = (img, ancho, alto, alinear) => new D.TableCell({
+        borders: bordesNinguno, width: { size: 50, type: D.WidthType.PERCENTAGE },
+        children: [parrafo(new D.ImageRun({ data: img, transformation: { width: ancho, height: alto } }), { alignment: alinear })],
+      });
+      hijos.push(new D.Table({
+        width: { size: 100, type: D.WidthType.PERCENTAGE }, borders: bordesNinguno,
+        rows: [new D.TableRow({ children: [celdaLogo(ministerio, 180, 97, D.AlignmentType.LEFT), celdaLogo(des, 150, 98, D.AlignmentType.RIGHT)] })],
+      }));
+      hijos.push(parrafo(run(''), { spacing: { before: 2600 } }));
+      if (mo.borrador) hijos.push(parrafo(run(textoBorrador(mo).toUpperCase(), { bold: true, color: LADRILLO, size: 18 }), { spacing: { after: 240 } }));
+      hijos.push(parrafo(run(conCampos(x.caratula.titulo), { bold: true, color: AZUL, size: 64 }), { spacing: { after: 160 } }));
+      hijos.push(parrafo(run(conCampos(x.caratula.subtitulo), { color: '3A4356', size: 32 }), { spacing: { after: 280 } }));
+      // El filete tricolor: tres celdas de color, finitas
+      const franja = (color) => new D.TableCell({
+        borders: bordesNinguno, shading: { type: D.ShadingType.CLEAR, fill: color, color: 'auto' },
+        width: { size: 1350, type: D.WidthType.DXA }, children: [parrafo(run('', { size: 2 }))],
+      });
+      hijos.push(new D.Table({
+        width: { size: 4050, type: D.WidthType.DXA }, borders: bordesNinguno,
+        rows: [new D.TableRow({ height: { value: 90, rule: D.HeightRule.EXACT }, children: ['0094F9', '49A830', 'FEB501'].map(franja) })],
+      }));
+      hijos.push(parrafo(run(conCampos(x.caratula.bajada), { color: '3A4356', size: 24 }), { spacing: { before: 320 } }));
+      hijos.push(parrafo(run(''), { spacing: { before: 3000 } }));
+      for (const l of autoridades(x)) hijos.push(parrafo(run(l, { size: 22 }), { spacing: { after: 80 } }));
+      hijos.push(parrafo([
+        new D.ImageRun({ data: simbolo, transformation: { width: 44, height: 46 } }),
+        run('  '),
+        new D.ImageRun({ data: palabra, transformation: { width: 102, height: 26 } }),
+        run('   Relevamiento y Sistematización de Saberes Prioritarios del Nivel Secundario', { bold: true, color: AZUL, size: 16 }),
+      ], { spacing: { before: 300, after: 160 }, border: { top: { style: D.BorderStyle.SINGLE, size: 4, color: 'D5DCE6', space: 8 } } }));
+      hijos.push(parrafo(run(`${conCampos(x.caratula.lugar)}${x.caratula.vigencia ? ` · ${conCampos(x.caratula.vigencia)}` : ''}`, { bold: true, color: '3A4356', size: 22 })));
+
+      // Índice
+      hijos.push(parrafo(run('Contenido'), { heading: D.HeadingLevel.HEADING_1, pageBreakBefore: true }));
+      hijos.push(parrafo(run('Marco argumentativo', { bold: true }), { style: 'Texto' }));
+      hijos.push(parrafo(run('Cómo leer este diseño', { bold: true }), { style: 'Texto' }));
+      for (const a of Catalogo.areas()) {
+        const ms = mo.materias.filter((m) => m.area.id === a.id);
+        if (!ms.length) continue;
+        hijos.push(parrafo(run(a.nombre, { bold: true }), { style: 'Texto', spacing: { before: 160, after: 40 } }));
+        for (const m of ms) {
+          hijos.push(parrafo([run(nombreMateria(m.esp)), run(`  ${m.esp.saberes_por_ciclo ? 'todo el ciclo' : textoAniosDe(m.anios)}`, { color: GRIS, size: 18 })],
+            { style: 'Texto', indent: { left: 400 }, spacing: { after: 40 } }));
+        }
+      }
+
+      // Marco argumentativo
+      const marco = deHTML(limpiarHTML(conCampos(x.marco)));
+      hijos.push(parrafo(run(''), { pageBreakBefore: true, spacing: { after: 0 } }));
+      hijos.push(...marco);
+
+      // Cómo leer
+      hijos.push(parrafo(run('Cómo leer este diseño'), { heading: D.HeadingLevel.HEADING_1, pageBreakBefore: true }));
+      hijos.push(...deHTML(cuerpoLectura(x)));
+    } else {
+      hijos.push(parrafo(run(`${conCampos(x.caratula.titulo)} · ${conCampos(x.caratula.subtitulo)}`.toUpperCase(), { bold: true, color: AZUL, size: 16 }),
+        { spacing: { after: 80 } }));
+      if (mo.borrador) hijos.push(parrafo(run(textoBorrador(mo).toUpperCase(), { bold: true, color: LADRILLO, size: 16 }), { spacing: { after: 200 } }));
+    }
+
+    // Las materias: cada una en hoja nueva, cada año también
+    mo.materias.forEach((m, mi) => {
+      hijos.push(parrafo(run(m.area.nombre.toUpperCase(), { bold: true, color: LADRILLO, size: 16 }),
+        { pageBreakBefore: mo.conMarco || mi > 0, keepNext: true, spacing: { after: 40 } }));
+      hijos.push(parrafo(run(m.esp.nombre), { heading: D.HeadingLevel.HEADING_1 }));
+      hijos.push(parrafo(run(subtituloMateria(m), { color: '3A4356', size: 22 }),
+        { spacing: { after: 200 }, border: { bottom: { style: D.BorderStyle.SINGLE, size: 12, color: AZUL, space: 6 } } }));
+      const pres = (st.general.presentaciones || {})[m.esp.id];
+      if (pres) for (const p of pres.split(/\n{2,}/)) hijos.push(parrafo(run(p.replace(/\n/g, ' ')), { style: 'Texto' }));
+      m.anios.forEach((a, ai) => {
+        const estado = estadoAnio(mo, a);
+        hijos.push(parrafo([
+          run(textoAnio(a.u.anio)),
+          run(`  · ${cuentaAnio(a)}`, { bold: false, color: GRIS, size: 18 }),
+          ...(estado ? [run(` · ${estado}`, { bold: true, color: LADRILLO, size: 18 })] : []),
+        ], { heading: D.HeadingLevel.HEADING_2, pageBreakBefore: ai > 0 }));
+        if (!a.quedan.length) hijos.push(parrafo(run('Sin saberes.', { italics: true, color: GRIS }), { style: 'Texto' }));
+        for (const t of [1, 2, 3]) {
+          const lista = a.quedan.filter((s) => s.trimestre === t);
+          if (!lista.length) continue;
+          hijos.push(parrafo(run(`${ORDINAL[t]} trimestre`), { heading: D.HeadingLevel.HEADING_3 }));
+          for (const s of lista) {
+            const info = nombreEje(s.eje_id);
+            const incluidos = s.contenidos.filter((c) => c.incluido);
+            const acuerdo = acuerdoSaber(s, x);
+            hijos.push(parrafo([
+              run(`SABER ${a.numerados.get(s.id)} · ${info.rotulo} — ${info.nombre.toUpperCase()}`, { bold: true, color: LADRILLO, size: 15 }),
+              ...(s.estado === 'revisar' ? [run(' (para revisar)', { bold: true, color: '7A4E00', size: 15 })] : []),
+            ], { keepNext: true, spacing: { before: 200, after: 20 } }));
+            hijos.push(parrafo(run(s.texto, { font: 'Cambria', size: 22, color: TINTA }), { keepNext: true, keepLines: true, spacing: { after: 40 } }));
+            if (acuerdo) hijos.push(parrafo(run(acuerdo, { color: GRIS, size: 16 }), { keepNext: incluidos.length > 0, spacing: { after: 40 } }));
+            for (const c of incluidos) {
+              hijos.push(parrafo([
+                run(c.texto, { size: 20 }),
+                ...(conPorcentaje(s, c, x) ? [run(`  ${pctContenido(s, c)} %`, { bold: true, color: AZUL, size: 17 })] : []),
+              ], { bullet: { level: 0 }, keepLines: true, spacing: { after: 20 } }));
+            }
+          }
+        }
+      });
+    });
+
+    const pie = new D.Footer({ children: [parrafo([
+      run(`${conCampos(x.caratula.titulo)} · ${conCampos(x.caratula.subtitulo)} · `, { color: GRIS, size: 16 }),
+      new D.TextRun({ children: [D.PageNumber.CURRENT], color: GRIS, size: 16 }),
+    ], { alignment: D.AlignmentType.RIGHT })] });
+
+    const doc = new D.Document({
+      creator: 'ReSaP — Dirección de Educación Secundaria',
+      title: conCampos(x.caratula.titulo),
+      styles: {
+        default: {
+          document: { run: { font: 'Arial', size: 22, color: TINTA } },
+          heading1: { run: { font: 'Arial', size: 36, bold: true, color: AZUL }, paragraph: { spacing: { before: 120, after: 200 }, keepNext: true } },
+          heading2: { run: { font: 'Arial', size: 30, bold: true, color: AZUL }, paragraph: { spacing: { before: 200, after: 120 }, keepNext: true } },
+          heading3: { run: { font: 'Arial', size: 21, bold: true, color: AZUL, allCaps: true }, paragraph: { spacing: { before: 260, after: 60 }, keepNext: true,
+            border: { bottom: { style: D.BorderStyle.SINGLE, size: 4, color: 'D5DCE6', space: 3 } } } },
+        },
+        paragraphStyles: [
+          { id: 'Texto', name: 'Texto', basedOn: 'Normal', run: { size: 22 }, paragraph: { spacing: { after: 120, line: 300 } } },
+          { id: 'Subtitulo', name: 'Subtítulo del marco', basedOn: 'Normal', next: 'Texto', run: { size: 26, bold: true, color: AZUL },
+            paragraph: { spacing: { before: 240, after: 80 }, keepNext: true } },
+        ],
+      },
+      numbering: { config: [{ reference: 'numerada', levels: [{ level: 0, format: D.LevelFormat.DECIMAL, text: '%1.', alignment: D.AlignmentType.START,
+        style: { paragraph: { indent: { left: 400, hanging: 300 } } } }] }] },
+      sections: [{
+        properties: { titlePage: mo.conMarco, page: { margin: { top: 1000, bottom: 1000, left: 1050, right: 1050 } } },
+        footers: mo.conMarco ? { default: pie, first: new D.Footer({ children: [parrafo(run(''))] }) } : { default: pie },
+        children: hijos,
+      }],
+    });
+    const blob = await D.Packer.toBlob(doc);
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    // Sin acentos ni eñes: con ellos, algunos Chrome lo bajan como «download»
+    a.download = `${nombre.normalize('NFD').replace(/[\u0300-\u036f]/g, '')}.docx`;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 2000);
+  }
+
+
   /* ---------- Eventos ---------- */
 
   function manejar(accion, ds, el) {
@@ -1296,7 +1615,13 @@ const Diseno = (function () {
       case 'ds-resumen': irAlResumen(); break;
       case 'ds-abrir': abrirMateria(ds.espacio, Number(ds.anio)); break;
       case 'ds-documento': irAlDocumento(); break;
-      case 'ds-descargar': descargar(ds.espacio || null); break;
+      case 'ds-descargar': abrirDescargar(ds.espacio || null); break;
+      case 'ds-desc-cerrar': if (st.descargar && !st.descargar.descargando) { st.descargar = null; d.render(); } break;
+      case 'ds-desc-ir': descargar(); break;
+      case 'ds-desc-todas':
+        if (st.descargar) { st.descargar.elegidas = new Set(Catalogo.areas().flatMap((a) => Catalogo.espaciosPorArea(a.id).map((e) => e.id))); st.descargar.error = null; d.render(); }
+        break;
+      case 'ds-desc-ninguna': if (st.descargar) { st.descargar.elegidas = new Set(); d.render(); } break;
       case 'ds-traer':
         if (st.vista === 'materia') { st.conflicto = false; st.errorAccion = null; cargarGeneral().then(() => abrirMateria(st.espacio_id, st.anio)); }
         break;
@@ -1359,6 +1684,21 @@ const Diseno = (function () {
       case 'ds-incluir': incluir(ds.saber, ds.clave, el.checked); break;
       case 'ds-word': subirWord(el); break;
       case 'ds-opcion': cambiarDoc((x) => { x.opciones[ds.campo] = el.checked; }, { ya: true }); break;
+      case 'ds-desc-que':
+        if (st.descargar) {
+          st.descargar.todas = el.value === 'todas';
+          // Al elegir, arranca con la materia que se está mirando (o ninguna)
+          if (!st.descargar.todas) st.descargar.elegidas = new Set(st.vista === 'materia' && st.espacio_id ? [st.espacio_id] : []);
+          st.descargar.conMarco = st.descargar.todas;
+          st.descargar.error = null;
+          d.render();
+        }
+        break;
+      case 'ds-desc-materia':
+        if (st.descargar) { if (el.checked) st.descargar.elegidas.add(el.value); else st.descargar.elegidas.delete(el.value); st.descargar.error = null; d.render(); }
+        break;
+      case 'ds-desc-marco': if (st.descargar) { st.descargar.conMarco = el.checked; d.render(); } break;
+      case 'ds-desc-formato': if (st.descargar) { st.descargar.formato = el.value; st.descargar.error = null; d.render(); } break;
       default: break;
     }
   }
@@ -1381,6 +1721,7 @@ const Diseno = (function () {
   }
 
   function escape() {
+    if (st.descargar) { if (!st.descargar.descargando) { st.descargar = null; d.render(); } return true; }
     if (st.editando || st.confirmar) { st.editando = null; st.confirmar = null; d.render(); return true; }
     return false;
   }
@@ -1405,7 +1746,7 @@ const Diseno = (function () {
     st.activo = true;
     st.aviso = null;
     st.errorAccion = null;
-    st.generando = null;
+    st.descargar = null;
     if (hash) {
       const materia = hash.get('diseno');
       if (hash.get('documento') === '1') st.vista = 'documento';
